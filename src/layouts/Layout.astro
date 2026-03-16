@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
+import SocialIcons from '../components/SocialIcons.astro';
 import { siteTitle, brandName, defaultDescription } from '../data/meta';
 
 interface Props {
@@ -23,8 +24,15 @@ const fullTitle = title === 'Home' ? `${brandName} · ${siteTitle}` : `${title} 
   </head>
   <body>
     <header class="site-header">
-      <a href={base} class="logo">{brandName}</a>
-      <Nav currentPath={Astro.url.pathname} />
+      <div class="site-header__left">
+        <a href={base} class="logo">{brandName}</a>
+        <span class="site-header__sep" aria-hidden="true"></span>
+        <Nav currentPath={Astro.url.pathname} />
+      </div>
+      <div class="site-header__right">
+        <span class="site-header__sep" aria-hidden="true"></span>
+        <SocialIcons />
+      </div>
     </header>
     <main>
       <slot />
@@ -37,9 +45,10 @@ const fullTitle = title === 'Home' ? `${brandName} · ${siteTitle}` : `${title} 
       import gsap from 'gsap';
       const logo = document.querySelector('.logo');
       const navLinks = document.querySelectorAll('.nav .nav__link');
+      const socialLinks = document.querySelectorAll('.social-icons__link');
       if (logo || navLinks.length) {
-        gsap.set([logo, ...navLinks], { opacity: 0, y: -8 });
-        gsap.to([logo, ...navLinks], {
+        gsap.set([logo, ...navLinks, ...socialLinks], { opacity: 0, y: -8 });
+        gsap.to([logo, ...navLinks, ...socialLinks], {
           opacity: 1,
           y: 0,
           duration: 0.5,
