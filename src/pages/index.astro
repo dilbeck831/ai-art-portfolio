@@ -50,16 +50,16 @@ const heroImages = featured.length > 0
         </div>
         <div class="about-artist__stats">
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target="6" data-suffix="+">0</span>
+            <span class="about-artist__stat-num" data-target="120" data-suffix="+">0</span>
             <span class="about-artist__stat-label">Years creating</span>
           </div>
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target="14" data-suffix="+">0</span>
+            <span class="about-artist__stat-num" data-target="201" data-suffix="+">0</span>
             <span class="about-artist__stat-label">Works created</span>
           </div>
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target="4" data-suffix="">0</span>
-            <span class="about-artist__stat-label">Disciplines</span>
+            <span class="about-artist__stat-num" data-target="30" data-suffix="+">0</span>
+            <span class="about-artist__stat-label">Exhibitions</span>
           </div>
         </div>
       </div>
@@ -86,7 +86,6 @@ const heroImages = featured.length > 0
         .to(subtitle, { opacity: 1, y: 0, duration: 0.7 }, '-=0.5');
     }
 
-    // Animate featured collection cells on scroll
     const featuredCells = document.querySelectorAll('.featured-cell');
     if (featuredCells.length) {
       gsap.set(featuredCells, { opacity: 0, y: 32 });
@@ -136,23 +135,22 @@ const heroImages = featured.length > 0
       });
     }
   </script>
-
   <script>
     function initCountUp() {
       const section = document.querySelector('.about-artist');
       if (!section) return;
       const nums = section.querySelectorAll('.about-artist__stat-num');
       const duration = 1500;
-      const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
+      const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
           observer.disconnect();
           nums.forEach((el) => {
-            const target = Number((el as HTMLElement).dataset.target) || 0;
-            const suffix = (el as HTMLElement).dataset.suffix || '';
+            const target = Number(el.dataset.target) || 0;
+            const suffix = el.dataset.suffix || '';
             const start = performance.now();
-            const step = (now: number) => {
+            const step = (now) => {
               const elapsed = now - start;
               const p = Math.min(elapsed / duration, 1);
               const value = Math.floor(easeOutQuart(p) * target);
