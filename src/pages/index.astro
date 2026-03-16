@@ -6,10 +6,10 @@ import ArtCard from '../components/ArtCard.astro';
 import { getFeaturedArtworks, getArtworksBySeries } from '../data/artworks';
 import { brandName, defaultDescription } from '../data/meta';
 
-const featured = getFeaturedArtworks(8);
+const featured = getFeaturedArtworks(7);
 const recentArt = getArtworksBySeries('fragment').slice(0, 4);
 const base = import.meta.env.BASE_URL;
-const artistImage = `${base}artist.jpeg?v=1`;
+const artistImage = `${base}artist-placeholder.svg`;
 
 const heroImages = featured.length > 0
   ? featured.map((a) => ({
@@ -19,13 +19,11 @@ const heroImages = featured.length > 0
     }))
   : [];
 ---
-
 <Layout title="Home" description={defaultDescription}>
   <Hero images={heroImages} />
 
-  {featured.length > 0 && <FeaturedCollection artworks={featured} base={base} />}
+  <FeaturedCollection artworks={featured} base={base} />
 
-  <!-- Recent work -->
   <section>
     <h2 class="section-title">Recent work</h2>
     <ul class="gallery-grid">
@@ -34,25 +32,14 @@ const heroImages = featured.length > 0
       ))}
     </ul>
     <div class="recent-links">
-      <a href={`${base}work/`}>Work</a> —
-      <a href={`${base}work/ai-art/`}>AI Art</a>,
-      <a href={`${base}work/music/`}>Music</a>,
-      <a href={`${base}work/ux/`}>UI/UX</a> ·
-      <a href={`${base}lab/`}>Lab</a>
+      <a href={`${base}work/`}>Work</a> — <a href={`${base}work/ai-art/`}>AI Art</a>, <a href={`${base}work/music/`}>Music</a>, <a href={`${base}work/ux/`}>UI/UX</a> · <a href={`${base}lab/`}>Lab</a>
     </div>
   </section>
 
-  <!-- ── About the artist ── -->
   <section class="about-artist" id="about-artist">
     <div class="about-artist__inner">
       <div class="about-artist__image-wrap">
-        <img
-          src={artistImage}
-          alt={`${brandName} — artist`}
-          class="about-artist__image"
-          width="600"
-          height="720"
-        />
+        <img src={artistImage} alt={`${brandName} — artist`} class="about-artist__image" width="600" height="720" />
       </div>
       <div class="about-artist__content">
         <p class="about-artist__label">About the artist</p>
@@ -63,23 +50,22 @@ const heroImages = featured.length > 0
         </div>
         <div class="about-artist__stats">
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target="120" data-suffix="+">0</span>
+            <span class="about-artist__stat-num" data-target="6" data-suffix="+">0</span>
             <span class="about-artist__stat-label">Years creating</span>
           </div>
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target="201" data-suffix="+">0</span>
+            <span class="about-artist__stat-num" data-target="14" data-suffix="+">0</span>
             <span class="about-artist__stat-label">Works created</span>
           </div>
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target="30" data-suffix="+">0</span>
-            <span class="about-artist__stat-label">Exhibitions</span>
+            <span class="about-artist__stat-num" data-target="4" data-suffix="">0</span>
+            <span class="about-artist__stat-label">Disciplines</span>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ── Commission CTA ── -->
   <section class="commission-cta">
     <h2 class="section-title">Commission & contact</h2>
     <p>Custom AI art, UX/IA consulting, or Lab tooling. <a href={`${base}contact/`}>Get in touch →</a></p>
@@ -98,6 +84,26 @@ const heroImages = featured.length > 0
       gsap.timeline({ defaults: { ease: 'power3.out' } })
         .to(title, { opacity: 1, y: 0, duration: 0.9 })
         .to(subtitle, { opacity: 1, y: 0, duration: 0.7 }, '-=0.5');
+    }
+
+    // Animate featured collection cells on scroll
+    const featuredCells = document.querySelectorAll('.featured-cell');
+    if (featuredCells.length) {
+      gsap.set(featuredCells, { opacity: 0, y: 32 });
+      ScrollTrigger.create({
+        trigger: '.featured-collection',
+        start: 'top 85%',
+        onEnter: () => {
+          gsap.to(featuredCells, {
+            opacity: 1,
+            y: 0,
+            duration: 0.7,
+            stagger: 0.06,
+            ease: 'power2.out',
+          });
+        },
+        once: true,
+      });
     }
 
     document.querySelectorAll('.gallery-grid').forEach((grid) => {
@@ -143,15 +149,14 @@ const heroImages = featured.length > 0
           if (!entry.isIntersecting) return;
           observer.disconnect();
           nums.forEach((el) => {
-            const elem = el as HTMLElement;
-            const target = Number(elem.dataset.target) || 0;
-            const suffix = elem.dataset.suffix || '';
+            const target = Number((el as HTMLElement).dataset.target) || 0;
+            const suffix = (el as HTMLElement).dataset.suffix || '';
             const start = performance.now();
             const step = (now: number) => {
               const elapsed = now - start;
               const p = Math.min(elapsed / duration, 1);
               const value = Math.floor(easeOutQuart(p) * target);
-              elem.textContent = value + suffix;
+              el.textContent = value + suffix;
               if (p < 1) requestAnimationFrame(step);
             };
             requestAnimationFrame(step);
