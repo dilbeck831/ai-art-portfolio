@@ -1,0 +1,374 @@
+---
+interface HeroImage {
+  src: string;
+  alt: string;
+  title: string;
+}
+
+interface Props {
+  images?: HeroImage[];
+}
+
+const { images = [] } = Astro.props;
+const hasImages = images.length > 0;
+---
+
+<header
+  class="hero-full"
+  id="hero-full"
+  data-has-images={hasImages}
+  data-image-count={images.length}
+  aria-label="Hero"
+>
+  <!-- 1. Fog background (CSS only) -->
+  <div class="hero-fog" aria-hidden="true">
+    <div class="hero-fog__layer hero-fog__layer--1"></div>
+    <div class="hero-fog__layer hero-fog__layer--2"></div>
+    <div class="hero-fog__layer hero-fog__layer--3"></div>
+    <div class="hero-fog__layer hero-fog__layer--4"></div>
+  </div>
+
+  <!-- 2. Slideshow -->
+  {hasImages && (
+    <div
+      class="hero-slideshow"
+      role="img"
+      aria-label="Artwork slideshow"
+    >
+      {images.map((img, i) => (
+        <div
+          class="hero-slideshow__slide"
+          data-slide-index={i}
+          aria-hidden={i > 0}
+        >
+          <img
+            src={img.src}
+            alt={img.alt}
+            class="hero-slideshow__img"
+            loading={i === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+          />
+        </div>
+      ))}
+    </div>
+  )}
+
+  <!-- 3. Vignette overlay -->
+  {hasImages && <div class="hero-vignette" aria-hidden="true"></div>}
+
+  <!-- 4. Hero text -->
+  <div class="hero-text">
+    <p class="hero-text__label">AI Art · UI/UX · The Lab</p>
+    <h1 class="hero-text__title">TØX!Q</h1>
+    <p class="hero-text__subline">Where vision becomes obsidian</p>
+  </div>
+</header>
+
+<style>
+  .hero-full {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 480px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background: var(--hero-bg, #0a0a0a);
+  }
+
+  .hero-full[data-reduced-motion="true"] .hero-slideshow__slide:not([data-slide-index="0"]) {
+    display: none;
+  }
+  .hero-full[data-reduced-motion="true"] .hero-slideshow__slide[data-slide-index="0"] {
+    opacity: 1;
+  }
+
+  /* ----- 1. Fog ----- */
+  .hero-fog {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .hero-fog__layer {
+    position: absolute;
+    inset: -20%;
+    border-radius: 50%;
+    opacity: 0;
+  }
+
+  .hero-fog__layer--1 {
+    background: radial-gradient(
+      ellipse 80% 80% at 30% 40%,
+      rgba(26, 10, 46, 0.35) 0%,
+      transparent 60%
+    );
+    animation: hero-fog-drift-1 32s ease-in-out infinite;
+  }
+
+  .hero-fog__layer--2 {
+    background: radial-gradient(
+      ellipse 70% 90% at 70% 60%,
+      rgba(2, 26, 26, 0.3) 0%,
+      transparent 55%
+    );
+    animation: hero-fog-drift-2 40s ease-in-out infinite;
+    animation-delay: -8s;
+  }
+
+  .hero-fog__layer--3 {
+    background: radial-gradient(
+      ellipse 90% 70% at 50% 30%,
+      rgba(26, 10, 46, 0.25) 0%,
+      transparent 50%
+    );
+    animation: hero-fog-drift-3 24s ease-in-out infinite;
+    animation-delay: -16s;
+  }
+
+  .hero-fog__layer--4 {
+    background: radial-gradient(
+      ellipse 60% 80% at 80% 20%,
+      rgba(2, 26, 26, 0.2) 0%,
+      transparent 60%
+    );
+    animation: hero-fog-drift-4 36s ease-in-out infinite;
+    animation-delay: -4s;
+  }
+
+  @keyframes hero-fog-drift-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+    33% { transform: translate(4%, -3%) scale(1.05); opacity: 0.8; }
+    66% { transform: translate(-2%, 2%) scale(0.98); opacity: 0.5; }
+  }
+
+  @keyframes hero-fog-drift-2 {
+    0%, 100% { transform: translate(-3%, 2%) scale(1.02); opacity: 0.5; }
+    50% { transform: translate(2%, -4%) scale(1.08); opacity: 0.7; }
+  }
+
+  @keyframes hero-fog-drift-3 {
+    0%, 100% { transform: translate(2%, 1%) scale(1); opacity: 0.6; }
+    25% { transform: translate(-5%, -2%) scale(1.06); opacity: 0.4; }
+    75% { transform: translate(1%, 3%) scale(0.96); opacity: 0.7; }
+  }
+
+  @keyframes hero-fog-drift-4 {
+    0%, 100% { transform: translate(-2%, -1%) scale(1.04); opacity: 0.4; }
+    50% { transform: translate(3%, 2%) scale(0.98); opacity: 0.6; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-fog__layer {
+      animation: none;
+      opacity: 0.5;
+    }
+  }
+
+  /* ----- 2. Slideshow ----- */
+  .hero-slideshow {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-slideshow__slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .hero-slideshow__img {
+    max-height: 75vh;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* ----- 3. Vignette ----- */
+  .hero-vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 80% 80% at 50% 50%,
+      transparent 30%,
+      rgba(10, 10, 10, 0.4) 70%,
+      rgba(10, 10, 10, 0.85) 100%
+    );
+  }
+
+  /* ----- 4. Hero text ----- */
+  .hero-text {
+    position: relative;
+    z-index: 4;
+    padding: 0 2rem 8rem 2rem;
+    max-width: 42rem;
+  }
+
+  .hero-text__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--hero-text-muted, rgba(255, 255, 255, 0.7));
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  }
+
+  .hero-text__title {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin: 0 0 0.5rem 0;
+    background: var(--gradient-primary, linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.9) 100%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.9));
+  }
+
+  .hero-text__subline {
+    font-size: clamp(1rem, 2.5vw, 1.35rem);
+    font-weight: 400;
+    color: var(--hero-text-subline, rgba(255, 255, 255, 0.95));
+    margin: 0;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Backdrop for legibility */
+  .hero-text::before {
+    content: "";
+    position: absolute;
+    inset: -1rem;
+    background: linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%);
+    border-radius: 8px;
+    z-index: -1;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-text .hero-text__label,
+    .hero-text .hero-text__title,
+    .hero-text .hero-text__subline {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script is:inline>
+  (function () {
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      var h = document.getElementById('hero-full');
+      if (h) h.setAttribute('data-reduced-motion', 'true');
+      return;
+    }
+
+    function run() {
+      if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+        setTimeout(run, 50);
+        return;
+      }
+      gsap.registerPlugin(ScrollTrigger);
+
+      var hero = document.getElementById('hero-full');
+      if (!hero) return;
+
+      var hasImages = hero.getAttribute('data-has-images') === 'true';
+      var imageCount = parseInt(hero.getAttribute('data-image-count') || '0', 10);
+
+      var label = hero.querySelector('.hero-text__label');
+      var title = hero.querySelector('.hero-text__title');
+      var subline = hero.querySelector('.hero-text__subline');
+      if (label && title && subline) {
+        gsap.set([label, title, subline], { opacity: 0, y: 30 });
+        gsap.to([label, title, subline], {
+          opacity: 1,
+          y: 0,
+          duration: 1.2,
+          stagger: 0.2,
+          delay: 0.3,
+          ease: 'power2.out',
+        });
+      }
+
+      if (hasImages && imageCount > 0) {
+        var slides = hero.querySelectorAll('.hero-slideshow__slide');
+        var imgs = hero.querySelectorAll('.hero-slideshow__img');
+        if (slides.length === 0) return;
+
+        var current = 0;
+        var duration = 5;
+        var crossfadeDuration = 2;
+
+        gsap.set(slides, { opacity: 0 });
+        gsap.set(slides[0], { opacity: 1 });
+        slides[0].setAttribute('aria-hidden', 'false');
+
+        function goNext() {
+          var prev = current;
+          current = (current + 1) % slides.length;
+          var nextSlide = slides[current];
+          var prevSlide = slides[prev];
+          var nextImg = imgs[current];
+
+          prevSlide.setAttribute('aria-hidden', 'true');
+          nextSlide.setAttribute('aria-hidden', 'false');
+
+          gsap.to(prevSlide, { opacity: 0, duration: crossfadeDuration, ease: 'power2.inOut' });
+          gsap.fromTo(nextSlide, { opacity: 0 }, { opacity: 1, duration: crossfadeDuration, ease: 'power2.inOut' });
+          gsap.fromTo(nextImg, { scale: 1 }, { scale: 1.04, duration: duration, ease: 'none' });
+        }
+
+        gsap.to(imgs[0], { scale: 1.04, duration: duration, ease: 'none' });
+        setInterval(goNext, duration * 1000);
+
+        gsap.to(hero, {
+          scrollTrigger: {
+            trigger: hero,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          },
+          opacity: 0.85,
+          scale: 0.98,
+        });
+      } else {
+        gsap.to(hero, {
+          scrollTrigger: {
+            trigger: hero,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          },
+          opacity: 0.9,
+          scale: 0.98,
+        });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', run);
+    } else {
+      run();
+    }
+  })();
+</script>
