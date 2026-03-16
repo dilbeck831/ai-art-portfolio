@@ -1,323 +1,294 @@
 ---
-/**
- * FeaturedCollection.astro
- * Mosaic layout: first piece large (2×2), next two tall (1×2), rest 1×1.
- *
- * Usage in index.astro:
- *   import FeaturedCollection from '../components/FeaturedCollection.astro';
- *   <FeaturedCollection artworks={featured} base={base} />
- */
 import type { Artwork } from '../data/artworks';
 
 interface Props {
   artworks: Artwork[];
-  base: string;
+  base?: string;
 }
 
-const { artworks, base } = Astro.props;
+const { artworks, base = import.meta.env.BASE_URL } = Astro.props;
 
-const pieces = artworks.slice(0, 8);
+// Slot 0 = hero (large left), slots 1-4 = 2x2 grid, slots 5-6 = bottom row
+const hero   = artworks[0];
+const grid   = artworks.slice(1, 5);
+const bottom = artworks.slice(5, 7);
 ---
 
-<section class="featured-collection">
-  <div class="fc-header">
-    <div class="fc-header__left">
-      <p class="fc-label">Selected Works</p>
-      <h2 class="fc-title">Featured Collection</h2>
+{artworks.length > 0 && (
+  <section class="featured-collection" id="featured">
+
+    <div class="featured-collection__header">
+      <p class="featured-collection__eyebrow">Selected Works</p>
+      <h2 class="featured-collection__heading">Featured Collection</h2>
     </div>
-    <a href={`${base}work/ai-art/`} class="fc-view-all">View All Works →</a>
-  </div>
 
-  <div class="fc-mosaic">
-    {pieces.map((artwork, i) => (
-      <a
-        href={`${base}work/ai-art/#${artwork.slug}`}
-        class={`fc-item fc-item--${i === 0 ? 'hero' : i <= 2 ? 'tall' : 'square'}`}
-        data-index={i}
-      >
-        <img
-          src={`${base}art/${artwork.image}`}
-          alt={artwork.title}
-          loading={i === 0 ? 'eager' : 'lazy'}
-          decoding="async"
-        />
-        <div class="fc-item__overlay">
-          <div class="fc-item__info">
-            <span class="fc-item__title">{artwork.title}</span>
-            <span class="fc-item__category">
-              {artwork.series.charAt(0).toUpperCase() + artwork.series.slice(1).replace('-', ' ')}
-              {artwork.year ? ` · ${artwork.year}` : ''}
-            </span>
+    <div class="featured-collection__top">
+
+      {/* Hero — large left cell */}
+      {hero && (
+        <a
+          href={`${base}work/ai-art/${hero.slug}/`}
+          class="featured-cell featured-cell--hero"
+          aria-label={hero.title}
+        >
+          <img
+            src={`${base}art/${hero.image}`}
+            alt={hero.title}
+            loading="eager"
+            decoding="async"
+          />
+          <div class="featured-cell__overlay">
+            <span class="featured-cell__title">{hero.title}</span>
+            <span class="featured-cell__cat">Fine Art</span>
           </div>
-        </div>
-      </a>
-    ))}
-  </div>
+        </a>
+      )}
 
-  <div class="fc-cta">
-    <a href={`${base}work/ai-art/`} class="fc-cta__link">
-      <span>View All Works</span>
-      <span class="fc-cta__arrow">→</span>
-    </a>
-  </div>
-</section>
+      {/* 2×2 grid — right side */}
+      <div class="featured-collection__grid2x2">
+        {grid.map((artwork) => (
+          <a
+            href={`${base}work/ai-art/${artwork.slug}/`}
+            class="featured-cell featured-cell--sm"
+            aria-label={artwork.title}
+          >
+            <img
+              src={`${base}art/${artwork.image}`}
+              alt={artwork.title}
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="featured-cell__overlay">
+              <span class="featured-cell__title">{artwork.title}</span>
+              <span class="featured-cell__cat">Fine Art</span>
+            </div>
+          </a>
+        ))}
+      </div>
+
+    </div>
+
+    {bottom.length > 0 && (
+      <div class="featured-collection__bottom">
+        {bottom.map((artwork) => (
+          <a
+            href={`${base}work/ai-art/${artwork.slug}/`}
+            class="featured-cell featured-cell--tall"
+            aria-label={artwork.title}
+          >
+            <img
+              src={`${base}art/${artwork.image}`}
+              alt={artwork.title}
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="featured-cell__overlay">
+              <span class="featured-cell__title">{artwork.title}</span>
+              <span class="featured-cell__cat">Fine Art</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    )}
+
+    <div class="featured-collection__cta">
+      <a href={`${base}work/ai-art/`} class="featured-collection__cta-link">
+        View All Works →
+      </a>
+    </div>
+
+  </section>
+)}
 
 <style>
   .featured-collection {
-    margin: calc(var(--space) * 4) 0;
+    padding: var(--fc-pad, 5rem) 0 4rem;
+    position: relative;
   }
 
-  .fc-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: calc(var(--space) * 1.5);
-    gap: 1rem;
+  /* ── Header ── */
+  .featured-collection__header {
+    text-align: center;
+    margin-bottom: 2.5rem;
   }
-  .fc-label {
-    font-size: 0.7rem;
-    font-weight: 600;
+
+  .featured-collection__eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
     color: var(--accent);
-    margin: 0 0 0.4rem 0;
+    margin: 0 0 0.6rem;
   }
-  .fc-title {
-    font-size: clamp(1.5rem, 3vw, 2.25rem);
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    line-height: 1.1;
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+
+  .featured-collection__heading {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -0.01em;
     margin: 0;
   }
-  .fc-view-all {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--accent);
-    white-space: nowrap;
-    padding-bottom: 0.2rem;
-    border-bottom: 1px solid transparent;
-    transition: color 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
-  }
-  .fc-view-all:hover {
-    color: var(--accent-bright);
-    border-bottom-color: var(--accent-bright);
-  }
 
-  .fc-mosaic {
+  /* ── Top row: hero + 2×2 ── */
+  .featured-collection__top {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: 280px 280px;
-    gap: 3px;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: var(--bg);
+    grid-template-columns: 1.15fr 1fr;
+    gap: 6px;
+    margin-bottom: 6px;
   }
 
-  .fc-item {
+  .featured-collection__grid2x2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
+  }
+
+  /* ── Bottom row: 2 tall cells ── */
+  .featured-collection__bottom {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  /* ── Shared cell styles ── */
+  .featured-cell {
+    display: block;
     position: relative;
     overflow: hidden;
-    display: block;
+    border-radius: 3px;
+    text-decoration: none;
     background: var(--bg-elevated);
-    cursor: pointer;
-    opacity: 0;
   }
 
-  .fc-item--hero {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-
-  .fc-item--tall {
-    grid-column: span 1;
-    grid-row: span 2;
-  }
-
-  .fc-item--square {
-    grid-column: span 1;
-    grid-row: span 1;
-  }
-
-  .fc-item img {
+  .featured-cell img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.6s var(--ease-out), filter 0.4s var(--ease-out);
-    will-change: transform;
+    transition: transform 0.65s var(--ease-out);
   }
 
-  .fc-item__overlay {
+  .featured-cell:hover img {
+    transform: scale(1.05);
+  }
+
+  /* Hero tall */
+  .featured-cell--hero {
+    min-height: 540px;
+  }
+
+  /* 2×2 cells */
+  .featured-cell--sm {
+    aspect-ratio: 4 / 3;
+  }
+
+  /* Bottom tall cells */
+  .featured-cell--tall {
+    aspect-ratio: 3 / 4;
+  }
+
+  /* ── Hover overlay ── */
+  .featured-cell__overlay {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to top,
-      rgba(10, 6, 18, 0.92) 0%,
-      rgba(10, 6, 18, 0.4) 40%,
-      transparent 70%
-    );
-    opacity: 0;
-    transition: opacity 0.35s var(--ease-out);
-    display: flex;
-    align-items: flex-end;
-    padding: 1.25rem;
-  }
-
-  .fc-item__info {
-    transform: translateY(8px);
-    transition: transform 0.35s var(--ease-out);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem 1.25rem 1.1rem;
+    background: linear-gradient(to top, rgba(10, 6, 18, 0.82) 0%, transparent 100%);
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 3px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 0.3s var(--ease-out),
+      transform 0.3s var(--ease-out);
   }
-  .fc-item__title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.2;
-    letter-spacing: -0.01em;
+
+  .featured-cell:hover .featured-cell__overlay {
+    opacity: 1;
+    transform: translateY(0);
   }
-  .fc-item--hero .fc-item__title {
-    font-size: 1.3rem;
+
+  /* Also show overlay on focus (keyboard nav) */
+  .featured-cell:focus-visible .featured-cell__overlay {
+    opacity: 1;
+    transform: translateY(0);
   }
-  .fc-item__category {
-    font-size: 0.7rem;
+
+  .featured-cell:focus-visible {
+    outline: 2px solid var(--purple-500);
+    outline-offset: 3px;
+  }
+
+  .featured-cell__title {
+    font-size: 0.95rem;
     font-weight: 600;
-    text-transform: uppercase;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+
+  .featured-cell__cat {
+    font-size: 0.65rem;
+    font-weight: 600;
     letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--accent);
   }
 
-  .fc-item::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    padding: 2px;
-    background: var(--gradient-primary);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s var(--ease-out);
-    pointer-events: none;
-    z-index: 2;
+  /* ── CTA ── */
+  .featured-collection__cta {
+    text-align: center;
+    margin-top: 2.25rem;
   }
 
-  .fc-item:hover img {
-    transform: scale(1.06);
-    filter: brightness(0.85);
-  }
-  .fc-item:hover .fc-item__overlay {
-    opacity: 1;
-  }
-  .fc-item:hover .fc-item__info {
-    transform: translateY(0);
-  }
-  .fc-item:hover::before {
-    opacity: 1;
-  }
-
-  .fc-item:focus-visible {
-    outline: 2px solid var(--purple-500);
-    outline-offset: 2px;
-    z-index: 3;
-  }
-
-  .fc-cta {
-    margin-top: calc(var(--space) * 1.5);
-    display: flex;
-    justify-content: center;
-  }
-  .fc-cta__link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 2rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    font-weight: 600;
+  .featured-collection__cta-link {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 3px;
     transition:
-      color 0.25s var(--ease-out),
-      border-color 0.25s var(--ease-out),
-      background 0.25s var(--ease-out),
-      transform 0.25s var(--ease-spring);
+      color 0.2s var(--ease-out),
+      border-color 0.2s var(--ease-out);
   }
-  .fc-cta__link:hover {
+
+  .featured-collection__cta-link:hover {
     color: var(--accent-bright);
     border-color: var(--border-strong);
-    background: var(--surface-hover);
-    transform: translateY(-2px);
-  }
-  .fc-cta__arrow {
-    transition: transform 0.25s var(--ease-out);
-  }
-  .fc-cta__link:hover .fc-cta__arrow {
-    transform: translateX(4px);
   }
 
+  /* ── Responsive ── */
   @media (max-width: 900px) {
-    .fc-mosaic {
-      grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: repeat(4, 200px);
+    .featured-collection__top {
+      grid-template-columns: 1fr;
     }
-    .fc-item--hero {
-      grid-column: span 2;
-      grid-row: span 2;
+
+    .featured-cell--hero {
+      min-height: 420px;
     }
-    .fc-item--tall {
-      grid-column: span 1;
-      grid-row: span 1;
+
+    .featured-collection__bottom {
+      grid-template-columns: 1fr 1fr;
     }
   }
 
-  @media (max-width: 560px) {
-    .fc-mosaic {
+  @media (max-width: 600px) {
+    .featured-collection__grid2x2 {
       grid-template-columns: 1fr 1fr;
-      grid-template-rows: repeat(5, 160px);
     }
-    .fc-item--hero {
-      grid-column: span 2;
-      grid-row: span 2;
+
+    .featured-collection__bottom {
+      grid-template-columns: 1fr;
     }
-    .fc-item--tall,
-    .fc-item--square {
-      grid-column: span 1;
-      grid-row: span 1;
-    }
-    .fc-header {
-      flex-direction: column;
-      align-items: flex-start;
+
+    .featured-cell--tall {
+      aspect-ratio: 4 / 3;
     }
   }
 </style>
-
-<script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  gsap.registerPlugin(ScrollTrigger);
-
-  const mosaic = document.querySelector('.fc-mosaic');
-  if (mosaic) {
-    const items = mosaic.querySelectorAll('.fc-item');
-    ScrollTrigger.create({
-      trigger: mosaic,
-      start: 'top 85%',
-      onEnter: () => {
-        gsap.to(items, {
-          opacity: 1,
-          duration: 0.55,
-          stagger: { each: 0.08, from: 'start' },
-          ease: 'power2.out',
-        });
-      },
-      once: true,
-    });
-  }
-</script>
