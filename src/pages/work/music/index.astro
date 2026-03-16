@@ -15,58 +15,46 @@ const sunoEmbedBase = 'https://suno.com/embed';
       <div class="suno-embeds__player-wrap" aria-live="polite">
         <iframe
           id="suno-embed-iframe"
-          src={`${sunoEmbedBase}/${sunoTracks[0].id}`}
+          src={`${sunoEmbedBase}/${sunoTracks[0].id}?autoplay=1`}
           title={`${sunoTracks[0].title} — Suno`}
           class="suno-embeds__iframe"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope"
         />
       </div>
-      <ul class="suno-embeds__track-list" role="list" aria-label="Select a track to play">
+      <div class="suno-embeds__track-list" role="tablist" aria-label="Select a track">
         {sunoTracks.map((track, i) => (
-          <li>
-            <button
-              type="button"
-              class={`suno-card ${i === 0 ? 'is-active' : ''}`}
-              data-suno-id={track.id}
-              data-suno-title={track.title}
-            >
-              <span class="suno-card__art">
-                <img
-                  src={`https://cdn2.suno.ai/${track.id}.jpeg`}
-                  alt=""
-                  width="120"
-                  height="120"
-                  onerror="this.parentElement?.classList.add('is-fallback')"
-                />
-              </span>
-              <span class="suno-card__info">
-                <span class="suno-card__title">{track.title}</span>
-                <span class="suno-card__play" aria-hidden="true">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M8 5v14l11-7L8 5z" fill="currentColor"/>
-                  </svg>
-                </span>
-              </span>
-            </button>
-          </li>
+          <button
+            type="button"
+            class={`suno-embeds__track-btn ${i === 0 ? 'is-active' : ''}`}
+            role="tab"
+            aria-selected={i === 0}
+            data-suno-id={track.id}
+            data-suno-title={track.title}
+          >
+            {track.title}
+          </button>
         ))}
-      </ul>
+      </div>
       <script>
         (function () {
           const container = document.querySelector('.suno-embeds');
           if (!container) return;
           const iframe = document.getElementById('suno-embed-iframe');
           const base = container.getAttribute('data-suno-embed-base');
-          const cards = container.querySelectorAll('.suno-card');
-          cards.forEach((btn) => {
+          const buttons = container.querySelectorAll('.suno-embeds__track-btn');
+          buttons.forEach((btn) => {
             btn.addEventListener('click', () => {
               const id = btn.getAttribute('data-suno-id');
               const title = btn.getAttribute('data-suno-title');
               if (!id || !iframe || !base) return;
-              iframe.src = base + '/' + id;
+              iframe.src = base + '/' + id + '?autoplay=1';
               iframe.title = title + ' — Suno';
-              cards.forEach((c) => c.classList.remove('is-active'));
+              buttons.forEach((b) => {
+                b.classList.remove('is-active');
+                b.setAttribute('aria-selected', 'false');
+              });
               btn.classList.add('is-active');
+              btn.setAttribute('aria-selected', 'true');
             });
           });
         })();
