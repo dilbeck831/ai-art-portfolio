@@ -1,22 +1,473 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { brandName, siteTitle, defaultDescription } from '../../data/meta';
+import { brandName, siteTitle } from '../../data/meta';
 ---
-<Layout title="About" description={`About ${brandName} / ${siteTitle}. Creative and enterprise.`}>
-  <h1 class="page-title">About</h1>
-  <p class="page-subtitle">{brandName} / {siteTitle}</p>
-  <div class="prose">
-    <p>
-      TØX!Q and TOXIQMYND are one identity: AI art, music, and interactive tools on the creative side;
-      enterprise UX, information architecture, and design systems on the professional side.
+
+<Layout title="About" description={`About ${brandName} — artist, producer, and UX practitioner working at the intersection of generative AI, dark surrealist aesthetics, electronic music, and enterprise design systems.`}>
+
+  <style>
+    /* ── Page hero ── */
+    .about-hero {
+      padding: calc(var(--space) * 4) 0 calc(var(--space) * 3);
+      position: relative;
+    }
+    .about-hero::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--purple-500), transparent);
+      opacity: 0.4;
+    }
+    .page-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      margin: 0 0 0.75rem 0;
+    }
+    .about-hero .page-title {
+      font-size: clamp(2.25rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin: 0 0 1rem 0;
+    }
+    .page-tagline {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 52ch;
+      margin: 0;
+    }
+
+    /* ── Identity card ── */
+    .identity-card {
+      margin: calc(var(--space) * 3) 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      box-shadow: var(--shadow-card);
+    }
+    .identity-card::before {
+      content: '';
+      position: absolute; inset: -1px;
+      border-radius: calc(var(--radius-lg) + 1px);
+      padding: 1px;
+      background: var(--gradient-primary);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .identity-col {
+      padding: calc(var(--space) * 2.5);
+      position: relative;
+    }
+    .identity-col:first-child {
+      border-right: 1px solid var(--border);
+    }
+    .identity-col::before {
+      content: '';
+      position: absolute; top: -30%; right: -10%;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .col-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      margin: 0 0 1.25rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .col-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--purple-500), transparent);
+      opacity: 0.5;
+    }
+    .bio-text {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.75;
+    }
+    .bio-text p + p { margin-top: 1rem; }
+    .bio-text strong { color: var(--accent-bright); font-weight: 600; }
+
+    /* ── Disciplines ── */
+    .disciplines {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .discipline {
+      display: grid;
+      grid-template-columns: 2rem 1fr;
+      gap: 1rem;
+      align-items: start;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+      opacity: 0;
+      animation: fadeUp 0.5s var(--ease-out) forwards;
+    }
+    .discipline:last-child { border-bottom: none; }
+    .discipline:nth-child(1) { animation-delay: 0.15s; }
+    .discipline:nth-child(2) { animation-delay: 0.25s; }
+    .discipline:nth-child(3) { animation-delay: 0.35s; }
+    .discipline:nth-child(4) { animation-delay: 0.45s; }
+    .disc-num {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--purple-500);
+      padding-top: 0.2rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .disc-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text);
+      margin: 0 0 0.2rem 0;
+    }
+    .disc-tags {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Philosophy ── */
+    .philosophy {
+      margin: calc(var(--space) * 3) 0;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: calc(var(--space) * 3);
+      align-items: start;
+    }
+    .philosophy-quote {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: calc(var(--space) * 2);
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-glow);
+    }
+    .philosophy-quote::before {
+      content: '"';
+      position: absolute; top: -0.5rem; left: 0.75rem;
+      font-size: 8rem; font-weight: 800; line-height: 1;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+    .quote-text {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--accent-bright);
+      line-height: 1.65;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+    }
+    .philosophy-body {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.8;
+    }
+    .philosophy-body p + p { margin-top: 1.25rem; }
+    .philosophy-body strong { color: var(--text); }
+
+    /* ── Capabilities ── */
+    .capabilities {
+      margin: calc(var(--space) * 3) 0;
+    }
+    .cap-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space);
+      margin-top: calc(var(--space) * 1.5);
+    }
+    .cap-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: calc(var(--space) * 1.25);
+      transition: transform 0.3s var(--ease-spring), box-shadow 0.3s var(--ease-out), border-color 0.3s;
+    }
+    .cap-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--border-strong);
+    }
+    .cap-tag {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--purple-500);
+      margin: 0 0 0.5rem 0;
+    }
+    .cap-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 0.4rem 0;
+    }
+    .cap-detail {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ── Handle / CTA row ── */
+    .handle-row {
+      margin: calc(var(--space) * 3) 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: calc(var(--space) * 2.5) calc(var(--space) * 3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-glow);
+    }
+    .handle-row::before {
+      content: '';
+      position: absolute; top: -50%; right: -5%;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(232, 121, 249, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .handle-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      margin: 0 0 0.5rem 0;
+    }
+    .handle-name {
+      font-size: clamp(1.5rem, 4vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      line-height: 1.1;
+    }
+    .handle-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .handle-sub {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-style: italic;
+      margin: 0 0 1.25rem 0;
+      line-height: 1.6;
+    }
+    .cta-btn {
+      display: inline-block;
+      padding: 0.65rem 1.5rem;
+      background: var(--gradient-primary);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border-radius: 9999px;
+      transition: filter 0.25s var(--ease-out), transform 0.25s var(--ease-spring);
+    }
+    .cta-btn:hover {
+      filter: brightness(1.15);
+      transform: scale(1.03);
+      color: #fff;
+    }
+
+    /* ── Animation ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .identity-card { grid-template-columns: 1fr; }
+      .identity-col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+      .philosophy { grid-template-columns: 1fr; gap: var(--space); }
+      .cap-grid { grid-template-columns: 1fr 1fr; }
+      .handle-row { flex-direction: column; align-items: flex-start; }
+      .handle-right { text-align: left; }
+    }
+    @media (max-width: 480px) {
+      .cap-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <!-- Hero -->
+  <section class="about-hero">
+    <p class="page-label">Identity</p>
+    <h1 class="page-title">Artist. Architect.<br />Obsessive.</h1>
+    <p class="page-tagline">
+      Working at the intersection of generative AI, dark surrealist aesthetics,
+      electronic music, and enterprise design systems.
     </p>
-    <p>
-      The work investigates the tension between the constructed and the organic—light as material,
-      shadow as language. The studio is a laboratory where intuition and technique negotiate in the dark.
-    </p>
-    <p>
-      Fortune 100 clients, AMD, and independent art and music. Edit this at
-      <code>src/pages/about/index.astro</code>.
-    </p>
+  </section>
+
+  <!-- Identity card: bio + disciplines -->
+  <div class="identity-card">
+    <div class="identity-col">
+      <p class="col-label">The Practice</p>
+      <div class="bio-text">
+        <p>
+          TØX!Q is the creative identity of <strong>Justin Dilbeck</strong> — artist, producer,
+          and UX practitioner working at the intersection of generative AI, dark surrealist
+          aesthetics, electronic music, and enterprise design systems.
+        </p>
+        <p>
+          By day, Justin operates at the enterprise level — leading UX and information
+          architecture for <strong>Fortune 100 technology clients</strong>, building
+          WCAG-compliant design systems, and restructuring large-scale navigation architectures.
+        </p>
+        <p>
+          By night, and in between, everything feeds into a single creative engine:
+          AI, art, sound, and code.
+        </p>
+      </div>
+    </div>
+    <div class="identity-col">
+      <p class="col-label">Disciplines</p>
+      <ul class="disciplines">
+        <li class="discipline">
+          <span class="disc-num">01</span>
+          <div>
+            <p class="disc-name">AI Art</p>
+            <p class="disc-tags">Midjourney · Stable Diffusion · Kling · Veo · Sora · Wan</p>
+          </div>
+        </li>
+        <li class="discipline">
+          <span class="disc-num">02</span>
+          <div>
+            <p class="disc-name">Music Production</p>
+            <p class="disc-tags">Drum & Bass · Neurofunk · Deep House · Dubstep</p>
+          </div>
+        </li>
+        <li class="discipline">
+          <span class="disc-num">03</span>
+          <div>
+            <p class="disc-name">UX / Information Architecture</p>
+            <p class="disc-tags">Enterprise navigation · Design systems · Accessibility · Front-end</p>
+          </div>
+        </li>
+        <li class="discipline">
+          <span class="disc-num">04</span>
+          <div>
+            <p class="disc-name">Creative Tooling</p>
+            <p class="disc-tags">Browser apps · n8n automation · AI content pipelines · Claude API</p>
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
+
+  <!-- Philosophy -->
+  <section class="philosophy">
+    <div class="philosophy-quote">
+      <p class="quote-text">
+        Dark, baroque, deliberate. Imagery favors locked compositions.
+        Music favors pressure over melody. Design favors structure over decoration.
+      </p>
+    </div>
+    <div class="philosophy-body">
+      <p>
+        The TØX!Q work is defined by a consistent aesthetic across every medium. Each piece
+        begins with observation — a quality of light through glass, a texture remembered in
+        childhood, a feeling without a name.
+      </p>
+      <p>
+        The studio is a laboratory where intuition and technique negotiate in the dark.
+        Animation work uses a consistent framework: <strong>baroque detail protection</strong>,
+        no camera drift, atmospheric breath rather than motion.
+      </p>
+      <p>
+        Models are chosen per-image — Kling for fluid organic motion, Veo for painterly
+        fidelity, Sora for dimensional depth, Wan for textural transformation.
+      </p>
+    </div>
+  </section>
+
+  <!-- Capabilities -->
+  <section class="capabilities">
+    <h2 class="section-title">Capabilities</h2>
+    <div class="cap-grid">
+      <div class="cap-card">
+        <p class="cap-tag">IA</p>
+        <p class="cap-name">Information Architecture</p>
+        <p class="cap-detail">Card sorting · Sitemaps · Content taxonomies · Navigation systems</p>
+      </div>
+      <div class="cap-card">
+        <p class="cap-tag">SYS</p>
+        <p class="cap-name">Design Systems</p>
+        <p class="cap-detail">Component libraries · Token systems · Pattern documentation</p>
+      </div>
+      <div class="cap-card">
+        <p class="cap-tag">A11Y</p>
+        <p class="cap-name">Accessibility</p>
+        <p class="cap-detail">WCAG AA/AAA · ADA component systems · Inclusive design</p>
+      </div>
+      <div class="cap-card">
+        <p class="cap-tag">DEV</p>
+        <p class="cap-name">Front-End</p>
+        <p class="cap-detail">Astro · TypeScript · Vanilla CSS · Dark UI · Responsive layouts</p>
+      </div>
+      <div class="cap-card">
+        <p class="cap-tag">AI</p>
+        <p class="cap-name">AI Tooling</p>
+        <p class="cap-detail">n8n automation · Multi-agent workflows · Claude API · Midjourney</p>
+      </div>
+      <div class="cap-card">
+        <p class="cap-tag">PRO</p>
+        <p class="cap-name">Prototyping</p>
+        <p class="cap-detail">Interactive prototypes · Stakeholder documentation · Figma MCP</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Handle / CTA -->
+  <div class="handle-row">
+    <div>
+      <p class="handle-label">Handle</p>
+      <p class="handle-name">TØX!Q / @TOXIQMYND</p>
+    </div>
+    <div class="handle-right">
+      <p class="handle-sub">
+        Available for commissions,<br />collaborations, and conversations<br />worth having.
+      </p>
+      <a href="/contact/" class="cta-btn">Begin a conversation →</a>
+    </div>
+  </div>
+
 </Layout>
