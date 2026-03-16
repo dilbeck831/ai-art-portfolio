@@ -406,28 +406,35 @@ main {
   margin: 0 0 var(--space) 0;
 }
 
-.suno-embeds__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.suno-embeds__track-list {
   display: flex;
-  flex-direction: column;
-  gap: var(--space);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: var(--space);
 }
 
-.suno-embeds__item {
+.suno-embeds__track-btn {
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--text-muted);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  padding: calc(var(--space) * 1.5);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), background 0.2s var(--ease-out);
 }
 
-.suno-embeds__track-title {
-  font-size: 1rem;
-  font-weight: 600;
+.suno-embeds__track-btn:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+}
+
+.suno-embeds__track-btn.is-active {
   color: var(--accent-bright);
-  margin: 0 0 0.75rem 0;
+  border-color: var(--accent);
+  background: rgba(139, 92, 246, 0.15);
 }
 
 .suno-embeds__frame-wrap {

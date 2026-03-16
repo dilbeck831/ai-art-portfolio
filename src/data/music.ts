@@ -12,4 +12,7 @@ export interface SunoTrack {
 /** Add your Suno track IDs here. Get the ID from the song URL: suno.com/song/[this-id] or suno.com/s/[this-id] */
 export const sunoTracks: SunoTrack[] = [
   { id: 'b2d8fd09-0906-4b17-80f5-28fcd024b753', title: 'Shadows x Fireball x Switch Blade (3X Mashup)' },
+  { id: 'a16f84a4-650d-4a0c-b164-02ca4e73bfac', title: 'Desert Bass' },
+  { id: '8c70a8ea-1e67-4f58-94ca-960be8bc6b00', title: 'Last one Asleep' },
+  { id: 'b4f1b893-8c49-4bbc-a409-33ca3303e4a8', title: 'Loosing You' },
 ];

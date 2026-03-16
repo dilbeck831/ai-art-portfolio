@@ -10,24 +10,55 @@ const sunoEmbedBase = 'https://suno.com/embed';
   <p class="page-subtitle">Drum and bass, neurofunk, deep house, dubstep.</p>
 
   {sunoTracks.length > 0 && (
-    <section class="suno-embeds" aria-label="Suno tracks">
+    <section class="suno-embeds" aria-label="Suno tracks" data-suno-embed-base={sunoEmbedBase}>
       <h2 class="suno-embeds__title">Tracks</h2>
-      <ul class="suno-embeds__list">
-        {sunoTracks.map((track) => (
-          <li class="suno-embeds__item">
-            <h3 class="suno-embeds__track-title">{track.title}</h3>
-            <div class="suno-embeds__frame-wrap">
-              <iframe
-                src={`${sunoEmbedBase}/${track.id}`}
-                title={`${track.title} — Suno`}
-                class="suno-embeds__iframe"
-                loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope"
-              />
-            </div>
-          </li>
+      <div class="suno-embeds__track-list" role="tablist" aria-label="Select a track">
+        {sunoTracks.map((track, i) => (
+          <button
+            type="button"
+            class={`suno-embeds__track-btn ${i === 0 ? 'is-active' : ''}`}
+            role="tab"
+            aria-selected={i === 0}
+            data-suno-id={track.id}
+            data-suno-title={track.title}
+          >
+            {track.title}
+          </button>
         ))}
-      </ul>
+      </div>
+      <div class="suno-embeds__frame-wrap">
+        <iframe
+          id="suno-embed-iframe"
+          src={`${sunoEmbedBase}/${sunoTracks[0].id}`}
+          title={`${sunoTracks[0].title} — Suno`}
+          class="suno-embeds__iframe"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope"
+        />
+      </div>
+      <script>
+        (function () {
+          const container = document.querySelector('.suno-embeds');
+          if (!container) return;
+          const iframe = document.getElementById('suno-embed-iframe');
+          const base = container.getAttribute('data-suno-embed-base');
+          const buttons = container.querySelectorAll('.suno-embeds__track-btn');
+          buttons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-suno-id');
+              const title = btn.getAttribute('data-suno-title');
+              if (!id || !iframe || !base) return;
+              iframe.src = base + '/' + id;
+              iframe.title = title + ' — Suno';
+              buttons.forEach((b) => {
+                b.classList.remove('is-active');
+                b.setAttribute('aria-selected', 'false');
+              });
+              btn.classList.add('is-active');
+              btn.setAttribute('aria-selected', 'true');
+            });
+          });
+        })();
+      </script>
     </section>
   )}
 
