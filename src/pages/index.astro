@@ -65,6 +65,60 @@ const artistImage = `${base}artist-placeholder.svg`;
   </section>
 
   <script>
+    import gsap from 'gsap';
+    import { ScrollTrigger } from 'gsap/ScrollTrigger';
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Hero: title and subtitle timeline
+    const hero = document.querySelector('.hero');
+    if (hero) {
+      const title = hero.querySelector('h1');
+      const subtitle = hero.querySelector('p');
+      gsap.set([title, subtitle], { opacity: 0, y: 28 });
+      gsap.timeline({ defaults: { ease: 'power3.out' } })
+        .to(title, { opacity: 1, y: 0, duration: 0.9 })
+        .to(subtitle, { opacity: 1, y: 0, duration: 0.7 }, '-=0.5');
+    }
+
+    // Gallery grids: reveal cards on scroll with stagger
+    document.querySelectorAll('.gallery-grid').forEach((grid) => {
+      const cards = grid.querySelectorAll('.art-card');
+      gsap.set(cards, { opacity: 0, y: 40 });
+      ScrollTrigger.create({
+        trigger: grid,
+        start: 'top 88%',
+        onEnter: () => {
+          gsap.to(cards, {
+            opacity: 1,
+            y: 0,
+            duration: 0.65,
+            stagger: 0.07,
+            ease: 'power2.out',
+          });
+        },
+        once: true,
+      });
+    });
+
+    // About section: image and content slide in from sides
+    const about = document.querySelector('.about-artist');
+    if (about) {
+      const imgWrap = about.querySelector('.about-artist__image-wrap');
+      const content = about.querySelector('.about-artist__content');
+      gsap.set(imgWrap, { opacity: 0, x: -56 });
+      gsap.set(content, { opacity: 0, x: 56 });
+      ScrollTrigger.create({
+        trigger: about,
+        start: 'top 78%',
+        onEnter: () => {
+          gsap.to(imgWrap, { opacity: 1, x: 0, duration: 0.85, ease: 'power2.out' });
+          gsap.to(content, { opacity: 1, x: 0, duration: 0.85, ease: 'power2.out' });
+        },
+        once: true,
+      });
+    }
+  </script>
+  <script>
     function initCountUp() {
       const section = document.querySelector('.about-artist');
       if (!section) return;
