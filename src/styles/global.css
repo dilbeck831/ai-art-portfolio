@@ -641,3 +641,45 @@ a:focus-visible,
     gap: var(--space);
   }
 }
+/* ----- Header layout additions (add to .site-header block) ----- */
+
+/* Replace justify-content: space-between with these sub-clusters */
+.site-header__left {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--space) * 1.5);
+}
+
+.site-header__right {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--space) * 0.75);
+}
+
+/* Hairline separator between logo→nav and nav→social */
+.site-header__sep {
+  display: block;
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* Responsive: stack vertically on mobile */
+@media (max-width: 640px) {
+  .site-header {
+    flex-direction: column;
+    gap: var(--space);
+    align-items: center;
+  }
+
+  .site-header__left,
+  .site-header__right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .site-header__sep {
+    display: none;
+  }
+}
