@@ -4,6 +4,9 @@ import ArtCard from '../components/ArtCard.astro';
 import { artworks } from '../data/artworks';
 
 const featured = artworks.filter((a) => a.favorite);
+const base = import.meta.env.BASE_URL;
+// Replace with your photo: put artist.jpg in public/ and use `${base}artist.jpg`
+const artistImage = `${base}artist-placeholder.svg`;
 ---
 <Layout title="Home" description="AI Art portfolio — generative and digital art.">
   <section class="hero">
@@ -30,4 +33,66 @@ const featured = artworks.filter((a) => a.favorite);
       ))}
     </ul>
   </section>
+
+  <section class="about-artist" id="about-artist">
+    <div class="about-artist__inner">
+      <div class="about-artist__image-wrap">
+        <img src={artistImage} alt="TØX!Q — artist" class="about-artist__image" width="600" height="720" />
+      </div>
+      <div class="about-artist__content">
+        <p class="about-artist__label">About the artist</p>
+        <h2 class="about-artist__name">TØX!Q</h2>
+        <div class="about-artist__bio">
+          <p>A multidisciplinary artist working across digital and traditional media. My work investigates the tension between the constructed and the organic—light as material, shadow as language.</p>
+          <p>Each piece begins with observation—a quality of light through glass, a texture remembered in childhood, a feeling without a name. The studio is a laboratory where intuition and technique negotiate in the dark.</p>
+        </div>
+        <div class="about-artist__stats">
+          <div class="about-artist__stat">
+            <span class="about-artist__stat-num" data-target="120" data-suffix="+">0</span>
+            <span class="about-artist__stat-label">Years creating</span>
+          </div>
+          <div class="about-artist__stat">
+            <span class="about-artist__stat-num" data-target="201" data-suffix="+">0</span>
+            <span class="about-artist__stat-label">Works created</span>
+          </div>
+          <div class="about-artist__stat">
+            <span class="about-artist__stat-num" data-target="30" data-suffix="+">0</span>
+            <span class="about-artist__stat-label">Exhibitions</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function initCountUp() {
+      const section = document.querySelector('.about-artist');
+      if (!section) return;
+      const nums = section.querySelectorAll('.about-artist__stat-num');
+      const duration = 1500;
+      const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          observer.disconnect();
+          nums.forEach((el) => {
+            const target = Number(el.dataset.target) || 0;
+            const suffix = el.dataset.suffix || '';
+            const start = performance.now();
+            const step = (now) => {
+              const elapsed = now - start;
+              const p = Math.min(elapsed / duration, 1);
+              const value = Math.floor(easeOutQuart(p) * target);
+              el.textContent = value + suffix;
+              if (p < 1) requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
+          });
+        });
+      }, { threshold: 0.25 });
+      observer.observe(section);
+    }
+    initCountUp();
+  </script>
 </Layout>
