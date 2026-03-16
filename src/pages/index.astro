@@ -1,0 +1,33 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ArtCard from '../components/ArtCard.astro';
+import { artworks } from '../data/artworks';
+
+const featured = artworks.filter((a) => a.favorite);
+---
+<Layout title="Home" description="AI Art portfolio — generative and digital art.">
+  <section class="hero">
+    <h1>AI Art</h1>
+    <p>Generative and digital art. A selection of favorites and the full gallery.</p>
+  </section>
+
+  {featured.length > 0 && (
+    <section>
+      <h2 class="section-title">Featured</h2>
+      <ul class="gallery-grid">
+        {featured.map((artwork) => (
+          <ArtCard artwork={artwork} />
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <section>
+    <h2 class="section-title">All work</h2>
+    <ul class="gallery-grid">
+      {artworks.map((artwork) => (
+        <ArtCard artwork={artwork} />
+      ))}
+    </ul>
+  </section>
+</Layout>

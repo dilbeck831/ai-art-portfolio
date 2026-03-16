@@ -1,0 +1,32 @@
+---
+import type { Artwork } from '../data/artworks';
+
+interface Props {
+  artwork: Artwork;
+}
+const { artwork } = Astro.props;
+const imageUrl = `/art/${artwork.image}`;
+const videoUrl = artwork.video ? `/art/${artwork.video}` : null;
+---
+<li class="art-card">
+  <a href={`/gallery/#${artwork.id}`} class="art-card__link">
+    <div class="art-card__media">
+      {videoUrl ? (
+        <video src={videoUrl} poster={imageUrl} muted loop playsinline />
+      ) : (
+        <img src={imageUrl} alt={artwork.title} loading="lazy" decoding="async" />
+      )}
+    </div>
+    <div class="art-card__body">
+      <h3 class="art-card__title">{artwork.title}</h3>
+      {artwork.description && <p class="art-card__description">{artwork.description}</p>}
+    </div>
+  </a>
+</li>
+
+<style>
+  .art-card__link {
+    display: block;
+    color: inherit;
+  }
+</style>
