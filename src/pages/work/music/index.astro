@@ -1,12 +1,36 @@
 ---
 import WorkLayout from '../../../layouts/WorkLayout.astro';
-import { musicPlaceholder } from '../../../data/music';
+import { musicPlaceholder, sunoTracks } from '../../../data/music';
 import { siteTitle } from '../../../data/meta';
 const base = import.meta.env.BASE_URL;
+const sunoEmbedBase = 'https://suno.com/embed';
 ---
 <WorkLayout title="Music" description="Music and production. TØX!Q / TOXIQMYND." breadcrumb={[{ label: 'Music', href: `${base}work/music/` }]}>
   <h1 class="page-title">Music</h1>
   <p class="page-subtitle">Drum and bass, neurofunk, deep house, dubstep.</p>
+
+  {sunoTracks.length > 0 && (
+    <section class="suno-embeds" aria-label="Suno tracks">
+      <h2 class="suno-embeds__title">Tracks</h2>
+      <ul class="suno-embeds__list">
+        {sunoTracks.map((track) => (
+          <li class="suno-embeds__item">
+            <h3 class="suno-embeds__track-title">{track.title}</h3>
+            <div class="suno-embeds__frame-wrap">
+              <iframe
+                src={`${sunoEmbedBase}/${track.id}`}
+                title={`${track.title} — Suno`}
+                class="suno-embeds__iframe"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope"
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
   <div class="prose music-placeholder">
     <p>{musicPlaceholder.message}</p>
     <p>Genres: {musicPlaceholder.genres.join(', ')}.</p>
