@@ -6,7 +6,7 @@ import ArtCard from '../components/ArtCard.astro';
 import { getFeaturedArtworks, getArtworksBySeries } from '../data/artworks';
 import { brandName, defaultDescription } from '../data/meta';
 
-const featured = getFeaturedArtworks(6);
+const featured = getFeaturedArtworks(8);
 const recentArt = getArtworksBySeries('fragment').slice(0, 4);
 const base = import.meta.env.BASE_URL;
 const artistImage = `${base}artist-placeholder.svg`;
@@ -19,11 +19,13 @@ const heroImages = featured.length > 0
     }))
   : [];
 ---
+
 <Layout title="Home" description={defaultDescription}>
   <Hero images={heroImages} />
 
   {featured.length > 0 && <FeaturedCollection artworks={featured} base={base} />}
 
+  <!-- Recent work -->
   <section>
     <h2 class="section-title">Recent work</h2>
     <ul class="gallery-grid">
@@ -32,14 +34,25 @@ const heroImages = featured.length > 0
       ))}
     </ul>
     <div class="recent-links">
-      <a href={`${base}work/`}>Work</a> — <a href={`${base}work/ai-art/`}>AI Art</a>, <a href={`${base}work/music/`}>Music</a>, <a href={`${base}work/ux/`}>UI/UX</a> · <a href={`${base}lab/`}>Lab</a>
+      <a href={`${base}work/`}>Work</a> —
+      <a href={`${base}work/ai-art/`}>AI Art</a>,
+      <a href={`${base}work/music/`}>Music</a>,
+      <a href={`${base}work/ux/`}>UI/UX</a> ·
+      <a href={`${base}lab/`}>Lab</a>
     </div>
   </section>
 
+  <!-- ── About the artist ── -->
   <section class="about-artist" id="about-artist">
     <div class="about-artist__inner">
       <div class="about-artist__image-wrap">
-        <img src={artistImage} alt={`${brandName} — artist`} class="about-artist__image" width="600" height="720" />
+        <img
+          src={artistImage}
+          alt={`${brandName} — artist`}
+          class="about-artist__image"
+          width="600"
+          height="720"
+        />
       </div>
       <div class="about-artist__content">
         <p class="about-artist__label">About the artist</p>
@@ -66,6 +79,7 @@ const heroImages = featured.length > 0
     </div>
   </section>
 
+  <!-- ── Commission CTA ── -->
   <section class="commission-cta">
     <h2 class="section-title">Commission & contact</h2>
     <p>Custom AI art, UX/IA consulting, or Lab tooling. <a href={`${base}contact/`}>Get in touch →</a></p>
@@ -116,26 +130,28 @@ const heroImages = featured.length > 0
       });
     }
   </script>
+
   <script>
     function initCountUp() {
       const section = document.querySelector('.about-artist');
       if (!section) return;
       const nums = section.querySelectorAll('.about-artist__stat-num');
       const duration = 1500;
-      const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
+      const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
           observer.disconnect();
           nums.forEach((el) => {
-            const target = Number(el.dataset.target) || 0;
-            const suffix = el.dataset.suffix || '';
+            const elem = el as HTMLElement;
+            const target = Number(elem.dataset.target) || 0;
+            const suffix = elem.dataset.suffix || '';
             const start = performance.now();
-            const step = (now) => {
+            const step = (now: number) => {
               const elapsed = now - start;
               const p = Math.min(elapsed / duration, 1);
               const value = Math.floor(easeOutQuart(p) * target);
-              el.textContent = value + suffix;
+              elem.textContent = value + suffix;
               if (p < 1) requestAnimationFrame(step);
             };
             requestAnimationFrame(step);
