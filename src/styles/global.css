@@ -683,3 +683,97 @@ a:focus-visible,
     display: none;
   }
 }
+
+/* At 700px and below: hide desktop nav + social on all pages (mobile uses Menu accordion or hero menu) */
+@media (max-width: 700px) {
+  .site-header .nav,
+  .site-header__right {
+    display: none !important;
+  }
+
+  /* On home mobile: hide the entire header so the hero (profile, name, desc, social, Menu) is the first thing — no duplicate nav */
+  .page-home .site-header {
+    display: none !important;
+  }
+}
+
+/* Header mobile menu accordion: hidden by default, show only at 700px and below */
+.site-header__mobile-menu {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .site-header__mobile-menu {
+    display: block;
+    width: 100%;
+    max-width: 280px;
+    margin-top: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .site-header__menu-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: left;
+    color: var(--text);
+    background: var(--surface);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.2s;
+  }
+
+  .site-header__menu-btn:hover {
+    background: var(--surface-hover);
+  }
+
+  .site-header__menu-btn::after {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.2s;
+  }
+
+  .site-header__menu-btn[aria-expanded="true"]::after {
+    transform: rotate(-135deg);
+  }
+
+  .site-header__menu-nav {
+    border-top: 1px solid var(--border);
+  }
+
+  .site-header__menu-nav[hidden] {
+    display: none !important;
+  }
+
+  .site-header__menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+  }
+
+  .site-header__menu-link {
+    display: block;
+    padding: 0.45rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.2s, background 0.2s;
+  }
+
+  .site-header__menu-link:hover,
+  .site-header__menu-link--active {
+    color: var(--accent-bright);
+  }
+}

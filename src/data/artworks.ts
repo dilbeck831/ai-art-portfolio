@@ -13,6 +13,8 @@ export interface Artwork {
   description?: string;
   year?: string;
   favorite?: boolean;
+  /** When true, this artwork is used as the homepage hero image (single image to the right of the text). Only one should be set. */
+  homepageHero?: boolean;
   date?: string;
 }
 
@@ -25,12 +27,13 @@ export interface ArtSeries {
 
 export const artworks: Artwork[] = [
   {
-    id: '1',
+    id: 'homepage-hero',
     slug: 'fragment-i',
     title: 'Fragment I',
     series: 'fragment',
     image: '0_0 (1).jpeg',
     favorite: true,
+    homepageHero: true,
     date: '2026-03',
   },
   {
@@ -156,4 +159,9 @@ export function getFeaturedArtworks(limit = 7): Artwork[] {
 
 export function getArtworkBySlug(slug: string): Artwork | undefined {
   return artworks.find((a) => a.slug === slug);
+}
+
+/** Returns the artwork designated as the homepage hero (single image right of text). Set homepageHero: true on one entry in artworks. */
+export function getHomepageHeroArtwork(): Artwork | undefined {
+  return artworks.find((a) => a.homepageHero === true);
 }

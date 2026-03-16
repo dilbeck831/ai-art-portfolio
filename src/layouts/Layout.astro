@@ -10,8 +10,23 @@ interface Props {
 }
 const { title, description = defaultDescription } = Astro.props;
 const base = import.meta.env.BASE_URL;
-const currentPath = Astro.url.pathname.replace(base, base).replace(/\/$/, base === '/' ? '' : base);
+const pathname = Astro.url.pathname;
+const pathNorm = pathname.replace(/\/$/, '') || '/';
+const baseNorm = base.replace(/\/$/, '') || '/';
+const currentPath = pathname;
 const fullTitle = title === 'Home' ? `${brandName} · ${siteTitle}` : `${title} · ${siteTitle}`;
+const isHome = pathNorm === baseNorm;
+const isActive = (path: string) => (path === base ? currentPath === base || currentPath === base.replace(/\/$/, '') : currentPath.startsWith(path));
+const navLinks = [
+  { href: base, label: 'Home' },
+  { href: `${base}work/`, label: 'Work' },
+  { href: `${base}work/ai-art/`, label: 'AI Art' },
+  { href: `${base}work/music/`, label: 'Music' },
+  { href: `${base}work/ux/`, label: 'UI/UX' },
+  { href: `${base}lab/`, label: 'Lab' },
+  { href: `${base}about/`, label: 'About' },
+  { href: `${base}contact/`, label: 'Contact' },
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -22,7 +37,7 @@ const fullTitle = title === 'Home' ? `${brandName} · ${siteTitle}` : `${title} 
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <title>{fullTitle}</title>
   </head>
-  <body>
+  <body class:list={[isHome && 'page-home']}>
     <header class="site-header">
       <div class="site-header__left">
         <a href={base} class="logo">{brandName}</a>
@@ -33,6 +48,20 @@ const fullTitle = title === 'Home' ? `${brandName} · ${siteTitle}` : `${title} 
         <span class="site-header__sep" aria-hidden="true"></span>
         <SocialIcons />
       </div>
+      {!isHome && (
+        <div class="site-header__mobile-menu">
+          <button type="button" class="site-header__menu-btn" aria-expanded="false" aria-controls="header-menu-nav" id="header-menu-btn">
+            Menu
+          </button>
+          <nav id="header-menu-nav" class="site-header__menu-nav" aria-label="Main" hidden>
+            <ul class="site-header__menu-list">
+              {navLinks.map(({ href, label }) => (
+                <li><a href={href} class:list={['site-header__menu-link', isActive(href) && 'site-header__menu-link--active']}>{label}</a></li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      )}
     </header>
     <main>
       <slot />
@@ -55,6 +84,15 @@ const fullTitle = title === 'Home' ? `${brandName} · ${siteTitle}` : `${title} 
           stagger: 0.06,
           delay: 0.2,
           ease: 'power2.out',
+        });
+      }
+      const headerMenuBtn = document.getElementById('header-menu-btn');
+      const headerMenuNav = document.getElementById('header-menu-nav');
+      if (headerMenuBtn && headerMenuNav) {
+        headerMenuBtn.addEventListener('click', () => {
+          const expanded = headerMenuBtn.getAttribute('aria-expanded') === 'true';
+          headerMenuBtn.setAttribute('aria-expanded', String(!expanded));
+          headerMenuNav.hidden = expanded;
         });
       }
     </script>
