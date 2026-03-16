@@ -1,6 +1,6 @@
 /**
- * AI Art pieces. Add images to public/art/ (e.g. public/art/fragment/).
- * series: "fragment" | future "dark-romantics" | "liminal-spaces" | etc.
+ * AI Art pieces. Images live at public/art/
+ * series: "fragment" | "dark-romantics" | "liminal-spaces" | etc.
  */
 
 export interface Artwork {
@@ -26,143 +26,123 @@ export interface ArtSeries {
 export const artworks: Artwork[] = [
   {
     id: '1',
-    slug: 'fragment-01',
-    title: 'Fragment 01',
+    slug: 'fragment-i',
+    title: 'Fragment I',
     series: 'fragment',
     image: '0_0 (1).jpeg',
     favorite: true,
-    date: '2024-03',
+    date: '2026-03',
   },
   {
     id: '2',
-    slug: 'fragment-02',
-    title: 'Fragment 02',
+    slug: 'fragment-ii',
+    title: 'Fragment II',
     series: 'fragment',
-    image: '0_0 (1).jpeg',
+    image: '0_0 (2).jpeg',
     favorite: true,
-    date: '2024-03',
+    date: '2026-03',
   },
   {
     id: '3',
-    slug: 'fragment-03',
-    title: 'Fragment 03',
+    slug: 'fragment-iii',
+    title: 'Fragment III',
     series: 'fragment',
-    image: '0_0 (1).jpeg',
-    date: '2024-02',
+    image: '0_0 (3).jpeg',
+    favorite: true,
+    date: '2026-03',
   },
-   {
+  {
     id: '4',
-    slug: 'fragment-05',
-    title: 'Fragment 03',
+    slug: 'fragment-iv',
+    title: 'Fragment IV',
     series: 'fragment',
-    image: '0_0 (1).jpeg',
-    date: '2024-02',
+    image: '0_0 (4).jpeg',
+    favorite: true,
+    date: '2026-03',
   },
-   {
+  {
     id: '5',
-    slug: 'fragment-05',
-    title: 'Fragment 03',
+    slug: 'fragment-v',
+    title: 'Fragment V',
     series: 'fragment',
-    image: '0_0 (2).jpeg',
-    date: '2024-02',
+    image: '0_0 (5).jpeg',
+    favorite: true,
+    date: '2026-03',
   },
   {
     id: '6',
-    slug: 'fragment-06',
-    title: 'Fragment 03',
+    slug: 'fragment-vi',
+    title: 'Fragment VI',
     series: 'fragment',
-    image: '0_0 (3).jpeg',
-    date: '2024-02',
+    image: '0_0 (6).jpeg',
+    favorite: true,
+    date: '2026-03',
   },
   {
     id: '7',
-    slug: 'fragment-07',
-    title: 'Fragment 03',
+    slug: 'fragment-vii',
+    title: 'Fragment VII',
     series: 'fragment',
-    image: '0_0 (4).jpeg',
-    date: '2024-02',
+    image: '0_0 (7).jpeg',
+    favorite: true,
+    date: '2026-03',
   },
   {
     id: '8',
-    slug: 'fragment-08',
-    title: 'Fragment 03',
+    slug: 'fragment-viii',
+    title: 'Fragment VIII',
     series: 'fragment',
-    image: '0_0 (5).jpeg',
-    date: '2024-02',
+    image: '0_0 (8).jpeg',
+    date: '2026-02',
   },
   {
     id: '9',
-    slug: 'fragment-09',
-    title: 'Fragment 03',
+    slug: 'fragment-ix',
+    title: 'Fragment IX',
     series: 'fragment',
-    image: '0_0 (6).jpeg',
-    date: '2024-02',
+    image: '0_0 (9).jpeg',
+    date: '2026-02',
   },
   {
     id: '10',
-    slug: 'fragment-10',
-    title: 'Fragment 03',
+    slug: 'fragment-x',
+    title: 'Fragment X',
     series: 'fragment',
-    image: '0_0 (7).jpeg',
-    date: '2024-02',
+    image: '0_0 (10).jpeg',
+    date: '2026-02',
   },
   {
     id: '11',
-    slug: 'fragment-11',
-    title: 'Fragment 03',
+    slug: 'fragment-xi',
+    title: 'Fragment XI',
     series: 'fragment',
-    image: '0_0 (8).jpeg',
-    date: '2024-02',
+    image: '0_0 (11).jpeg',
+    date: '2026-02',
   },
   {
     id: '12',
-    slug: 'fragment-12',
-    title: 'Fragment 03',
+    slug: 'fragment-xii',
+    title: 'Fragment XII',
     series: 'fragment',
-    image: '0_0 (9).jpeg',
-    date: '2024-02',
+    image: '0_0 (12).jpeg',
+    date: '2026-02',
   },
   {
     id: '13',
-    slug: 'fragment-13',
-    title: 'Fragment 03',
+    slug: 'fragment-xiii',
+    title: 'Fragment XIII',
     series: 'fragment',
-    image: '0_0 (10).jpeg',
-    date: '2024-02',
+    image: '0_0 (13).jpeg',
+    date: '2026-02',
   },
   {
     id: '14',
-    slug: 'fragment-14',
-    title: 'Fragment 03',
-    series: 'fragment',
-    image: '0_0 (11).jpeg',
-    date: '2024-02',
-  },
-  {
-    id: '15',
-    slug: 'fragment-15',
-    title: 'Fragment 03',
-    series: 'fragment',
-    image: '0_0 (12).jpeg',
-    date: '2024-02',
-  },
-  {
-    id: '16',
-    slug: 'fragment-16',
-    title: 'Fragment 03',
-    series: 'fragment',
-    image: '0_0 (13).jpeg',
-    date: '2024-02',
-  },
-  {
-    id: '17',
-    slug: 'fragment-17',
-    title: 'Fragment 03',
+    slug: 'fragment-xiv',
+    title: 'Fragment XIV',
     series: 'fragment',
     image: '0_0 (14).jpeg',
-    date: '2024-02',
+    date: '2026-02',
   },
-  // Add remaining 14 Fragment pieces; replace image with fragment/01.jpg etc.
 ];
 
 export function getArtworksBySeries(series?: string): Artwork[] {
@@ -170,6 +150,10 @@ export function getArtworksBySeries(series?: string): Artwork[] {
   return artworks.filter((a) => a.series === series);
 }
 
-export function getFeaturedArtworks(limit = 6): Artwork[] {
+export function getFeaturedArtworks(limit = 7): Artwork[] {
   return artworks.filter((a) => a.favorite).slice(0, limit);
+}
+
+export function getArtworkBySlug(slug: string): Artwork | undefined {
+  return artworks.find((a) => a.slug === slug);
 }
