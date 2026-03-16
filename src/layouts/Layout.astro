@@ -5,6 +5,7 @@ interface Props {
   description?: string;
 }
 const { title, description = "AI Art portfolio" } = Astro.props;
+const base = import.meta.env.BASE_URL;
 ---
 <!doctype html>
 <html lang="en">
@@ -12,17 +13,17 @@ const { title, description = "AI Art portfolio" } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <title>{title}</title>
   </head>
   <body>
     <header class="site-header">
-      <a href="/" class="logo">AI Art</a>
+      <a href={base} class="logo">AI Art</a>
       <nav>
-        <a href="/">Home</a>
-        <a href="/gallery/">Gallery</a>
-        <a href="/about/">About</a>
-        <a href="/contact/">Contact</a>
+        <a href={base}>Home</a>
+        <a href={`${base}gallery/`}>Gallery</a>
+        <a href={`${base}about/`}>About</a>
+        <a href={`${base}contact/`}>Contact</a>
       </nav>
     </header>
     <main>

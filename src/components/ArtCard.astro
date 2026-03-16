@@ -5,11 +5,12 @@ interface Props {
   artwork: Artwork;
 }
 const { artwork } = Astro.props;
-const imageUrl = `/art/${artwork.image}`;
-const videoUrl = artwork.video ? `/art/${artwork.video}` : null;
+const base = import.meta.env.BASE_URL;
+const imageUrl = `${base}art/${artwork.image}`;
+const videoUrl = artwork.video ? `${base}art/${artwork.video}` : null;
 ---
 <li class="art-card">
-  <a href={`/gallery/#${artwork.id}`} class="art-card__link">
+  <a href={`${base}gallery/#${artwork.id}`} class="art-card__link">
     <div class="art-card__media">
       {videoUrl ? (
         <video src={videoUrl} poster={imageUrl} muted loop playsinline />
