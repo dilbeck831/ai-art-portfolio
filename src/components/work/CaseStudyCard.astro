@@ -1,0 +1,50 @@
+---
+import type { CaseStudy } from '../../data/case-studies';
+
+interface Props {
+  study: CaseStudy;
+  base: string;
+}
+const { study, base } = Astro.props;
+---
+<li class="case-study-card">
+  <a href={`${base}work/ux/${study.slug}/`} class="case-study-card__link">
+    {study.client && <span class="case-study-card__client">{study.client}</span>}
+    <h3 class="case-study-card__title">{study.title}</h3>
+    <p class="case-study-card__summary">{study.summary}</p>
+  </a>
+</li>
+
+<style>
+  .case-study-card {
+    list-style: none;
+  }
+  .case-study-card__link {
+    display: block;
+    padding: var(--space);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: inherit;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .case-study-card__link:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-hover);
+  }
+  .case-study-card__client {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+  .case-study-card__title {
+    font-size: 1.1rem;
+    margin: 0.25rem 0 0.5rem 0;
+  }
+  .case-study-card__summary {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+</style>

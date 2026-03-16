@@ -1,0 +1,48 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import { siteTitle, brandName, defaultDescription } from '../data/meta';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = defaultDescription } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const fullTitle = `${title} · Lab · ${siteTitle}`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <title>{fullTitle}</title>
+  </head>
+  <body>
+    <header class="site-header site-header--minimal">
+      <a href={base} class="logo">{brandName}</a>
+      <a href={`${base}lab/`} class="lab-back">← Lab</a>
+      <Nav currentPath={Astro.url.pathname} />
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p><a href={`${base}lab/`}>Lab</a> · <a href={base}>Home</a> · <a href={`${base}contact/`}>Contact</a></p>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .lab-back {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-right: auto;
+    padding-right: 1rem;
+  }
+  .lab-back:hover {
+    color: var(--text);
+  }
+</style>

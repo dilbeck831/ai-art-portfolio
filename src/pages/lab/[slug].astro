@@ -1,0 +1,61 @@
+---
+import LabLayout from '../../layouts/LabLayout.astro';
+import { getLabToolBySlug } from '../../data/lab-tools';
+
+export async function getStaticPaths() {
+  const { labTools } = await import('../../data/lab-tools');
+  return labTools.map((t) => ({ params: { slug: t.slug } }));
+}
+
+const { slug } = Astro.params;
+const tool = getLabToolBySlug(slug!);
+const base = import.meta.env.BASE_URL;
+
+if (!tool) {
+  return Astro.redirect(`${base}lab/`);
+}
+---
+<LabLayout title={tool.title} description={tool.shortDescription}>
+  <article class="lab-tool-page">
+    <header>
+      <span class="lab-tool-page__number">{tool.number}</span>
+      <h1 class="page-title">{tool.title}</h1>
+      <p class="page-subtitle">{tool.shortDescription}</p>
+      {tool.tech && tool.tech.length > 0 && (
+        <p class="lab-tool-page__tech">{tool.tech.join(' · ')}</p>
+      )}
+    </header>
+    <div class="lab-tool-page__embed">
+      <p class="lab-tool-placeholder">Tool embed or inline app goes here. Replace this with iframe or client-side script for {tool.slug}.</p>
+    </div>
+  </article>
+</LabLayout>
+
+<style>
+  .lab-tool-page__number {
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .lab-tool-page__tech {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0.25rem 0 0 0;
+  }
+  .lab-tool-page__embed {
+    margin-top: calc(var(--space) * 2);
+    min-height: 320px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space);
+  }
+  .lab-tool-placeholder {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin: 0;
+  }
+</style>

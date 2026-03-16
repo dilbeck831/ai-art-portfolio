@@ -1,0 +1,18 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { brandName, siteTitle } from '../../data/meta';
+const base = import.meta.env.BASE_URL;
+---
+<Layout title="Contact" description={`Contact ${brandName}. Commissions, UX/IA, Lab.`}>
+  <h1 class="page-title">Contact</h1>
+  <p class="page-subtitle">Commissions, collaborations, UX/IA consulting.</p>
+  <div class="prose">
+    <p>
+      For AI art commissions, enterprise UX/IA work, or Lab tooling: reach out via your preferred channel.
+      Replace this with a mailto link, contact form (e.g. Formspree), or social links.
+    </p>
+    <p>
+      Edit <code>src/pages/contact/index.astro</code> to add your email or form.
+    </p>
+  </div>
+</Layout>

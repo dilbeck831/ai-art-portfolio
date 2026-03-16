@@ -1,0 +1,78 @@
+---
+import WorkLayout from '../../../layouts/WorkLayout.astro';
+import { getCaseStudyBySlug } from '../../../data/case-studies';
+import { capabilities } from '../../../data/capabilities';
+import { siteTitle } from '../../../data/meta';
+
+function getCapabilityNames(ids: string[]): string[] {
+  return ids.map((id) => capabilities.find((c) => c.id === id)?.name ?? id);
+}
+
+export async function getStaticPaths() {
+  const { caseStudies } = await import('../../../data/case-studies');
+  return caseStudies.map((c) => ({ params: { slug: c.slug } }));
+}
+
+const { slug } = Astro.params;
+const study = getCaseStudyBySlug(slug!);
+const base = import.meta.env.BASE_URL;
+
+if (!study) {
+  return Astro.redirect(`${base}work/ux/`);
+}
+---
+<WorkLayout
+  title={study.title}
+  description={study.summary}
+  breadcrumb={[
+    { label: 'UI/UX', href: `${base}work/ux/` },
+    { label: study.title, href: `${base}work/ux/${study.slug}/` },
+  ]}
+>
+  <article class="case-study">
+    <header>
+      {study.client && <span class="case-study__client">{study.client}</span>}
+      <h1 class="page-title">{study.title}</h1>
+      {study.role && <p class="case-study__role">{study.role}</p>}
+      <p class="case-study__summary">{study.summary}</p>
+    </header>
+    <div class="prose case-study__body">
+      <p>{study.body}</p>
+    </div>
+    {study.capabilities && study.capabilities.length > 0 && (
+      <p class="case-study__caps">
+        <span class="case-study__caps-label">Capabilities:</span>{' '}
+        {getCapabilityNames(study.capabilities).join(', ')}
+      </p>
+    )}
+  </article>
+</WorkLayout>
+
+<style>
+  .case-study__client {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+  .case-study__role {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin: 0.25rem 0 1rem 0;
+  }
+  .case-study__summary {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin: 0 0 1.5rem 0;
+  }
+  .case-study__body {
+    margin-bottom: 1.5rem;
+  }
+  .case-study__caps {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .case-study__caps-label {
+    font-weight: 600;
+  }
+</style>

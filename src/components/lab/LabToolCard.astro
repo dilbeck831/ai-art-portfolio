@@ -1,0 +1,58 @@
+---
+import type { LabTool } from '../../data/lab-tools';
+
+interface Props {
+  tool: LabTool;
+  base: string;
+}
+const { tool, base } = Astro.props;
+---
+<li class="lab-tool-card">
+  <a href={`${base}lab/${tool.slug}/`} class="lab-tool-card__link">
+    <span class="lab-tool-card__number">{tool.number}</span>
+    <h3 class="lab-tool-card__title">{tool.title}</h3>
+    <p class="lab-tool-card__desc">{tool.shortDescription}</p>
+    {tool.tech && tool.tech.length > 0 && (
+      <p class="lab-tool-card__tech">{tool.tech.join(' · ')}</p>
+    )}
+  </a>
+</li>
+
+<style>
+  .lab-tool-card {
+    list-style: none;
+  }
+  .lab-tool-card__link {
+    display: block;
+    padding: var(--space);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: inherit;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .lab-tool-card__link:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-hover);
+  }
+  .lab-tool-card__number {
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  .lab-tool-card__title {
+    font-size: 1.1rem;
+    margin: 0.25rem 0 0.5rem 0;
+  }
+  .lab-tool-card__desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .lab-tool-card__tech {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+  }
+</style>

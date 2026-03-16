@@ -1,0 +1,15 @@
+---
+import type { Artwork } from '../../data/artworks';
+import ArtCard from '../ArtCard.astro';
+
+interface Props {
+  artworks: Artwork[];
+  base: string;
+}
+const { artworks, base } = Astro.props;
+---
+<ul class="gallery-grid">
+  {artworks.map((a) => (
+    <ArtCard artwork={a} base={base} />
+  ))}
+</ul>

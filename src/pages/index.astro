@@ -1,47 +1,52 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ArtCard from '../components/ArtCard.astro';
-import { artworks } from '../data/artworks';
+import { getFeaturedArtworks, getArtworksBySeries } from '../data/artworks';
+import { brandName, defaultDescription } from '../data/meta';
 
-const featured = artworks.filter((a) => a.favorite);
+const featured = getFeaturedArtworks(6);
+const recentArt = getArtworksBySeries('fragment').slice(0, 4);
 const base = import.meta.env.BASE_URL;
-// Replace with your photo: put artist.jpg in public/ and use `${base}artist.jpg`
 const artistImage = `${base}artist-placeholder.svg`;
 ---
-<Layout title="Home" description="AI Art portfolio — generative and digital art.">
+<Layout title="Home" description={defaultDescription}>
   <section class="hero">
-    <h1>AI Art</h1>
-    <p>Generative and digital art. A selection of favorites and the full gallery.</p>
+    <h1>{brandName}</h1>
+    <p>AI art, UX/IA, and the Lab. One identity — creative and enterprise.</p>
   </section>
 
   {featured.length > 0 && (
     <section>
-      <h2 class="section-title">Featured</h2>
+      <h2 class="section-title">Fragment — featured</h2>
       <ul class="gallery-grid">
         {featured.map((artwork) => (
-          <ArtCard artwork={artwork} />
+          <ArtCard artwork={artwork} base={base} />
         ))}
       </ul>
+      <p class="section-cta"><a href={`${base}work/ai-art/`}>View full AI Art gallery →</a></p>
     </section>
   )}
 
   <section>
-    <h2 class="section-title">All work</h2>
+    <h2 class="section-title">Recent work</h2>
     <ul class="gallery-grid">
-      {artworks.map((artwork) => (
-        <ArtCard artwork={artwork} />
+      {recentArt.map((artwork) => (
+        <ArtCard artwork={artwork} base={base} />
       ))}
     </ul>
+    <div class="recent-links">
+      <a href={`${base}work/`}>Work</a> — <a href={`${base}work/ai-art/`}>AI Art</a>, <a href={`${base}work/music/`}>Music</a>, <a href={`${base}work/ux/`}>UI/UX</a> · <a href={`${base}lab/`}>Lab</a>
+    </div>
   </section>
 
   <section class="about-artist" id="about-artist">
     <div class="about-artist__inner">
       <div class="about-artist__image-wrap">
-        <img src={artistImage} alt="TØX!Q — artist" class="about-artist__image" width="600" height="720" />
+        <img src={artistImage} alt={`${brandName} — artist`} class="about-artist__image" width="600" height="720" />
       </div>
       <div class="about-artist__content">
         <p class="about-artist__label">About the artist</p>
-        <h2 class="about-artist__name">TØX!Q</h2>
+        <h2 class="about-artist__name">{brandName}</h2>
         <div class="about-artist__bio">
           <p>A multidisciplinary artist working across digital and traditional media. My work investigates the tension between the constructed and the organic—light as material, shadow as language.</p>
           <p>Each piece begins with observation—a quality of light through glass, a texture remembered in childhood, a feeling without a name. The studio is a laboratory where intuition and technique negotiate in the dark.</p>
@@ -64,12 +69,16 @@ const artistImage = `${base}artist-placeholder.svg`;
     </div>
   </section>
 
+  <section class="commission-cta">
+    <h2 class="section-title">Commission & contact</h2>
+    <p>Custom AI art, UX/IA consulting, or Lab tooling. <a href={`${base}contact/`}>Get in touch →</a></p>
+  </section>
+
   <script>
     import gsap from 'gsap';
     import { ScrollTrigger } from 'gsap/ScrollTrigger';
     gsap.registerPlugin(ScrollTrigger);
 
-    // Hero: title and subtitle timeline
     const hero = document.querySelector('.hero');
     if (hero) {
       const title = hero.querySelector('h1');
@@ -80,7 +89,6 @@ const artistImage = `${base}artist-placeholder.svg`;
         .to(subtitle, { opacity: 1, y: 0, duration: 0.7 }, '-=0.5');
     }
 
-    // Gallery grids: reveal cards on scroll with stagger
     document.querySelectorAll('.gallery-grid').forEach((grid) => {
       const cards = grid.querySelectorAll('.art-card');
       gsap.set(cards, { opacity: 0, y: 40 });
@@ -88,19 +96,12 @@ const artistImage = `${base}artist-placeholder.svg`;
         trigger: grid,
         start: 'top 88%',
         onEnter: () => {
-          gsap.to(cards, {
-            opacity: 1,
-            y: 0,
-            duration: 0.65,
-            stagger: 0.07,
-            ease: 'power2.out',
-          });
+          gsap.to(cards, { opacity: 1, y: 0, duration: 0.65, stagger: 0.07, ease: 'power2.out' });
         },
         once: true,
       });
     });
 
-    // About section: image and content slide in from sides
     const about = document.querySelector('.about-artist');
     if (about) {
       const imgWrap = about.querySelector('.about-artist__image-wrap');
@@ -125,7 +126,6 @@ const artistImage = `${base}artist-placeholder.svg`;
       const nums = section.querySelectorAll('.about-artist__stat-num');
       const duration = 1500;
       const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
-
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;

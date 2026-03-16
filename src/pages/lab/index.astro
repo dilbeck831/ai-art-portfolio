@@ -1,0 +1,28 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import LabToolCard from '../../components/lab/LabToolCard.astro';
+import { labTools } from '../../data/lab-tools';
+import { siteTitle } from '../../data/meta';
+const base = import.meta.env.BASE_URL;
+const sorted = [...labTools].sort((a, b) => a.order - b.order);
+---
+<Layout title="Lab" description="Browser tools: synths, AI prompt studios, experiments. TØX!Q / TOXIQMYND.">
+  <h1 class="page-title">Lab</h1>
+  <p class="page-subtitle">Interactive browser tools. No install. Web Audio, Three.js, AI APIs.</p>
+  <ul class="lab-grid">
+    {sorted.map((tool) => (
+      <LabToolCard tool={tool} base={base} />
+    ))}
+  </ul>
+</Layout>
+
+<style>
+  .lab-grid {
+    list-style: none;
+    padding: 0;
+    margin: calc(var(--space) * 2) 0 0 0;
+    display: grid;
+    gap: var(--space);
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+</style>

@@ -1,0 +1,22 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { brandName, siteTitle, defaultDescription } from '../../data/meta';
+---
+<Layout title="About" description={`About ${brandName} / ${siteTitle}. Creative and enterprise.`}>
+  <h1 class="page-title">About</h1>
+  <p class="page-subtitle">{brandName} / {siteTitle}</p>
+  <div class="prose">
+    <p>
+      TØX!Q and TOXIQMYND are one identity: AI art, music, and interactive tools on the creative side;
+      enterprise UX, information architecture, and design systems on the professional side.
+    </p>
+    <p>
+      The work investigates the tension between the constructed and the organic—light as material,
+      shadow as language. The studio is a laboratory where intuition and technique negotiate in the dark.
+    </p>
+    <p>
+      Fortune 100 clients, AMD, and independent art and music. Edit this at
+      <code>src/pages/about/index.astro</code>.
+    </p>
+  </div>
+</Layout>

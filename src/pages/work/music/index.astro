@@ -1,0 +1,14 @@
+---
+import WorkLayout from '../../../layouts/WorkLayout.astro';
+import { musicPlaceholder } from '../../../data/music';
+import { siteTitle } from '../../../data/meta';
+const base = import.meta.env.BASE_URL;
+---
+<WorkLayout title="Music" description="Music and production. TØX!Q / TOXIQMYND." breadcrumb={[{ label: 'Music', href: `${base}work/music/` }]}>
+  <h1 class="page-title">Music</h1>
+  <p class="page-subtitle">Drum and bass, neurofunk, deep house, dubstep.</p>
+  <div class="prose music-placeholder">
+    <p>{musicPlaceholder.message}</p>
+    <p>Genres: {musicPlaceholder.genres.join(', ')}.</p>
+  </div>
+</WorkLayout>

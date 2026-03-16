@@ -338,6 +338,27 @@ main {
   opacity: 0.6;
 }
 
+.section-cta {
+  margin-top: var(--space);
+}
+.section-cta a {
+  color: var(--accent);
+}
+.recent-links {
+  margin-top: var(--space);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.recent-links a {
+  color: var(--accent);
+}
+.commission-cta {
+  margin-top: calc(var(--space) * 3);
+}
+.commission-cta a {
+  color: var(--accent);
+}
+
 /* ----- Prose (About / Contact) ----- */
 .prose {
   max-width: 60ch;

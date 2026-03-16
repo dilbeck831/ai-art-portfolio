@@ -1,11 +1,16 @@
 ---
 import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import { siteTitle, brandName, defaultDescription } from '../data/meta';
+
 interface Props {
   title: string;
   description?: string;
 }
-const { title, description = "AI Art portfolio" } = Astro.props;
+const { title, description = defaultDescription } = Astro.props;
 const base = import.meta.env.BASE_URL;
+const currentPath = Astro.url.pathname.replace(base, base).replace(/\/$/, base === '/' ? '' : base);
+const fullTitle = title === 'Home' ? `${brandName} · ${siteTitle}` : `${title} · ${siteTitle}`;
 ---
 <!doctype html>
 <html lang="en">
@@ -14,28 +19,24 @@ const base = import.meta.env.BASE_URL;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <title>{title}</title>
+    <title>{fullTitle}</title>
   </head>
   <body>
     <header class="site-header">
-      <a href={base} class="logo">AI Art</a>
-      <nav>
-        <a href={base}>Home</a>
-        <a href={`${base}gallery/`}>Gallery</a>
-        <a href={`${base}about/`}>About</a>
-        <a href={`${base}contact/`}>Contact</a>
-      </nav>
+      <a href={base} class="logo">{brandName}</a>
+      <Nav currentPath={Astro.url.pathname} />
     </header>
     <main>
       <slot />
     </main>
     <footer class="site-footer">
-      <p>© {new Date().getFullYear()} · Built with Astro</p>
+      <p><a href={base}>Home</a> · <a href={`${base}work/`}>Work</a> · <a href={`${base}lab/`}>Lab</a> · <a href={`${base}about/`}>About</a> · <a href={`${base}contact/`}>Contact</a></p>
+      <p>© {new Date().getFullYear()} {brandName} / {siteTitle}</p>
     </footer>
     <script>
       import gsap from 'gsap';
       const logo = document.querySelector('.logo');
-      const navLinks = document.querySelectorAll('.site-header nav a');
+      const navLinks = document.querySelectorAll('.nav .nav__link');
       if (logo || navLinks.length) {
         gsap.set([logo, ...navLinks], { opacity: 0, y: -8 });
         gsap.to([logo, ...navLinks], {
