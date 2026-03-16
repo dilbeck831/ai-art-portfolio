@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
+import FeaturedCollection from '../components/FeaturedCollection.astro';
 import ArtCard from '../components/ArtCard.astro';
 import { getFeaturedArtworks, getArtworksBySeries } from '../data/artworks';
 import { brandName, defaultDescription } from '../data/meta';
@@ -21,17 +22,7 @@ const heroImages = featured.length > 0
 <Layout title="Home" description={defaultDescription}>
   <Hero images={heroImages} />
 
-  {featured.length > 0 && (
-    <section>
-      <h2 class="section-title">Fragment — featured</h2>
-      <ul class="gallery-grid">
-        {featured.map((artwork) => (
-          <ArtCard artwork={artwork} base={base} />
-        ))}
-      </ul>
-      <p class="section-cta"><a href={`${base}work/ai-art/`}>View full AI Art gallery →</a></p>
-    </section>
-  )}
+  {featured.length > 0 && <FeaturedCollection artworks={featured} base={base} />}
 
   <section>
     <h2 class="section-title">Recent work</h2>
