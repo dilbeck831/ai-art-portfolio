@@ -12,7 +12,7 @@ const sunoEmbedBase = 'https://suno.com/embed';
   {sunoTracks.length > 0 && (
     <section class="suno-embeds" aria-label="Suno tracks" data-suno-embed-base={sunoEmbedBase}>
       <h2 class="suno-embeds__title">Tracks</h2>
-      <div class="suno-embeds__player-wrap">
+      <div class="suno-embeds__player-wrap" aria-live="polite">
         <iframe
           id="suno-embed-iframe"
           src={`${sunoEmbedBase}/${sunoTracks[0].id}`}
@@ -21,17 +21,32 @@ const sunoEmbedBase = 'https://suno.com/embed';
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope"
         />
       </div>
-      <ul class="suno-embeds__track-list" role="list" aria-label="Select a track">
+      <ul class="suno-embeds__track-list" role="list" aria-label="Select a track to play">
         {sunoTracks.map((track, i) => (
           <li>
             <button
               type="button"
-              class={`suno-embeds__track-row ${i === 0 ? 'is-active' : ''}`}
+              class={`suno-card ${i === 0 ? 'is-active' : ''}`}
               data-suno-id={track.id}
               data-suno-title={track.title}
             >
-              <span class="suno-embeds__track-num">{String(i + 1).padStart(2, '0')}</span>
-              <span class="suno-embeds__track-label">{track.title}</span>
+              <span class="suno-card__art">
+                <img
+                  src={`https://cdn2.suno.ai/${track.id}.jpeg`}
+                  alt=""
+                  width="120"
+                  height="120"
+                  onerror="this.parentElement?.classList.add('is-fallback')"
+                />
+              </span>
+              <span class="suno-card__info">
+                <span class="suno-card__title">{track.title}</span>
+                <span class="suno-card__play" aria-hidden="true">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M8 5v14l11-7L8 5z" fill="currentColor"/>
+                  </svg>
+                </span>
+              </span>
             </button>
           </li>
         ))}
@@ -42,15 +57,15 @@ const sunoEmbedBase = 'https://suno.com/embed';
           if (!container) return;
           const iframe = document.getElementById('suno-embed-iframe');
           const base = container.getAttribute('data-suno-embed-base');
-          const rows = container.querySelectorAll('.suno-embeds__track-row');
-          rows.forEach((btn) => {
+          const cards = container.querySelectorAll('.suno-card');
+          cards.forEach((btn) => {
             btn.addEventListener('click', () => {
               const id = btn.getAttribute('data-suno-id');
               const title = btn.getAttribute('data-suno-title');
               if (!id || !iframe || !base) return;
               iframe.src = base + '/' + id;
               iframe.title = title + ' — Suno';
-              rows.forEach((r) => r.classList.remove('is-active'));
+              cards.forEach((c) => c.classList.remove('is-active'));
               btn.classList.add('is-active');
             });
           });
