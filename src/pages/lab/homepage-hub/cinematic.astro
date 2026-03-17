@@ -1,0 +1,485 @@
+---
+import { getArtworksBySeries } from '../../../data/artworks';
+const artworks = getArtworksBySeries('fragment');
+const base = import.meta.env.BASE_URL;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinematic — V1 · TOXIQMYND</title>
+  <meta name="description" content="Full-bleed cinematic homepage — TOXIQMYND" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #a78bfa;
+      --accent-bright: #c4b5fd;
+      --purple-500: #8b5cf6;
+      --text: #f3eef9;
+      --text-muted: #9d8bb8;
+      --bg: #0a0612;
+      --bg-elevated: #120c1a;
+      --surface: #16101f;
+      --border: rgba(139, 92, 246, 0.2);
+      --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── BACK NAV ────────────────────────────────────── */
+    .back-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 2rem;
+      background: linear-gradient(to bottom, rgba(10,6,18,0.85) 0%, transparent 100%);
+      backdrop-filter: blur(2px);
+      pointer-events: none;
+    }
+    .back-nav a {
+      pointer-events: all;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(167,139,250,0.6);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .back-nav a:hover { color: var(--accent-bright); }
+    .back-nav__brand {
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* ── HERO ────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* letterbox bars */
+    .hero::before, .hero::after {
+      content: '';
+      position: absolute; left: 0; right: 0; z-index: 10;
+      height: clamp(40px, 7vh, 80px);
+      background: var(--bg);
+    }
+    .hero::before { top: 0; }
+    .hero::after  { bottom: 0; }
+
+    /* backdrop slides */
+    .hero__slides {
+      position: absolute; inset: 0;
+      z-index: 0;
+    }
+    .hero__slide {
+      position: absolute; inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transform: scale(1.06);
+      transition: opacity 0s, transform 0s;
+      will-change: opacity, transform;
+    }
+    .hero__slide.is-active {
+      opacity: 1;
+      transform: scale(1);
+      transition: opacity 1.4s var(--ease-silk), transform 8s linear;
+    }
+    .hero__slide.is-leaving {
+      opacity: 0;
+      transform: scale(1.04);
+      transition: opacity 1.4s var(--ease-silk), transform 1.4s var(--ease-silk);
+    }
+
+    /* dark vignette over slides */
+    .hero__vignette {
+      position: absolute; inset: 0; z-index: 1;
+      background:
+        radial-gradient(ellipse at center, transparent 30%, rgba(10,6,18,0.65) 100%),
+        linear-gradient(to bottom, rgba(10,6,18,0.5) 0%, transparent 30%, transparent 70%, rgba(10,6,18,0.7) 100%);
+      pointer-events: none;
+    }
+
+    /* overlay tint */
+    .hero__tint {
+      position: absolute; inset: 0; z-index: 2;
+      background: rgba(10,6,18,0.35);
+      pointer-events: none;
+    }
+
+    /* brand text */
+    .hero__brand {
+      position: relative; z-index: 20;
+      text-align: center;
+      user-select: none;
+    }
+    .hero__brand-name {
+      font-size: clamp(5rem, 18vw, 18rem);
+      font-weight: 900;
+      line-height: 0.85;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.12) 0%,
+        rgba(167,139,250,0.55) 35%,
+        rgba(196,181,253,0.8) 55%,
+        rgba(167,139,250,0.55) 75%,
+        rgba(255,255,255,0.12) 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      mix-blend-mode: screen;
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    .hero__brand-sub {
+      font-size: clamp(0.6rem, 1.5vw, 0.85rem);
+      letter-spacing: 0.6em;
+      text-transform: uppercase;
+      color: rgba(167,139,250,0.45);
+      margin-top: 1rem;
+      opacity: 0;
+    }
+
+    /* slide counter */
+    .hero__counter {
+      position: absolute; bottom: clamp(50px, 10vh, 100px);
+      right: 2rem; z-index: 20;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      color: rgba(167,139,250,0.35);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* slide dots */
+    .hero__dots {
+      position: absolute; bottom: clamp(50px, 10vh, 100px);
+      left: 50%; transform: translateX(-50%);
+      z-index: 20;
+      display: flex; gap: 6px;
+    }
+    .hero__dot {
+      width: 20px; height: 2px;
+      background: rgba(167,139,250,0.25);
+      border-radius: 1px;
+      transition: background 0.4s, width 0.4s;
+      cursor: pointer;
+    }
+    .hero__dot.is-active {
+      background: var(--accent);
+      width: 36px;
+    }
+
+    /* ── SECTION TITLES ──────────────────────────────── */
+    .section-eyebrow {
+      font-size: 0.62rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--accent);
+      opacity: 0.7;
+    }
+
+    /* ── GALLERY STRIP ───────────────────────────────── */
+    .gallery-strip {
+      padding: 5rem 0 3rem;
+      overflow: hidden;
+    }
+    .gallery-strip__header {
+      display: flex; align-items: baseline; gap: 1.5rem;
+      padding: 0 2rem;
+      margin-bottom: 2rem;
+    }
+    .gallery-strip__title {
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .strip-track {
+      display: flex;
+      gap: 12px;
+      padding: 0 2rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      cursor: grab;
+      user-select: none;
+    }
+    .strip-track::-webkit-scrollbar { display: none; }
+    .strip-track:active { cursor: grabbing; }
+
+    .strip-item {
+      flex: 0 0 auto;
+      width: clamp(200px, 22vw, 300px);
+      aspect-ratio: 3/4;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      background: var(--surface);
+      border: 1px solid rgba(139,92,246,0.15);
+      transition: border-color 0.3s;
+    }
+    .strip-item:hover {
+      border-color: rgba(139,92,246,0.4);
+    }
+    .strip-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(0.8) brightness(0.85);
+      transition: transform 0.7s var(--ease-silk), filter 0.4s;
+    }
+    .strip-item:hover img {
+      transform: scale(1.05);
+      filter: saturate(1) brightness(0.95);
+    }
+    .strip-item__title {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 2rem 1rem 1rem;
+      background: linear-gradient(to top, rgba(10,6,18,0.9) 0%, transparent 100%);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(196,181,253,0.8);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .strip-item:hover .strip-item__title { opacity: 1; }
+
+    /* ── INFO BAND ───────────────────────────────────── */
+    .info-band {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    @media (max-width: 600px) {
+      .info-band { grid-template-columns: 1fr; }
+    }
+    .info-band__item {
+      padding: 2.5rem 2rem;
+      border-right: 1px solid var(--border);
+    }
+    .info-band__item:last-child { border-right: none; }
+    .info-band__label {
+      font-size: 0.6rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--accent);
+      opacity: 0.6;
+      margin-bottom: 0.5rem;
+    }
+    .info-band__value {
+      font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    /* ── PAGE FOOTER ─────────────────────────────────── */
+    .page-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .page-footer__link {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(167,139,250,0.35);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .page-footer__link:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="back-nav">
+    <a class="back-nav__brand" href={`${base}`}>TØX!Q</a>
+    <a href={`${base}lab/homepage-hub/`}>← Hub</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <!-- Backdrop slides -->
+    <div class="hero__slides" id="slides">
+      {artworks.slice(0, 7).map((a, i) => (
+        <div
+          class:list={['hero__slide', i === 0 && 'is-active']}
+          style={`background-image: url('${base}art/${encodeURIComponent(a.image)}')`}
+          data-index={i}
+          data-title={a.title}
+        />
+      ))}
+    </div>
+
+    <div class="hero__vignette"></div>
+    <div class="hero__tint"></div>
+
+    <!-- Brand -->
+    <div class="hero__brand">
+      <h1 class="hero__brand-name" id="brand-name">TØX!Q</h1>
+      <p class="hero__brand-sub" id="brand-sub">Where vision becomes obsidian</p>
+    </div>
+
+    <!-- Counter -->
+    <div class="hero__counter" id="slide-counter">01 / {artworks.slice(0,7).length.toString().padStart(2,'0')}</div>
+
+    <!-- Dots -->
+    <div class="hero__dots" id="dots" role="tablist" aria-label="Slide navigation">
+      {artworks.slice(0, 7).map((_, i) => (
+        <button
+          class:list={['hero__dot', i === 0 && 'is-active']}
+          role="tab"
+          aria-selected={i === 0}
+          aria-label={`Slide ${i + 1}`}
+          data-dot={i}
+        />
+      ))}
+    </div>
+  </section>
+
+  <!-- Gallery Strip -->
+  <section class="gallery-strip">
+    <div class="gallery-strip__header">
+      <span class="section-eyebrow">Fragment Series</span>
+      <h2 class="gallery-strip__title">Selected Works</h2>
+    </div>
+    <div class="strip-track" id="strip-track">
+      {artworks.map((a) => (
+        <a class="strip-item" href={`${base}work/ai-art/${a.slug}/`} draggable="false">
+          <img
+            src={`${base}art/${encodeURIComponent(a.image)}`}
+            alt={a.title}
+            loading="lazy"
+            draggable="false"
+          />
+          <span class="strip-item__title">{a.title}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Info Band -->
+  <div class="info-band">
+    <div class="info-band__item">
+      <p class="info-band__label">Series</p>
+      <p class="info-band__value">Fragment</p>
+    </div>
+    <div class="info-band__item">
+      <p class="info-band__label">Works</p>
+      <p class="info-band__value">{artworks.length}</p>
+    </div>
+    <div class="info-band__item">
+      <p class="info-band__label">Year</p>
+      <p class="info-band__value">2026</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="page-footer">
+    <a class="page-footer__link" href={`${base}`}>TOXIQMYND</a>
+    <a class="page-footer__link" href={`${base}work/ai-art/`}>View All Works →</a>
+  </footer>
+
+<script>
+import gsap from 'gsap';
+
+// ── HERO BRAND ENTRANCE ──────────────────────────────
+gsap.to('#brand-name', { opacity: 1, y: 0, duration: 1.4, ease: 'power3.out', delay: 0.4 });
+gsap.to('#brand-sub',  { opacity: 1, duration: 1.0, ease: 'power2.out', delay: 1.0 });
+
+// ── SLIDESHOW ────────────────────────────────────────
+const slides = Array.from(document.querySelectorAll<HTMLElement>('.hero__slide'));
+const dots   = Array.from(document.querySelectorAll<HTMLElement>('.hero__dot'));
+const counter = document.getElementById('slide-counter')!;
+const total = slides.length;
+let current = 0;
+let timer: ReturnType<typeof setTimeout>;
+
+function goTo(idx: number) {
+  const prev = current;
+  current = (idx + total) % total;
+
+  slides[prev].classList.remove('is-active');
+  slides[prev].classList.add('is-leaving');
+  setTimeout(() => slides[prev].classList.remove('is-leaving'), 1500);
+
+  slides[current].classList.add('is-active');
+
+  dots.forEach((d, i) => {
+    d.classList.toggle('is-active', i === current);
+    d.setAttribute('aria-selected', String(i === current));
+  });
+
+  const n = String(current + 1).padStart(2, '0');
+  const t = String(total).padStart(2, '0');
+  counter.textContent = `${n} / ${t}`;
+}
+
+function advance() {
+  goTo(current + 1);
+  clearTimeout(timer);
+  timer = setTimeout(advance, 5000);
+}
+
+timer = setTimeout(advance, 5000);
+
+dots.forEach((dot) => {
+  dot.addEventListener('click', () => {
+    const idx = parseInt(dot.dataset.dot || '0', 10);
+    goTo(idx);
+    clearTimeout(timer);
+    timer = setTimeout(advance, 5000);
+  });
+});
+
+// ── DRAG-SCROLL STRIP ────────────────────────────────
+const strip = document.getElementById('strip-track') as HTMLElement;
+let isDown = false, startX = 0, scrollLeft = 0, velX = 0, lastX = 0;
+
+strip.addEventListener('mousedown', (e) => {
+  isDown = true; startX = e.pageX - strip.offsetLeft;
+  scrollLeft = strip.scrollLeft; lastX = e.pageX; velX = 0;
+});
+strip.addEventListener('mouseleave', () => { isDown = false; });
+strip.addEventListener('mouseup',    () => { isDown = false; });
+strip.addEventListener('mousemove',  (e) => {
+  if (!isDown) return;
+  e.preventDefault();
+  velX = e.pageX - lastX; lastX = e.pageX;
+  strip.scrollLeft = scrollLeft - (e.pageX - strip.offsetLeft - startX);
+});
+
+(function inertia() {
+  if (!isDown && Math.abs(velX) > 0.5) {
+    strip.scrollLeft -= velX;
+    velX *= 0.9;
+  }
+  requestAnimationFrame(inertia);
+})();
+</script>
+</body>
+</html>

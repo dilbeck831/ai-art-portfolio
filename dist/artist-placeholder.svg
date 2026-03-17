@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="720" viewBox="0 0 600 720" fill="none">
+  <rect width="600" height="720" fill="#16101f"/>
+  <ellipse cx="300" cy="280" rx="120" ry="140" fill="#1e1628"/>
+  <text x="300" y="520" text-anchor="middle" fill="#3b2d52" font-family="system-ui,sans-serif" font-size="14">Your photo</text>
+  <text x="300" y="540" text-anchor="middle" fill="#2d2440" font-family="system-ui,sans-serif" font-size="12">Replace with artist.jpg in public/</text>
+</svg>
