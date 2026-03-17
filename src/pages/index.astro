@@ -36,16 +36,17 @@ const supabaseAnon = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.en
     currentPath={currentPath}
   />
 
-  <FeaturedCollection artworks={featured} base={base} />
+  <div id="featured-collection-wrapper">
+    <FeaturedCollection artworks={featured} base={base} />
+  </div>
 
   <section>
     <h2 class="section-title">Recent work</h2>
-    <ul class="gallery-grid">
+    <ul class="gallery-grid" id="recent-work-list" data-fallback-static>
       {recentArt.map((artwork) => (
         <ArtCard artwork={artwork} base={base} />
       ))}
     </ul>
-    <ul class="gallery-grid" id="recent-uploads-supabase" aria-label="Recent uploads from Supabase" data-recents-status="pending"></ul>
     <div class="recent-links">
       <a href={`${base}work/`}>Work</a> — <a href={`${base}work/ai-art/`}>AI Art</a>, <a href={`${base}work/music/`}>Music</a>, <a href={`${base}work/ux/`}>UI/UX</a> · <a href={`${base}lab/`}>Lab</a>
     </div>
@@ -93,26 +94,30 @@ const supabaseAnon = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.en
 
     /* Hero text/slideshow/scroll are handled in Hero.astro (CDN GSAP + ScrollTrigger) */
 
-    const featuredCells = document.querySelectorAll('.featured-cell');
-    if (featuredCells.length) {
-      gsap.set(featuredCells, { opacity: 0, y: 32 });
-      ScrollTrigger.create({
-        trigger: '.featured-collection',
-        start: 'top 85%',
-        onEnter: () => {
-          gsap.to(featuredCells, {
-            opacity: 1,
-            y: 0,
-            duration: 0.7,
-            stagger: 0.06,
-            ease: 'power2.out',
-          });
-        },
-        once: true,
-      });
+    function initFeaturedAnimation() {
+      const featuredCells = document.querySelectorAll('.featured-cell');
+      if (featuredCells.length) {
+        gsap.set(featuredCells, { opacity: 0, y: 32 });
+        ScrollTrigger.create({
+          trigger: '.featured-collection',
+          start: 'top 85%',
+          onEnter: () => {
+            gsap.to(featuredCells, {
+              opacity: 1,
+              y: 0,
+              duration: 0.7,
+              stagger: 0.06,
+              ease: 'power2.out',
+            });
+          },
+          once: true,
+        });
+      }
     }
+    initFeaturedAnimation();
+    document.addEventListener('featured-replaced', initFeaturedAnimation);
 
-    document.querySelectorAll('.gallery-grid').forEach((grid) => {
+    function initGridAnimation(grid: Element) {
       const cards = grid.querySelectorAll('.art-card');
       gsap.set(cards, { opacity: 0, y: 40 });
       ScrollTrigger.create({
@@ -123,6 +128,11 @@ const supabaseAnon = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.en
         },
         once: true,
       });
+    }
+    document.querySelectorAll('.gallery-grid').forEach(initGridAnimation);
+    document.addEventListener('recents-replaced', () => {
+      const list = document.getElementById('recent-work-list');
+      if (list) initGridAnimation(list);
     });
 
     const about = document.querySelector('.about-artist');
@@ -195,42 +205,85 @@ const supabaseAnon = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.en
   </script>
   <script define:vars={{ base }}>
     (function () {
-      function run() {
+      var headers = { 'apikey': '', 'Authorization': '', 'Content-Type': 'application/json' };
+      function getConfig() {
         var el = document.getElementById('supabase-config');
-        var container = document.getElementById('recent-uploads-supabase');
-        if (!el || !container) return;
-        var supabaseUrl = (el.getAttribute('data-supabase-url') || '').trim();
-        var supabaseAnon = (el.getAttribute('data-supabase-anon') || '').trim();
+        if (!el) return null;
+        var url = (el.getAttribute('data-supabase-url') || '').trim();
+        var anon = (el.getAttribute('data-supabase-anon') || '').trim();
         var baseUrl = (el.getAttribute('data-base') || base || '').trim();
-        if (!supabaseUrl || !supabaseAnon) {
-          if (container) container.setAttribute('data-recents-status', 'no-config');
-          return;
-        }
-        function doFetch(orderBy) {
-          var apiUrl = supabaseUrl.replace(/\/$/, '') + '/rest/v1/artworks?order=' + orderBy + '.desc&limit=4';
-          return fetch(apiUrl, {
-            method: 'GET',
-            headers: { 'apikey': supabaseAnon, 'Authorization': 'Bearer ' + supabaseAnon, 'Content-Type': 'application/json' }
-          }).then(function (res) { return res.text(); }).then(function (text) {
-            try { var data = JSON.parse(text); return Array.isArray(data) ? data : (data && data.data) || []; } catch (e) { return []; }
-          }).catch(function () { return []; });
-        }
-        doFetch('created_at').then(function (rows) {
-          if (rows.length === 0) return doFetch('inserted_at');
-          return rows;
-        }).then(function (rows) {
-          if (container) container.setAttribute('data-recents-status', rows.length ? 'loaded-' + rows.length : 'empty');
-          rows.forEach(function (row) {
-            var img = row.image_url || row.image || '';
-            var title = row.title || 'Untitled';
-            var slug = row.slug || row.id || '';
-            var href = baseUrl + 'work/ai-art/#' + slug;
-            var li = document.createElement('li');
-            li.className = 'art-card';
-            li.innerHTML = '<a href="' + href + '" class="art-card__link"><div class="art-card__media"><img src="' + (img.indexOf('http') === 0 ? img : baseUrl + 'art/' + img) + '" alt="' + title.replace(/"/g, '&quot;') + '" loading="lazy" decoding="async" /></div><div class="art-card__body"><h3 class="art-card__title">' + title.replace(/</g, '&lt;') + '</h3></div></a>';
-            container.appendChild(li);
+        if (!url || !anon) return null;
+        headers.apikey = anon;
+        headers.Authorization = 'Bearer ' + anon;
+        return { url: url.replace(/\/$/, ''), baseUrl: baseUrl };
+      }
+      function fetchArtworks(path) {
+        var cfg = getConfig();
+        if (!cfg) return Promise.resolve([]);
+        return fetch(cfg.url + '/rest/v1/artworks' + path, { method: 'GET', headers: headers })
+          .then(function (r) { return r.text(); })
+          .then(function (text) {
+            try { var d = JSON.parse(text); return Array.isArray(d) ? d : (d && d.data) || []; } catch (e) { return []; }
+          })
+          .catch(function () { return []; });
+      }
+      function imgUrl(row, baseUrl) {
+        var img = row.image_url || row.image || '';
+        return img.indexOf('http') === 0 ? img : baseUrl + 'art/' + img;
+      }
+      function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+      function run() {
+        var cfg = getConfig();
+        var baseUrl = cfg ? cfg.baseUrl : (base || '');
+        if (cfg) {
+          fetchArtworks('?order=created_at.desc&limit=4').then(function (rows) {
+            if (rows.length === 0) return fetchArtworks('?order=inserted_at.desc&limit=4');
+            return rows;
+          }).then(function (rows) {
+            var list = document.getElementById('recent-work-list');
+            if (!list || rows.length === 0) return;
+            list.removeAttribute('data-fallback-static');
+            list.innerHTML = rows.map(function (row) {
+              var title = esc(row.title) || 'Untitled';
+              var slug = row.slug || row.id || '';
+              var href = baseUrl + 'work/ai-art/#' + slug;
+              var src = imgUrl(row, baseUrl);
+              return '<li class="art-card"><a href="' + href + '" class="art-card__link"><div class="art-card__media"><img src="' + esc(src) + '" alt="' + title + '" loading="lazy" decoding="async" /></div><div class="art-card__body"><h3 class="art-card__title">' + title + '</h3></div></a></li>';
+            }).join('');
+            document.dispatchEvent(new CustomEvent('recents-replaced'));
           });
-        });
+          fetchArtworks('?favorite=eq.true&order=created_at.desc&limit=7').then(function (rows) {
+            if (rows.length === 0) return fetchArtworks('?featured=eq.true&order=created_at.desc&limit=7');
+            return rows;
+          }).then(function (rows) {
+            if (rows.length === 0) return;
+            var wrapper = document.getElementById('featured-collection-wrapper');
+            if (!wrapper) return;
+            var hero = rows[0];
+            var grid = rows.slice(1, 5);
+            var bottom = rows.slice(5, 7);
+            function cellHref(row) { return baseUrl + 'work/ai-art/' + (row.slug || row.id) + '/'; }
+            function cellImg(row) { return imgUrl(row, baseUrl); }
+            function cellTitle(row) { return esc(row.title) || 'Untitled'; }
+            var html = '<section class="featured-collection" id="featured"><div class="featured-collection__header"><p class="featured-collection__eyebrow">Selected Works</p><h2 class="featured-collection__heading">Featured Collection</h2></div><div class="featured-collection__top">';
+            if (hero) html += '<a href="' + cellHref(hero) + '" class="featured-cell featured-cell--hero" aria-label="' + cellTitle(hero) + '"><img src="' + esc(cellImg(hero)) + '" alt="' + cellTitle(hero) + '" loading="eager" decoding="async" /><div class="featured-cell__overlay"><span class="featured-cell__title">' + cellTitle(hero) + '</span><span class="featured-cell__cat">Fine Art</span></div></a>';
+            html += '<div class="featured-collection__grid2x2">';
+            grid.forEach(function (row) {
+              html += '<a href="' + cellHref(row) + '" class="featured-cell featured-cell--sm" aria-label="' + cellTitle(row) + '"><img src="' + esc(cellImg(row)) + '" alt="' + cellTitle(row) + '" loading="lazy" decoding="async" /><div class="featured-cell__overlay"><span class="featured-cell__title">' + cellTitle(row) + '</span><span class="featured-cell__cat">Fine Art</span></div></a>';
+            });
+            html += '</div></div>';
+            if (bottom.length) {
+              html += '<div class="featured-collection__bottom">';
+              bottom.forEach(function (row) {
+                html += '<a href="' + cellHref(row) + '" class="featured-cell featured-cell--tall" aria-label="' + cellTitle(row) + '"><img src="' + esc(cellImg(row)) + '" alt="' + cellTitle(row) + '" loading="lazy" decoding="async" /><div class="featured-cell__overlay"><span class="featured-cell__title">' + cellTitle(row) + '</span><span class="featured-cell__cat">Fine Art</span></div></a>';
+              });
+              html += '</div>';
+            }
+            html += '<div class="featured-collection__cta"><a href="' + baseUrl + 'work/ai-art/" class="featured-collection__cta-link">View All Works →</a></div></section>';
+            wrapper.innerHTML = html;
+            document.dispatchEvent(new CustomEvent('featured-replaced'));
+          });
+        }
       }
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
       else run();
