@@ -1,38 +1,57 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
-import FeaturedCollection from '../components/FeaturedCollection.astro';
 import ArtCard from '../components/ArtCard.astro';
-import { getFeaturedArtworks, getArtworksBySeries, getHomepageHeroArtwork } from '../data/artworks';
-import { brandName, defaultDescription, heroDescription } from '../data/meta';
+import { getFeaturedArtworks, getRecentArtworks } from '../data/artworks';
+import { brandName, defaultDescription } from '../data/meta';
 
-const featured = getFeaturedArtworks(7);
-const recentArt = getArtworksBySeries('fragment').slice(0, 4);
+const featured = await getFeaturedArtworks(6);
+const recentArt = await getRecentArtworks(4);
 const base = import.meta.env.BASE_URL;
-const artistImage = `${base}artist.jpeg?v=1`;
-const currentPath = Astro.url.pathname.replace(/\/$/, '') || base.replace(/\/$/, '');
+const artistImage = `${base}artist-placeholder.svg`;
 
-const heroArtwork = getHomepageHeroArtwork();
-const heroImage = heroArtwork
-  ? { src: `${base}art/${heroArtwork.image}`, alt: heroArtwork.title }
+const heroImage = featured.length > 0
+  ? { src: featured[0].image_url, alt: featured[0].title }
   : null;
 ---
 <Layout title="Home" description={defaultDescription}>
-  <Hero
-    image={heroImage}
-    profileImageUrl={artistImage}
-    heroDescription={heroDescription}
-    base={base}
-    currentPath={currentPath}
-  />
+  <Hero image={heroImage} />
 
-  <FeaturedCollection artworks={featured} base={base} />
+  {featured.length > 0 && (
+    <section>
+      <h2 class="section-title">Fragment — featured</h2>
+      <ul class="gallery-grid">
+        {featured.map((artwork) => (
+          <ArtCard artwork={{
+            id: artwork.id,
+            slug: artwork.id,
+            title: artwork.title,
+            series: artwork.collection,
+            image: artwork.image_url,
+            description: artwork.description,
+            favorite: artwork.favorite,
+            date: artwork.created_at?.slice(0, 7),
+          }} base={base} isSupabase={true} />
+        ))}
+      </ul>
+      <p class="section-cta"><a href={`${base}work/ai-art/`}>View full AI Art gallery →</a></p>
+    </section>
+  )}
 
   <section>
     <h2 class="section-title">Recent work</h2>
     <ul class="gallery-grid">
       {recentArt.map((artwork) => (
-        <ArtCard artwork={artwork} base={base} />
+        <ArtCard artwork={{
+          id: artwork.id,
+          slug: artwork.id,
+          title: artwork.title,
+          series: artwork.collection,
+          image: artwork.image_url,
+          description: artwork.description,
+          favorite: artwork.favorite,
+          date: artwork.created_at?.slice(0, 7),
+        }} base={base} isSupabase={true} />
       ))}
     </ul>
     <div class="recent-links">
@@ -49,21 +68,21 @@ const heroImage = heroArtwork
         <p class="about-artist__label">About the artist</p>
         <h2 class="about-artist__name">{brandName}</h2>
         <div class="about-artist__bio">
-          <p>A multidisciplinary artist working across digital and traditional media. My work investigates the tension between the constructed and the organic—light as material, shadow as language.</p>
-          <p>Each piece begins with observation—a quality of light through glass, a texture remembered in childhood, a feeling without a name. The studio is a laboratory where intuition and technique negotiate in the dark.</p>
+          <p>Multidisciplinary artist working at the intersection of AI, dark surrealism, and baroque aesthetics. Every piece is an obsession made visible.</p>
+          <p>Music producer. UX architect. World-builder. The studio is where intuition and obsession negotiate in the dark.</p>
         </div>
         <div class="about-artist__stats">
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target="120" data-suffix="+">0</span>
+            <span class="about-artist__stat-num" data-target="5" data-suffix="+">0</span>
             <span class="about-artist__stat-label">Years creating</span>
           </div>
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target="201" data-suffix="+">0</span>
+            <span class="about-artist__stat-num" data-target={recentArt.length + featured.length} data-suffix="+">0</span>
             <span class="about-artist__stat-label">Works created</span>
           </div>
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target="30" data-suffix="+">0</span>
-            <span class="about-artist__stat-label">Exhibitions</span>
+            <span class="about-artist__stat-num" data-target="3" data-suffix="">0</span>
+            <span class="about-artist__stat-label">Collections</span>
           </div>
         </div>
       </div>
@@ -79,27 +98,6 @@ const heroImage = heroArtwork
     import gsap from 'gsap';
     import { ScrollTrigger } from 'gsap/ScrollTrigger';
     gsap.registerPlugin(ScrollTrigger);
-
-    /* Hero text/slideshow/scroll are handled in Hero.astro (CDN GSAP + ScrollTrigger) */
-
-    const featuredCells = document.querySelectorAll('.featured-cell');
-    if (featuredCells.length) {
-      gsap.set(featuredCells, { opacity: 0, y: 32 });
-      ScrollTrigger.create({
-        trigger: '.featured-collection',
-        start: 'top 85%',
-        onEnter: () => {
-          gsap.to(featuredCells, {
-            opacity: 1,
-            y: 0,
-            duration: 0.7,
-            stagger: 0.06,
-            ease: 'power2.out',
-          });
-        },
-        once: true,
-      });
-    }
 
     document.querySelectorAll('.gallery-grid').forEach((grid) => {
       const cards = grid.querySelectorAll('.art-card');
@@ -136,50 +134,29 @@ const heroImage = heroArtwork
       const section = document.querySelector('.about-artist');
       if (!section) return;
       const nums = section.querySelectorAll('.about-artist__stat-num');
-      if (!nums.length) return;
       const duration = 1500;
       const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
-      let didRun = false;
-      const runCountUp = () => {
-        if (didRun) return;
-        didRun = true;
-        nums.forEach((el) => {
-          const target = Number(el.getAttribute('data-target')) || 0;
-          const suffix = el.getAttribute('data-suffix') || '';
-          const start = performance.now();
-          const step = (now) => {
-            const elapsed = now - start;
-            const p = Math.min(elapsed / duration, 1);
-            const value = Math.floor(easeOutQuart(p) * target);
-            el.textContent = value + suffix;
-            if (p < 1) requestAnimationFrame(step);
-          };
-          requestAnimationFrame(step);
-        });
-      };
       const observer = new IntersectionObserver((entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            observer.disconnect();
-            runCountUp();
-            return;
-          }
-        }
-      }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          observer.disconnect();
+          nums.forEach((el) => {
+            const target = Number(el.dataset.target) || 0;
+            const suffix = el.dataset.suffix || '';
+            const start = performance.now();
+            const step = (now) => {
+              const elapsed = now - start;
+              const p = Math.min(elapsed / duration, 1);
+              const value = Math.floor(easeOutQuart(p) * target);
+              el.textContent = value + suffix;
+              if (p < 1) requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
+          });
+        });
+      }, { threshold: 0.25 });
       observer.observe(section);
-      // If section is already in view (e.g. short viewport), run after a frame
-      requestAnimationFrame(() => {
-        const rect = section.getBoundingClientRect();
-        const inView = rect.top < window.innerHeight && rect.bottom > 0;
-        if (inView) runCountUp();
-      });
-      // Fallback: always run after 2s in case observer/rAF never fire (e.g. CSP, timing)
-      setTimeout(runCountUp, 2000);
     }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initCountUp);
-    } else {
-      initCountUp();
-    }
+    initCountUp();
   </script>
 </Layout>
