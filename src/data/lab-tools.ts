@@ -74,6 +74,16 @@ export const labTools: LabTool[] = [
     hasInlineApp: true,
     order: 7,
   },
+  {
+    slug: 'homepage-hub',
+    title: 'Homepage Hub',
+    number: '008',
+    shortDescription: 'Experimental homepage designs. Each a standalone vibe — pick what fits the mood.',
+    longDescription: 'V1 Cinematic (full-bleed slideshow) and V2 Danger Case (gold & black, particles, glitch). Each independently vibe-coded.',
+    tech: ['GSAP', 'Canvas API', 'CSS'],
+    hasInlineApp: false,
+    order: 8,
+  },
 ];
 
 export function getLabToolBySlug(slug: string): LabTool | undefined {

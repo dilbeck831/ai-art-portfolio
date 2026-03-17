@@ -8,8 +8,18 @@ const vibes = [
     label: 'V1',
     title: 'Cinematic',
     description: 'Full-viewport letterbox hero. Art cycles as a full-bleed backdrop. TØX!Q floats huge over top. Horizontal gallery strip below.',
-    href: `${base}lab/homepage-hub/v1-cinematic/`,
+    href: `${base}lab/homepage-hub/cinematic/`,
     tags: ['Full-bleed', 'GSAP', 'Slideshow', 'Editorial'],
+    gold: false,
+  },
+  {
+    id: 'v2-danger-case',
+    label: 'V2',
+    title: 'Danger Case',
+    description: 'Dark matter. Gold pressure. Canvas dust particles, parallax geometry, 3D card tilt, glitch typography, drag-scroll reel.',
+    href: `${base}lab/homepage-hub/v2-danger-case/`,
+    tags: ['Gold/Black', 'GSAP', 'Particles', 'Experimental'],
+    gold: true,
   },
 ];
 ---
@@ -19,24 +29,16 @@ const vibes = [
 
   <ul class="hub-grid">
     {vibes.map((v) => (
-      <li class="hub-card">
+      <li class:list={['hub-card', v.gold && 'hub-card--gold']}>
         <div class="hub-card__meta">
-          <span class="hub-card__label">{v.label}</span>
-          {v.tags.map((t) => <span class="hub-card__tag">{t}</span>)}
+          <span class:list={['hub-card__label', v.gold && 'hub-card__label--gold']}>{v.label}</span>
+          {v.tags.map((t) => <span class:list={['hub-card__tag', v.gold && 'hub-card__tag--gold']}>{t}</span>)}
         </div>
-        <h2 class="hub-card__title">{v.title}</h2>
+        <h2 class:list={['hub-card__title', v.gold && 'hub-card__title--gold']}>{v.title}</h2>
         <p class="hub-card__desc">{v.description}</p>
-        <a href={v.href} class="hub-card__btn">Open →</a>
+        <a href={v.href} class:list={['hub-card__btn', v.gold && 'hub-card__btn--gold']}>Open →</a>
       </li>
     ))}
-
-    <li class="hub-card hub-card--empty" aria-label="Placeholder for future vibe">
-      <div class="hub-card__meta">
-        <span class="hub-card__label hub-card__label--dim">V2</span>
-      </div>
-      <h2 class="hub-card__title hub-card__title--dim">Coming soon</h2>
-      <p class="hub-card__desc">Another vibe is brewing.</p>
-    </li>
   </ul>
 
   <p class="hub-note">
@@ -83,20 +85,27 @@ const vibes = [
     pointer-events: none;
   }
 
-  .hub-card:not(.hub-card--empty):hover {
+  .hub-card:hover {
     border-color: transparent;
     box-shadow: var(--shadow-card-hover);
     transform: translateY(-4px);
   }
 
-  .hub-card:not(.hub-card--empty):hover::before {
+  .hub-card:hover::before {
     opacity: 1;
   }
 
-  .hub-card--empty {
-    opacity: 0.4;
-    border-style: dashed;
-    pointer-events: none;
+  /* gold variant */
+  .hub-card--gold {
+    border-color: rgba(180, 130, 0, 0.2);
+    background: #0d0b07;
+  }
+  .hub-card--gold::before {
+    background: linear-gradient(135deg, #9a6f00, #d4af37, #f0c040);
+  }
+  .hub-card--gold:hover {
+    border-color: transparent;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 24px rgba(180,120,0,0.1) inset;
   }
 
   .hub-card__meta {
@@ -118,11 +127,10 @@ const vibes = [
     border-radius: 4px;
     padding: 0.2em 0.5em;
   }
-
-  .hub-card__label--dim {
-    color: var(--text-muted);
-    background: transparent;
-    border-color: var(--border);
+  .hub-card__label--gold {
+    color: #d4af37;
+    background: rgba(180, 130, 0, 0.12);
+    border-color: rgba(212, 175, 55, 0.35);
   }
 
   .hub-card__tag {
@@ -136,6 +144,11 @@ const vibes = [
     border-radius: 4px;
     padding: 0.15em 0.45em;
   }
+  .hub-card__tag--gold {
+    color: rgba(180, 130, 0, 0.65);
+    background: rgba(180, 130, 0, 0.06);
+    border-color: rgba(180, 130, 0, 0.2);
+  }
 
   .hub-card__title {
     font-size: 1.4rem;
@@ -147,10 +160,10 @@ const vibes = [
     background-clip: text;
     color: transparent;
   }
-
-  .hub-card__title--dim {
-    background: none;
-    color: var(--text-muted);
+  .hub-card__title--gold {
+    background: linear-gradient(120deg, #9a6f00, #d4af37, #f0c040);
+    -webkit-background-clip: text;
+    background-clip: text;
   }
 
   .hub-card__desc {
@@ -174,11 +187,17 @@ const vibes = [
     align-self: flex-start;
     transition: filter 0.2s var(--ease-out), transform 0.2s var(--ease-spring);
   }
-
   .hub-card__btn:hover {
     filter: brightness(1.12);
     transform: translateY(-1px);
     color: #fff;
+  }
+  .hub-card__btn--gold {
+    background: linear-gradient(135deg, #9a6f00, #d4af37 50%, #c9a227);
+    color: #0a0806;
+  }
+  .hub-card__btn--gold:hover {
+    color: #0a0806;
   }
 
   .hub-note {
