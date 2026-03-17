@@ -7,6 +7,9 @@ import { processSections } from '../../../data/ai-art-process';
 import { siteTitle } from '../../../data/meta';
 const base = import.meta.env.BASE_URL;
 const fragmentPieces = getArtworksBySeries('fragment');
+// Same fallbacks as admin.html so production always has valid URL/key (env can be empty string in CI)
+const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL || '').trim() || 'https://sbbmducevhpirnthzvtz.supabase.co';
+const supabaseKey = (import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '').trim() || 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
 ---
 <WorkLayout
   title="AI Art"
@@ -47,7 +50,7 @@ const fragmentPieces = getArtworksBySeries('fragment');
 </WorkLayout>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" is:inline></script>
-<script is:inline define:vars={{ supabaseUrl: (import.meta.env.PUBLIC_SUPABASE_URL || 'https://sbbmducevhpirnthzvtz.supabase.co'), supabaseKey: (import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX') }}>
+<script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
   (function () {
     var loading = document.getElementById('uploads-loading');
     var grid = document.getElementById('uploads-grid');
