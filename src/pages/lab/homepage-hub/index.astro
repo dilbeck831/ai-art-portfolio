@@ -1,0 +1,199 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+const base = import.meta.env.BASE_URL;
+
+const vibes = [
+  {
+    id: 'v1-cinematic',
+    label: 'V1',
+    title: 'Cinematic',
+    description: 'Full-viewport letterbox hero. Art cycles as a full-bleed backdrop. TØX!Q floats huge over top. Horizontal gallery strip below.',
+    href: `${base}lab/homepage-hub/v1-cinematic/`,
+    tags: ['Full-bleed', 'GSAP', 'Slideshow', 'Editorial'],
+  },
+];
+---
+<Layout title="Homepage Hub" description="Vibe-coded homepage alternatives for TØX!Q / TOXIQMYND.">
+  <h1 class="page-title">Homepage Hub</h1>
+  <p class="page-subtitle">Experimental homepage designs. Each is a standalone vibe — pick what fits the mood.</p>
+
+  <ul class="hub-grid">
+    {vibes.map((v) => (
+      <li class="hub-card">
+        <div class="hub-card__meta">
+          <span class="hub-card__label">{v.label}</span>
+          {v.tags.map((t) => <span class="hub-card__tag">{t}</span>)}
+        </div>
+        <h2 class="hub-card__title">{v.title}</h2>
+        <p class="hub-card__desc">{v.description}</p>
+        <a href={v.href} class="hub-card__btn">Open →</a>
+      </li>
+    ))}
+
+    <li class="hub-card hub-card--empty" aria-label="Placeholder for future vibe">
+      <div class="hub-card__meta">
+        <span class="hub-card__label hub-card__label--dim">V2</span>
+      </div>
+      <h2 class="hub-card__title hub-card__title--dim">Coming soon</h2>
+      <p class="hub-card__desc">Another vibe is brewing.</p>
+    </li>
+  </ul>
+
+  <p class="hub-note">
+    Each page is independently vibe-coded. Add a new <code>.astro</code> file under <code>lab/homepage-hub/</code> and drop a card above.
+  </p>
+</Layout>
+
+<style>
+  .hub-grid {
+    list-style: none;
+    padding: 0;
+    margin: calc(var(--space) * 2) 0 0 0;
+    display: grid;
+    gap: var(--space);
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+  .hub-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: calc(var(--space) * 1.5) calc(var(--space) * 1.75);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: border-color 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out), transform 0.3s var(--ease-spring);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hub-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: calc(var(--radius-lg) + 1px);
+    padding: 1px;
+    background: var(--gradient-primary);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-out);
+    pointer-events: none;
+  }
+
+  .hub-card:not(.hub-card--empty):hover {
+    border-color: transparent;
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-4px);
+  }
+
+  .hub-card:not(.hub-card--empty):hover::before {
+    opacity: 1;
+  }
+
+  .hub-card--empty {
+    opacity: 0.4;
+    border-style: dashed;
+    pointer-events: none;
+  }
+
+  .hub-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.25rem;
+  }
+
+  .hub-card__label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent-bright);
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 4px;
+    padding: 0.2em 0.5em;
+  }
+
+  .hub-card__label--dim {
+    color: var(--text-muted);
+    background: transparent;
+    border-color: var(--border);
+  }
+
+  .hub-card__tag {
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.15em 0.45em;
+  }
+
+  .hub-card__title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hub-card__title--dim {
+    background: none;
+    color: var(--text-muted);
+  }
+
+  .hub-card__desc {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0;
+    flex: 1;
+  }
+
+  .hub-card__btn {
+    display: inline-block;
+    margin-top: var(--space);
+    padding: 0.6rem 1.5rem;
+    background: var(--gradient-primary);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius);
+    align-self: flex-start;
+    transition: filter 0.2s var(--ease-out), transform 0.2s var(--ease-spring);
+  }
+
+  .hub-card__btn:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    color: #fff;
+  }
+
+  .hub-note {
+    margin-top: calc(var(--space) * 2.5);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .hub-note code {
+    font-size: 0.85em;
+    padding: 0.15em 0.4em;
+    background: var(--surface);
+    border-radius: 4px;
+    color: var(--accent-bright);
+    border: 1px solid var(--border);
+  }
+</style>
