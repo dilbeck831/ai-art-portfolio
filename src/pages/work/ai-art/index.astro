@@ -47,7 +47,7 @@ const fragmentPieces = getArtworksBySeries('fragment');
 </WorkLayout>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" is:inline></script>
-<script is:inline define:vars={{ supabaseUrl: typeof import.meta.env.PUBLIC_SUPABASE_URL !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_URL : 'https://sbbmducevhpirnthzvtz.supabase.co', supabaseKey: (typeof import.meta.env.PUBLIC_SUPABASE_KEY !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_KEY : null) || (typeof import.meta.env.PUBLIC_SUPABASE_ANON_KEY !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_ANON_KEY : null) || 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX' }}>
+<script is:inline define:vars={{ supabaseUrl: (import.meta.env.PUBLIC_SUPABASE_URL || 'https://sbbmducevhpirnthzvtz.supabase.co'), supabaseKey: (import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX') }}>
   (function () {
     var loading = document.getElementById('uploads-loading');
     var grid = document.getElementById('uploads-grid');
@@ -58,7 +58,12 @@ const fragmentPieces = getArtworksBySeries('fragment');
     var sortSelect = document.getElementById('uploads-sort');
     if (!loading || !grid) return;
     if (typeof supabase === 'undefined') {
-      loading.textContent = '';
+      loading.hidden = true;
+      if (errEl) { errEl.textContent = 'Could not load uploads.'; errEl.hidden = false; }
+      return;
+    }
+    if (!supabaseUrl || !supabaseKey) {
+      loading.hidden = true;
       if (errEl) { errEl.textContent = 'Could not load uploads.'; errEl.hidden = false; }
       return;
     }
@@ -98,43 +103,61 @@ const fragmentPieces = getArtworksBySeries('fragment');
         grid.appendChild(li);
       });
     }
-    var sb = supabase.createClient(supabaseUrl, supabaseKey);
-    sb.from('artworks').select('id,title,description,collection,image_url,created_at').order('created_at', { ascending: false }).limit(200)
-      .then(function (r) {
-        loading.hidden = true;
-        if (r.error) {
-          if (errEl) { errEl.textContent = r.error.message || 'Could not load gallery.'; errEl.hidden = false; }
-          return;
-        }
-        allData = r.data || [];
-        if (allData.length === 0) {
-          if (empty) { empty.textContent = 'No uploads yet.'; empty.hidden = false; }
-          return;
-        }
-        var collections = [];
-        var seen = {};
-        allData.forEach(function (a) {
-          var c = (a.collection || '').trim();
-          if (c && !seen[c]) { seen[c] = true; collections.push(c); }
-        });
-        collections.sort();
-        if (collectionSelect) {
-          collections.forEach(function (c) {
-            var opt = document.createElement('option');
-            opt.value = c;
-            opt.textContent = c.replace(/-/g, ' ');
-            collectionSelect.appendChild(opt);
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      loading.hidden = true;
+    }
+    var timeout = setTimeout(function () {
+      finish();
+      if (errEl) { errEl.textContent = 'Request timed out. Check your connection.'; errEl.hidden = false; }
+    }, 12000);
+    try {
+      var sb = supabase.createClient(supabaseUrl, supabaseKey);
+      sb.from('artworks').select('id,title,description,collection,image_url,created_at').order('created_at', { ascending: false }).limit(200)
+        .then(function (r) {
+          clearTimeout(timeout);
+          finish();
+          if (r.error) {
+            if (errEl) { errEl.textContent = r.error.message || 'Could not load gallery.'; errEl.hidden = false; }
+            return;
+          }
+          allData = r.data || [];
+          if (allData.length === 0) {
+            if (empty) { empty.textContent = 'No uploads yet.'; empty.hidden = false; }
+            return;
+          }
+          var collections = [];
+          var seen = {};
+          allData.forEach(function (a) {
+            var c = (a.collection || '').trim();
+            if (c && !seen[c]) { seen[c] = true; collections.push(c); }
           });
-        }
-        if (controls) controls.hidden = false;
-        render();
-        if (collectionSelect) collectionSelect.addEventListener('change', render);
-        if (sortSelect) sortSelect.addEventListener('change', render);
-      })
-      .catch(function (e) {
-        loading.hidden = true;
-        if (errEl) { errEl.textContent = e && e.message ? e.message : 'Could not load uploads.'; errEl.hidden = false; }
-      });
+          collections.sort();
+          if (collectionSelect) {
+            collections.forEach(function (c) {
+              var opt = document.createElement('option');
+              opt.value = c;
+              opt.textContent = c.replace(/-/g, ' ');
+              collectionSelect.appendChild(opt);
+            });
+          }
+          if (controls) controls.hidden = false;
+          render();
+          if (collectionSelect) collectionSelect.addEventListener('change', render);
+          if (sortSelect) sortSelect.addEventListener('change', render);
+        })
+        .catch(function (e) {
+          clearTimeout(timeout);
+          finish();
+          if (errEl) { errEl.textContent = e && e.message ? e.message : 'Could not load uploads.'; errEl.hidden = false; }
+        });
+    } catch (e) {
+      clearTimeout(timeout);
+      finish();
+      if (errEl) { errEl.textContent = e && e.message ? e.message : 'Could not load uploads.'; errEl.hidden = false; }
+    }
   })();
 </script>
 
