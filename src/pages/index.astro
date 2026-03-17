@@ -136,29 +136,48 @@ const heroImage = heroArtwork
       const section = document.querySelector('.about-artist');
       if (!section) return;
       const nums = section.querySelectorAll('.about-artist__stat-num');
+      if (!nums.length) return;
       const duration = 1500;
       const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          observer.disconnect();
-          nums.forEach((el) => {
-            const target = Number(el.dataset.target) || 0;
-            const suffix = el.dataset.suffix || '';
-            const start = performance.now();
-            const step = (now) => {
-              const elapsed = now - start;
-              const p = Math.min(elapsed / duration, 1);
-              const value = Math.floor(easeOutQuart(p) * target);
-              el.textContent = value + suffix;
-              if (p < 1) requestAnimationFrame(step);
-            };
-            requestAnimationFrame(step);
-          });
+      let didRun = false;
+      const runCountUp = () => {
+        if (didRun) return;
+        didRun = true;
+        nums.forEach((el) => {
+          const target = Number(el.getAttribute('data-target')) || 0;
+          const suffix = el.getAttribute('data-suffix') || '';
+          const start = performance.now();
+          const step = (now) => {
+            const elapsed = now - start;
+            const p = Math.min(elapsed / duration, 1);
+            const value = Math.floor(easeOutQuart(p) * target);
+            el.textContent = value + suffix;
+            if (p < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
         });
-      }, { threshold: 0.25 });
+      };
+      const observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            observer.disconnect();
+            runCountUp();
+            return;
+          }
+        }
+      }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
       observer.observe(section);
+      // If section is already in view (e.g. short viewport), run after a frame
+      requestAnimationFrame(() => {
+        const rect = section.getBoundingClientRect();
+        const inView = rect.top < window.innerHeight && rect.bottom > 0;
+        if (inView) runCountUp();
+      });
     }
-    initCountUp();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initCountUp);
+    } else {
+      initCountUp();
+    }
   </script>
 </Layout>
