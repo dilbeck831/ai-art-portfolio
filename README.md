@@ -9,7 +9,6 @@ npm install
 npm run dev
 
 ```
-
 Open [http://localhost:4321](http://localhost:4321). Use `npm run build` to build for production and `npm run preview` to preview the build.
 
 ---
