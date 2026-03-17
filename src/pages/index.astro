@@ -173,6 +173,8 @@ const heroImage = heroArtwork
         const inView = rect.top < window.innerHeight && rect.bottom > 0;
         if (inView) runCountUp();
       });
+      // Fallback: always run after 2s in case observer/rAF never fire (e.g. CSP, timing)
+      setTimeout(runCountUp, 2000);
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initCountUp);
