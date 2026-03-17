@@ -1,30 +1,23 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
+import FeaturedCollection from '../components/FeaturedCollection.astro';
 import ArtCard from '../components/ArtCard.astro';
-import { getFeaturedArtworks, getRecentArtworks } from '../data/artworks';
-import { brandName, defaultDescription } from '../data/meta';
+import { getFeaturedArtworks, getArtworksBySeries, getHomepageHeroArtwork } from '../data/artworks';
+import { brandName, defaultDescription, heroDescription } from '../data/meta';
 
-const featured = await getFeaturedArtworks(6);
-const recentArt = await getRecentArtworks(4);
+const featured = getFeaturedArtworks(7);
+const recentArt = getArtworksBySeries('fragment').slice(0, 4);
 const base = import.meta.env.BASE_URL;
-const artistImage = `${base}artist-placeholder.svg`;
+const artistImage = `${base}artist.jpeg?v=1`;
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || base.replace(/\/$/, '');
 
-const heroImage = featured.length > 0
-  ? { src: featured[0].image_url, alt: featured[0].title }
+const heroArtwork = getHomepageHeroArtwork();
+const heroImage = heroArtwork
+  ? { src: `${base}art/${heroArtwork.image}`, alt: heroArtwork.title }
   : null;
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? '';
-const supabaseAnon = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.PUBLIC_SUPABASE_KEY ?? '').toString();
 ---
 <Layout title="Home" description={defaultDescription}>
-  <div
-    id="supabase-config"
-    data-supabase-url={supabaseUrl}
-    data-supabase-anon={supabaseAnon}
-    data-base={base}
-    hidden
-    aria-hidden="true"
-  />
   <Hero
     image={heroImage}
     profileImageUrl={artistImage}
@@ -33,13 +26,11 @@ const supabaseAnon = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.en
     currentPath={currentPath}
   />
 
-  <div id="featured-collection-wrapper">
-    <FeaturedCollection artworks={featured} base={base} />
-  </div>
+  <FeaturedCollection artworks={featured} base={base} />
 
   <section>
     <h2 class="section-title">Recent work</h2>
-    <ul class="gallery-grid" id="recent-work-list" data-fallback-static>
+    <ul class="gallery-grid">
       {recentArt.map((artwork) => (
         <ArtCard artwork={artwork} base={base} />
       ))}
@@ -58,21 +49,21 @@ const supabaseAnon = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.en
         <p class="about-artist__label">About the artist</p>
         <h2 class="about-artist__name">{brandName}</h2>
         <div class="about-artist__bio">
-          <p>Multidisciplinary artist working at the intersection of AI, dark surrealism, and baroque aesthetics. Every piece is an obsession made visible.</p>
-          <p>Music producer. UX architect. World-builder. The studio is where intuition and obsession negotiate in the dark.</p>
+          <p>A multidisciplinary artist working across digital and traditional media. My work investigates the tension between the constructed and the organic—light as material, shadow as language.</p>
+          <p>Each piece begins with observation—a quality of light through glass, a texture remembered in childhood, a feeling without a name. The studio is a laboratory where intuition and technique negotiate in the dark.</p>
         </div>
         <div class="about-artist__stats">
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target="5" data-suffix="+">0</span>
+            <span class="about-artist__stat-num" data-target="120" data-suffix="+">0</span>
             <span class="about-artist__stat-label">Years creating</span>
           </div>
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target={recentArt.length + featured.length} data-suffix="+">0</span>
+            <span class="about-artist__stat-num" data-target="201" data-suffix="+">0</span>
             <span class="about-artist__stat-label">Works created</span>
           </div>
           <div class="about-artist__stat">
-            <span class="about-artist__stat-num" data-target="3" data-suffix="">0</span>
-            <span class="about-artist__stat-label">Collections</span>
+            <span class="about-artist__stat-num" data-target="30" data-suffix="+">0</span>
+            <span class="about-artist__stat-label">Exhibitions</span>
           </div>
         </div>
       </div>
@@ -112,9 +103,8 @@ const supabaseAnon = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.en
       }
     }
     initFeaturedAnimation();
-    document.addEventListener('featured-replaced', initFeaturedAnimation);
 
-    function initGridAnimation(grid: Element) {
+    document.querySelectorAll('.gallery-grid').forEach((grid) => {
       const cards = grid.querySelectorAll('.art-card');
       gsap.set(cards, { opacity: 0, y: 40 });
       ScrollTrigger.create({
@@ -125,11 +115,6 @@ const supabaseAnon = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.en
         },
         once: true,
       });
-    }
-    document.querySelectorAll('.gallery-grid').forEach(initGridAnimation);
-    document.addEventListener('recents-replaced', () => {
-      const list = document.getElementById('recent-work-list');
-      if (list) initGridAnimation(list);
     });
 
     const about = document.querySelector('.about-artist');
@@ -178,91 +163,5 @@ const supabaseAnon = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.en
       observer.observe(section);
     }
     initCountUp();
-  </script>
-  <script define:vars={{ base }}>
-    (function () {
-      var headers = { 'apikey': '', 'Authorization': '', 'Content-Type': 'application/json' };
-      function getConfig() {
-        var el = document.getElementById('supabase-config');
-        if (!el) return null;
-        var url = (el.getAttribute('data-supabase-url') || '').trim();
-        var anon = (el.getAttribute('data-supabase-anon') || '').trim();
-        var baseUrl = (el.getAttribute('data-base') || base || '').trim();
-        if (!url || !anon) return null;
-        headers.apikey = anon;
-        headers.Authorization = 'Bearer ' + anon;
-        return { url: url.replace(/\/$/, ''), baseUrl: baseUrl };
-      }
-      function fetchArtworks(path) {
-        var cfg = getConfig();
-        if (!cfg) return Promise.resolve([]);
-        return fetch(cfg.url + '/rest/v1/artworks' + path, { method: 'GET', headers: headers })
-          .then(function (r) { return r.text(); })
-          .then(function (text) {
-            try { var d = JSON.parse(text); return Array.isArray(d) ? d : (d && d.data) || []; } catch (e) { return []; }
-          })
-          .catch(function () { return []; });
-      }
-      function imgUrl(row, baseUrl) {
-        var img = row.image_url || row.image || '';
-        return img.indexOf('http') === 0 ? img : baseUrl + 'art/' + img;
-      }
-      function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-      function run() {
-        var cfg = getConfig();
-        var baseUrl = cfg ? cfg.baseUrl : (base || '');
-        if (cfg) {
-          fetchArtworks('?order=created_at.desc&limit=4').then(function (rows) {
-            if (rows.length === 0) return fetchArtworks('?order=inserted_at.desc&limit=4');
-            return rows;
-          }).then(function (rows) {
-            var list = document.getElementById('recent-work-list');
-            if (!list || rows.length === 0) return;
-            list.removeAttribute('data-fallback-static');
-            list.innerHTML = rows.map(function (row) {
-              var title = esc(row.title) || 'Untitled';
-              var slug = row.slug || row.id || '';
-              var href = baseUrl + 'work/ai-art/#' + slug;
-              var src = imgUrl(row, baseUrl);
-              return '<li class="art-card"><a href="' + href + '" class="art-card__link"><div class="art-card__media"><img src="' + esc(src) + '" alt="' + title + '" loading="lazy" decoding="async" /></div><div class="art-card__body"><h3 class="art-card__title">' + title + '</h3></div></a></li>';
-            }).join('');
-            document.dispatchEvent(new CustomEvent('recents-replaced'));
-          });
-          fetchArtworks('?favorite=eq.true&order=created_at.desc&limit=7').then(function (rows) {
-            if (rows.length === 0) return fetchArtworks('?featured=eq.true&order=created_at.desc&limit=7');
-            return rows;
-          }).then(function (rows) {
-            if (rows.length === 0) return;
-            var wrapper = document.getElementById('featured-collection-wrapper');
-            if (!wrapper) return;
-            var hero = rows[0];
-            var grid = rows.slice(1, 5);
-            var bottom = rows.slice(5, 7);
-            function cellHref(row) { return baseUrl + 'work/ai-art/' + (row.slug || row.id) + '/'; }
-            function cellImg(row) { return imgUrl(row, baseUrl); }
-            function cellTitle(row) { return esc(row.title) || 'Untitled'; }
-            var html = '<section class="featured-collection" id="featured"><div class="featured-collection__header"><p class="featured-collection__eyebrow">Selected Works</p><h2 class="featured-collection__heading">Featured Collection</h2></div><div class="featured-collection__top">';
-            if (hero) html += '<a href="' + cellHref(hero) + '" class="featured-cell featured-cell--hero" aria-label="' + cellTitle(hero) + '"><img src="' + esc(cellImg(hero)) + '" alt="' + cellTitle(hero) + '" loading="eager" decoding="async" /><div class="featured-cell__overlay"><span class="featured-cell__title">' + cellTitle(hero) + '</span><span class="featured-cell__cat">Fine Art</span></div></a>';
-            html += '<div class="featured-collection__grid2x2">';
-            grid.forEach(function (row) {
-              html += '<a href="' + cellHref(row) + '" class="featured-cell featured-cell--sm" aria-label="' + cellTitle(row) + '"><img src="' + esc(cellImg(row)) + '" alt="' + cellTitle(row) + '" loading="lazy" decoding="async" /><div class="featured-cell__overlay"><span class="featured-cell__title">' + cellTitle(row) + '</span><span class="featured-cell__cat">Fine Art</span></div></a>';
-            });
-            html += '</div></div>';
-            if (bottom.length) {
-              html += '<div class="featured-collection__bottom">';
-              bottom.forEach(function (row) {
-                html += '<a href="' + cellHref(row) + '" class="featured-cell featured-cell--tall" aria-label="' + cellTitle(row) + '"><img src="' + esc(cellImg(row)) + '" alt="' + cellTitle(row) + '" loading="lazy" decoding="async" /><div class="featured-cell__overlay"><span class="featured-cell__title">' + cellTitle(row) + '</span><span class="featured-cell__cat">Fine Art</span></div></a>';
-              });
-              html += '</div>';
-            }
-            html += '<div class="featured-collection__cta"><a href="' + baseUrl + 'work/ai-art/" class="featured-collection__cta-link">View All Works →</a></div></section>';
-            wrapper.innerHTML = html;
-            document.dispatchEvent(new CustomEvent('featured-replaced'));
-          });
-        }
-      }
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
-      else run();
-    })();
   </script>
 </Layout>
