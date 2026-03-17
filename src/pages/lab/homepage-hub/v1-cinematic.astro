@@ -1,11 +1,11 @@
 ---
 import '../../../styles/global.css';
-import { artworks, getFeaturedArtworks } from '../../../data/artworks';
+import { getAllArtworks, getFeaturedArtworks } from '../../../data/artworks';
 import { brandName } from '../../../data/meta';
 
 const base = import.meta.env.BASE_URL;
-const slides = getFeaturedArtworks(7);
-const all = artworks;
+const slides = await getFeaturedArtworks(7);
+const all = await getAllArtworks();
 const totalPad = String(slides.length).padStart(2, '0');
 ---
 <!doctype html>

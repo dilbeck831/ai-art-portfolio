@@ -6,7 +6,7 @@ import { getArtworksBySeries } from '../../../data/artworks';
 import { processSections } from '../../../data/ai-art-process';
 import { siteTitle } from '../../../data/meta';
 const base = import.meta.env.BASE_URL;
-const fragmentPieces = getArtworksBySeries('fragment');
+const fragmentPieces = await getArtworksBySeries('fragment');
 ---
 <WorkLayout
   title="AI Art"

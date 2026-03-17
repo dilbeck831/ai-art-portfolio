@@ -1,25 +1,35 @@
 ---
 import WorkLayout from '../../../layouts/WorkLayout.astro';
-import { artworks, getArtworkBySlug } from '../../../data/artworks';
+import { getAllArtworks, getArtworkBySlug } from '../../../data/artworks';
 import { brandName } from '../../../data/meta';
 
 export async function getStaticPaths() {
-  return artworks.map((artwork) => ({
-    params: { slug: artwork.slug },
-    props: { artwork },
+  const all = await getAllArtworks();
+  return all.map((a) => ({
+    params: { slug: a.id },
+    props: {
+      artwork: {
+        ...a,
+        slug: a.id,
+        series: a.collection,
+        image: a.image_url,
+        video: (a as { video?: string }).video,
+      },
+    },
   }));
 }
 
 const { artwork } = Astro.props;
 const base = import.meta.env.BASE_URL;
 
-// Prev / next within same series
-const seriesArtworks = artworks.filter((a) => a.series === artwork.series);
+const all = await getAllArtworks();
+const normalized = all.map((a) => ({ ...a, slug: a.id, series: a.collection, image: a.image_url }));
+const seriesArtworks = normalized.filter((a) => a.series === artwork.series);
 const idx = seriesArtworks.findIndex((a) => a.slug === artwork.slug);
 const prev = seriesArtworks[idx - 1];
 const next = seriesArtworks[idx + 1];
 
-const imageUrl = `${base}art/${artwork.image}`;
+const imageUrl = (artwork.image_url || artwork.image)?.startsWith('http') ? (artwork.image_url || artwork.image) : `${base}art/${artwork.image_url || artwork.image}`;
 ---
 
 <WorkLayout
