@@ -1,0 +1,699 @@
+---
+import '../../../styles/global.css';
+import { artworks, getFeaturedArtworks } from '../../../data/artworks';
+import { brandName } from '../../../data/meta';
+
+const base = import.meta.env.BASE_URL;
+const slides = getFeaturedArtworks(7);
+const all = artworks;
+const totalPad = String(slides.length).padStart(2, '0');
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="TØX!Q / TOXIQMYND — AI Art, UX/IA, The Lab. Homepage Alternative v1: Cinematic." />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <title>TØX!Q · Cinematic — v1</title>
+  </head>
+  <body>
+
+    <!-- ░░ CINEMA HERO ░░ -->
+    <section class="cinema" id="cinema" aria-label="Hero">
+
+      <!-- Top bar -->
+      <div class="cinema__bar cinema__bar--top">
+        <a href={base} class="cinema__logo">{brandName}</a>
+        <nav class="cinema__nav" aria-label="Primary">
+          <a href={`${base}work/ai-art/`}>AI Art</a>
+          <a href={`${base}work/ux/`}>UI/UX</a>
+          <a href={`${base}lab/`}>Lab</a>
+          <a href={`${base}about/`}>About</a>
+          <a href={`${base}contact/`}>Contact</a>
+        </nav>
+      </div>
+
+      <!-- Cycling background images -->
+      <div class="cinema__bg" aria-hidden="true">
+        {slides.map((a, i) => (
+          <img
+            src={`${base}art/${a.image}`}
+            alt={a.title}
+            class={`cinema__slide${i === 0 ? ' is-active' : ''}`}
+            data-index={String(i)}
+            data-title={a.title}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            width="1400"
+            height="900"
+          />
+        ))}
+        <div class="cinema__vignette" aria-hidden="true"></div>
+        <div class="cinema__grain" aria-hidden="true"></div>
+      </div>
+
+      <!-- Center identity -->
+      <div class="cinema__center">
+        <span class="cinema__eyebrow">AI Art &nbsp;·&nbsp; UX/IA &nbsp;·&nbsp; The Lab</span>
+        <h1 class="cinema__title">TØX!Q</h1>
+        <p class="cinema__sub">TOXIQMYND</p>
+        <div class="cinema__actions">
+          <a href={`${base}work/ai-art/`} class="cinema__btn cinema__btn--primary">View Work</a>
+          <a href={`${base}lab/`} class="cinema__btn cinema__btn--ghost">Explore Lab</a>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="cinema__bar cinema__bar--bottom">
+        <span class="cinema__counter" id="cinema-counter">01 / {totalPad}</span>
+        <span class="cinema__artwork-label" id="cinema-artwork">{slides[0]?.title ?? ''}</span>
+        <a href="#below" class="cinema__scroll-hint" aria-label="Scroll down">↓ scroll</a>
+      </div>
+
+    </section>
+
+    <!-- ░░ FRAGMENT STRIP ░░ -->
+    <section class="strip" id="below" aria-label="Fragment Series">
+      <header class="strip__head">
+        <span class="strip__label">Fragment Series</span>
+        <a href={`${base}work/ai-art/`} class="strip__view-all">See all {all.length} works →</a>
+      </header>
+      <div class="strip__track" role="list">
+        {all.map((a) => (
+          <a href={`${base}work/ai-art/`} class="strip__item" role="listitem">
+            <img
+              src={`${base}art/${a.image}`}
+              alt={a.title}
+              loading="lazy"
+              width="220"
+              height="300"
+            />
+            <span class="strip__item-title">{a.title}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- ░░ ABOUT BLOCK ░░ -->
+    <section class="vibe-about" aria-label="About the artist">
+      <div class="vibe-about__inner">
+        <p class="vibe-about__eyebrow">About the artist</p>
+        <h2 class="vibe-about__name">{brandName}</h2>
+        <p class="vibe-about__bio">
+          A multidisciplinary artist at the intersection of AI generation, baroque aesthetics, and enterprise UX. Fragments of light. Systems of intent.
+        </p>
+        <a href={`${base}about/`} class="vibe-about__link">Full bio →</a>
+      </div>
+    </section>
+
+    <!-- ░░ COMMISSION CTA ░░ -->
+    <section class="vibe-cta" aria-label="Commission and contact">
+      <h2 class="vibe-cta__title">Commission a work.</h2>
+      <p class="vibe-cta__sub">Custom AI art, UX consulting, Lab tooling.</p>
+      <a href={`${base}contact/`} class="vibe-cta__btn">Get in touch</a>
+    </section>
+
+    <!-- ░░ FOOTER ░░ -->
+    <footer class="vibe-footer">
+      <div class="vibe-footer__links">
+        <a href={base}>Home</a>
+        <a href={`${base}work/`}>Work</a>
+        <a href={`${base}lab/`}>Lab</a>
+        <a href={`${base}about/`}>About</a>
+        <a href={`${base}contact/`}>Contact</a>
+      </div>
+      <p class="vibe-footer__copy">© {new Date().getFullYear()} {brandName} / TOXIQMYND</p>
+      <p class="vibe-footer__meta">
+        Homepage Alternative — v1 · Cinematic &nbsp;·&nbsp;
+        <a href={`${base}lab/homepage-hub/`}>← Back to Hub</a>
+      </p>
+    </footer>
+
+    <!-- ░░ SLIDESHOW SCRIPT ░░ -->
+    <script>
+      const slides = document.querySelectorAll<HTMLElement>('.cinema__slide');
+      const counter = document.getElementById('cinema-counter');
+      const artworkLabel = document.getElementById('cinema-artwork');
+      let current = 0;
+      const total = slides.length;
+
+      function pad(n: number): string {
+        return String(n + 1).padStart(2, '0');
+      }
+
+      function goTo(idx: number): void {
+        slides[current].classList.remove('is-active');
+        current = ((idx % total) + total) % total;
+        slides[current].classList.add('is-active');
+        if (counter) counter.textContent = `${pad(current)} / ${String(total).padStart(2, '0')}`;
+        if (artworkLabel) artworkLabel.textContent = slides[current].dataset.title ?? '';
+      }
+
+      setInterval(() => goTo(current + 1), 4200);
+    </script>
+
+    <!-- ░░ GSAP ANIMATIONS ░░ -->
+    <script>
+      import gsap from 'gsap';
+      import { ScrollTrigger } from 'gsap/ScrollTrigger';
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Top bar
+      gsap.from('.cinema__bar--top', {
+        opacity: 0, y: -28, duration: 0.9, delay: 0.1, ease: 'power2.out',
+      });
+
+      // Center identity stagger
+      const tl = gsap.timeline({ delay: 0.45 });
+      tl.from('.cinema__eyebrow', { opacity: 0, y: 18, duration: 0.6, ease: 'power2.out' })
+        .from('.cinema__title',   { opacity: 0, scale: 0.88, duration: 1.1, ease: 'power3.out' }, '-=0.25')
+        .from('.cinema__sub',     { opacity: 0, y: 10, duration: 0.5, ease: 'power2.out' }, '-=0.5')
+        .from('.cinema__actions', { opacity: 0, y: 18, duration: 0.55, ease: 'power2.out' }, '-=0.25');
+
+      // Bottom bar
+      gsap.from('.cinema__bar--bottom', {
+        opacity: 0, y: 28, duration: 0.8, delay: 1.3, ease: 'power2.out',
+      });
+
+      // Strip items on scroll
+      const stripItems = document.querySelectorAll('.strip__item');
+      gsap.set(stripItems, { opacity: 0, y: 36 });
+      ScrollTrigger.create({
+        trigger: '.strip',
+        start: 'top 88%',
+        onEnter: () => {
+          gsap.to(stripItems, { opacity: 1, y: 0, duration: 0.55, stagger: 0.045, ease: 'power2.out' });
+        },
+        once: true,
+      });
+
+      // About on scroll
+      const aboutEls = document.querySelectorAll('.vibe-about__inner > *');
+      gsap.set(aboutEls, { opacity: 0, y: 28 });
+      ScrollTrigger.create({
+        trigger: '.vibe-about',
+        start: 'top 82%',
+        onEnter: () => {
+          gsap.to(aboutEls, { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, ease: 'power2.out' });
+        },
+        once: true,
+      });
+
+      // CTA on scroll
+      const ctaEls = document.querySelectorAll('.vibe-cta > *');
+      gsap.set(ctaEls, { opacity: 0, y: 24 });
+      ScrollTrigger.create({
+        trigger: '.vibe-cta',
+        start: 'top 86%',
+        onEnter: () => {
+          gsap.to(ctaEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.09, ease: 'power2.out' });
+        },
+        once: true,
+      });
+    </script>
+
+  </body>
+</html>
+
+<style>
+  /* ─── Reset / base ─────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { text-decoration: none; color: inherit; }
+  img { display: block; max-width: 100%; }
+
+  /* ─── CINEMA HERO ─────────────────────────────────────── */
+  .cinema {
+    position: relative;
+    height: 100vh;
+    min-height: 580px;
+    overflow: hidden;
+  }
+
+  /* Bar shared */
+  .cinema__bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2.5rem;
+    height: 60px;
+    background: rgba(8, 4, 14, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .cinema__bar--top {
+    top: 0;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.18);
+  }
+
+  .cinema__bar--bottom {
+    bottom: 0;
+    border-top: 1px solid rgba(139, 92, 246, 0.18);
+  }
+
+  .cinema__logo {
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .cinema__nav {
+    display: flex;
+    gap: 2rem;
+  }
+
+  .cinema__nav a {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.04em;
+    transition: color 0.2s;
+    position: relative;
+    padding-bottom: 2px;
+  }
+
+  .cinema__nav a::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: 0;
+    width: 0; height: 1px;
+    background: var(--accent);
+    transition: width 0.25s var(--ease-out);
+  }
+
+  .cinema__nav a:hover { color: var(--text); }
+  .cinema__nav a:hover::after { width: 100%; }
+
+  /* Background slides */
+  .cinema__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .cinema__slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0;
+    transition: opacity 1.6s ease;
+    will-change: opacity;
+  }
+
+  .cinema__slide.is-active {
+    opacity: 1;
+  }
+
+  /* Vignette overlay */
+  .cinema__vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse 80% 90% at 50% 50%, rgba(10, 6, 18, 0.35) 0%, rgba(10, 6, 18, 0.82) 100%),
+      linear-gradient(to bottom, rgba(10, 6, 18, 0.55) 0%, transparent 20%, transparent 70%, rgba(10, 6, 18, 0.65) 100%);
+  }
+
+  /* CSS noise grain */
+  .cinema__grain {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    opacity: 0.055;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /* Center content */
+  .cinema__center {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0.4rem;
+    pointer-events: none;
+  }
+
+  .cinema__eyebrow {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .cinema__title {
+    font-size: clamp(5.5rem, 20vw, 15rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 0.92;
+    margin: 0.15em 0 0.1em;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 80px rgba(139, 92, 246, 0.4));
+  }
+
+  .cinema__sub {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    margin: 0;
+  }
+
+  .cinema__actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+    pointer-events: all;
+  }
+
+  .cinema__btn {
+    display: inline-block;
+    padding: 0.7rem 1.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    border-radius: 3px;
+    transition: filter 0.25s, transform 0.2s var(--ease-spring), background 0.25s;
+  }
+
+  .cinema__btn--primary {
+    background: var(--gradient-primary);
+    color: #fff;
+  }
+
+  .cinema__btn--primary:hover {
+    filter: brightness(1.12);
+    transform: translateY(-2px);
+    color: #fff;
+  }
+
+  .cinema__btn--ghost {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.45);
+    color: var(--accent-bright);
+    backdrop-filter: blur(4px);
+  }
+
+  .cinema__btn--ghost:hover {
+    background: rgba(139, 92, 246, 0.22);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    color: var(--accent-bright);
+  }
+
+  /* Bottom bar content */
+  .cinema__counter {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.4);
+    font-variant-numeric: tabular-nums;
+    min-width: 4ch;
+  }
+
+  .cinema__artwork-label {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.05em;
+    font-style: italic;
+  }
+
+  .cinema__scroll-hint {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.35);
+    transition: color 0.2s;
+  }
+
+  .cinema__scroll-hint:hover {
+    color: var(--accent);
+  }
+
+  /* ─── FRAGMENT STRIP ──────────────────────────────────── */
+  .strip {
+    padding: 4.5rem 0 3rem;
+  }
+
+  .strip__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .strip__label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+  }
+
+  .strip__view-all {
+    font-size: 0.78rem;
+    color: var(--accent);
+    transition: color 0.2s;
+  }
+
+  .strip__view-all:hover { color: var(--accent-bright); }
+
+  .strip__track {
+    display: flex;
+    gap: 0.875rem;
+    padding: 0.5rem 2.5rem 1.5rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .strip__track::-webkit-scrollbar { display: none; }
+
+  .strip__item {
+    flex: 0 0 180px;
+    scroll-snap-align: start;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: transform 0.3s var(--ease-spring), border-color 0.25s;
+  }
+
+  .strip__item:hover {
+    transform: translateY(-5px) scale(1.015);
+    border-color: var(--accent);
+  }
+
+  .strip__item img {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    transition: transform 0.5s var(--ease-out);
+  }
+
+  .strip__item:hover img {
+    transform: scale(1.07);
+  }
+
+  .strip__item-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2.5rem 0.6rem 0.5rem;
+    font-size: 0.62rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent);
+    letter-spacing: 0.02em;
+  }
+
+  /* ─── ABOUT BLOCK ─────────────────────────────────────── */
+  .vibe-about {
+    padding: 6rem 2.5rem;
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid var(--border);
+  }
+
+  .vibe-about__inner {
+    max-width: 480px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .vibe-about__eyebrow {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  .vibe-about__name {
+    font-size: clamp(2.25rem, 6vw, 3.75rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 1.05;
+  }
+
+  .vibe-about__bio {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.72;
+    margin: 0.25rem 0;
+    max-width: 40ch;
+  }
+
+  .vibe-about__link {
+    font-size: 0.82rem;
+    color: var(--accent-bright);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.35);
+    padding-bottom: 1px;
+    transition: color 0.2s, border-color 0.2s;
+    margin-top: 0.25rem;
+  }
+
+  .vibe-about__link:hover {
+    color: var(--fuchsia-400);
+    border-color: var(--fuchsia-400);
+  }
+
+  /* ─── COMMISSION CTA ──────────────────────────────────── */
+  .vibe-cta {
+    padding: 5rem 2.5rem 6rem;
+    text-align: center;
+    background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.06) 60%, transparent 100%);
+    border-top: 1px solid var(--border);
+  }
+
+  .vibe-cta__title {
+    font-size: clamp(2rem, 5.5vw, 3.75rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 0.4rem;
+    color: var(--text);
+  }
+
+  .vibe-cta__sub {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin: 0 0 2rem;
+  }
+
+  .vibe-cta__btn {
+    display: inline-block;
+    padding: 1rem 2.75rem;
+    background: var(--gradient-primary);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.06em;
+    border-radius: 4px;
+    transition: filter 0.25s var(--ease-out), transform 0.2s var(--ease-spring);
+  }
+
+  .vibe-cta__btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-3px);
+    color: #fff;
+  }
+
+  /* ─── FOOTER ──────────────────────────────────────────── */
+  .vibe-footer {
+    padding: 2rem 2.5rem;
+    border-top: 1px solid var(--border);
+    background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.04));
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  .vibe-footer__links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .vibe-footer__links a {
+    color: var(--text-muted);
+    transition: color 0.2s;
+  }
+
+  .vibe-footer__links a:hover { color: var(--accent-bright); }
+
+  .vibe-footer__copy { margin: 0 0 0.25rem; }
+
+  .vibe-footer__meta {
+    margin: 0;
+    font-size: 0.72rem;
+    opacity: 0.7;
+  }
+
+  .vibe-footer__meta a { color: var(--accent); }
+  .vibe-footer__meta a:hover { color: var(--accent-bright); }
+
+  /* ─── RESPONSIVE ──────────────────────────────────────── */
+  @media (max-width: 700px) {
+    .cinema__nav { display: none; }
+
+    .cinema__bar--top,
+    .cinema__bar--bottom {
+      padding: 0 1.25rem;
+    }
+
+    .cinema__title {
+      font-size: clamp(4rem, 22vw, 8rem);
+    }
+
+    .strip__head,
+    .strip__track,
+    .vibe-about,
+    .vibe-cta {
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+    }
+
+    .strip__item { flex: 0 0 140px; }
+
+    .cinema__actions {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .vibe-footer__links { flex-wrap: wrap; gap: 0.75rem; }
+  }
+</style>
