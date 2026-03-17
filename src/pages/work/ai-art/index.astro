@@ -7,9 +7,6 @@ import { processSections } from '../../../data/ai-art-process';
 import { siteTitle } from '../../../data/meta';
 const base = import.meta.env.BASE_URL;
 const fragmentPieces = getArtworksBySeries('fragment');
-// Same fallbacks as admin.html so production always has valid URL/key (env can be empty string in CI)
-const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL || '').trim() || 'https://sbbmducevhpirnthzvtz.supabase.co';
-const supabaseKey = (import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '').trim() || 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
 ---
 <WorkLayout
   title="AI Art"
@@ -19,7 +16,7 @@ const supabaseKey = (import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.PUBL
   <h1 class="page-title">AI Art</h1>
   <p class="page-subtitle">Fragment series and process. Baroque detail, animation, style profiles.</p>
   <ArtGallery artworks={fragmentPieces} base={base} />
-  <section class="uploads-section" id="tox-uploads" aria-label="TØX!Q Uploads">
+  <section class="uploads-section" id="tox-uploads" aria-label="TØX!Q Uploads" data-supabase-url="https://sbbmducevhpirnthzvtz.supabase.co" data-supabase-key="sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX">
     <h2 class="section-title">TØX!Q Uploads</h2>
     <div class="uploads-controls" id="uploads-controls" hidden>
       <div class="uploads-control">
@@ -50,8 +47,11 @@ const supabaseKey = (import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.PUBL
 </WorkLayout>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" is:inline></script>
-<script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
+<script is:inline>
   (function () {
+    var section = document.getElementById('tox-uploads');
+    var supabaseUrl = (section && section.getAttribute('data-supabase-url')) || 'https://sbbmducevhpirnthzvtz.supabase.co';
+    var supabaseKey = (section && section.getAttribute('data-supabase-key')) || 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
     var loading = document.getElementById('uploads-loading');
     var grid = document.getElementById('uploads-grid');
     var empty = document.getElementById('uploads-empty');
@@ -60,17 +60,35 @@ const supabaseKey = (import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.PUBL
     var collectionSelect = document.getElementById('uploads-collection');
     var sortSelect = document.getElementById('uploads-sort');
     if (!loading || !grid) return;
-    if (typeof supabase === 'undefined') {
+    function showError(msg) {
       loading.hidden = true;
-      if (errEl) { errEl.textContent = 'Could not load uploads.'; errEl.hidden = false; }
-      return;
+      if (errEl) { errEl.textContent = msg || 'Could not load uploads.'; errEl.hidden = false; }
     }
-    if (!supabaseUrl || !supabaseKey) {
-      loading.hidden = true;
-      if (errEl) { errEl.textContent = 'Could not load uploads.'; errEl.hidden = false; }
-      return;
+    function runWhenSupabaseReady(fn) {
+      if (typeof window.supabase !== 'undefined') {
+        fn();
+        return;
+      }
+      var attempts = 0;
+      var t = setInterval(function () {
+        attempts++;
+        if (typeof window.supabase !== 'undefined') {
+          clearInterval(t);
+          fn();
+          return;
+        }
+        if (attempts > 50) {
+          clearInterval(t);
+          showError('Could not load uploads.');
+        }
+      }, 100);
     }
-    var allData = [];
+    runWhenSupabaseReady(function () {
+      if (!supabaseUrl || !supabaseUrl.startsWith('http')) {
+        showError('Could not load uploads.');
+        return;
+      }
+      var allData = [];
     function escapeAttr(s) { return (s || '').replace(/"/g, '&quot;'); }
     function escapeHtml(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function cardHtml(a) {
@@ -161,6 +179,7 @@ const supabaseKey = (import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.PUBL
       finish();
       if (errEl) { errEl.textContent = e && e.message ? e.message : 'Could not load uploads.'; errEl.hidden = false; }
     }
+    });
   })();
 </script>
 
