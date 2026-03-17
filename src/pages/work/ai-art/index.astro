@@ -16,14 +16,198 @@ const fragmentPieces = getArtworksBySeries('fragment');
   <h1 class="page-title">AI Art</h1>
   <p class="page-subtitle">Fragment series and process. Baroque detail, animation, style profiles.</p>
   <ArtGallery artworks={fragmentPieces} base={base} />
+  <section class="uploads-section" id="tox-uploads" aria-label="TØX!Q Uploads">
+    <h2 class="section-title">TØX!Q Uploads</h2>
+    <div class="uploads-controls" id="uploads-controls" hidden>
+      <div class="uploads-control">
+        <label for="uploads-collection">Collection</label>
+        <select id="uploads-collection" aria-label="Filter by collection">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="uploads-control">
+        <label for="uploads-sort">Sort by date</label>
+        <select id="uploads-sort" aria-label="Sort by date added">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+      </div>
+    </div>
+    <div class="uploads-grid-wrap">
+      <div class="uploads-loading" id="uploads-loading">loading…</div>
+      <ul class="gallery-grid uploads-grid" id="uploads-grid" aria-live="polite" hidden></ul>
+      <div class="uploads-empty" id="uploads-empty" hidden>No uploads yet.</div>
+      <div class="uploads-error" id="uploads-error" hidden></div>
+    </div>
+  </section>
   <section class="process-section">
     <h2 class="section-title">Process</h2>
     <ProcessBlock sections={processSections} />
   </section>
 </WorkLayout>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" is:inline></script>
+<script is:inline define:vars={{ supabaseUrl: typeof import.meta.env.PUBLIC_SUPABASE_URL !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_URL : 'https://sbbmducevhpirnthzvtz.supabase.co', supabaseKey: (typeof import.meta.env.PUBLIC_SUPABASE_KEY !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_KEY : null) || (typeof import.meta.env.PUBLIC_SUPABASE_ANON_KEY !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_ANON_KEY : null) || 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX' }}>
+  (function () {
+    var loading = document.getElementById('uploads-loading');
+    var grid = document.getElementById('uploads-grid');
+    var empty = document.getElementById('uploads-empty');
+    var errEl = document.getElementById('uploads-error');
+    var controls = document.getElementById('uploads-controls');
+    var collectionSelect = document.getElementById('uploads-collection');
+    var sortSelect = document.getElementById('uploads-sort');
+    if (!loading || !grid) return;
+    if (typeof supabase === 'undefined') {
+      loading.textContent = '';
+      if (errEl) { errEl.textContent = 'Could not load uploads.'; errEl.hidden = false; }
+      return;
+    }
+    var allData = [];
+    function escapeAttr(s) { return (s || '').replace(/"/g, '&quot;'); }
+    function escapeHtml(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function cardHtml(a) {
+      return '<div class="art-card__media">' +
+        '<img src="' + escapeAttr(a.image_url) + '" alt="' + escapeAttr(a.title || 'Artwork') + '" loading="lazy" decoding="async" />' +
+        '</div><div class="art-card__body">' +
+        '<h3 class="art-card__title">' + escapeHtml(a.title || 'Untitled') + '</h3>' +
+        (a.collection ? '<p class="art-card__description uploads-collection">' + escapeHtml(String(a.collection)) + '</p>' : '') +
+        '</div>';
+    }
+    function render() {
+      var collection = (collectionSelect && collectionSelect.value) || '';
+      var sortNewest = !sortSelect || sortSelect.value !== 'oldest';
+      var list = allData.slice();
+      if (collection) list = list.filter(function (a) { return (a.collection || '') === collection; });
+      list.sort(function (x, y) {
+        var a = x.created_at || '';
+        var b = y.created_at || '';
+        return sortNewest ? (b < a ? -1 : b > a ? 1 : 0) : (a < b ? -1 : a > b ? 1 : 0);
+      });
+      grid.innerHTML = '';
+      if (list.length === 0) {
+        grid.hidden = true;
+        if (empty) { empty.textContent = 'No uploads in this collection.'; empty.hidden = false; }
+        return;
+      }
+      if (empty) empty.hidden = true;
+      grid.hidden = false;
+      list.forEach(function (a) {
+        var li = document.createElement('li');
+        li.className = 'art-card uploads-card';
+        li.innerHTML = cardHtml(a);
+        grid.appendChild(li);
+      });
+    }
+    var sb = supabase.createClient(supabaseUrl, supabaseKey);
+    sb.from('artworks').select('id,title,description,collection,image_url,created_at').order('created_at', { ascending: false }).limit(200)
+      .then(function (r) {
+        loading.hidden = true;
+        if (r.error) {
+          if (errEl) { errEl.textContent = r.error.message || 'Could not load gallery.'; errEl.hidden = false; }
+          return;
+        }
+        allData = r.data || [];
+        if (allData.length === 0) {
+          if (empty) { empty.textContent = 'No uploads yet.'; empty.hidden = false; }
+          return;
+        }
+        var collections = [];
+        var seen = {};
+        allData.forEach(function (a) {
+          var c = (a.collection || '').trim();
+          if (c && !seen[c]) { seen[c] = true; collections.push(c); }
+        });
+        collections.sort();
+        if (collectionSelect) {
+          collections.forEach(function (c) {
+            var opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c.replace(/-/g, ' ');
+            collectionSelect.appendChild(opt);
+          });
+        }
+        if (controls) controls.hidden = false;
+        render();
+        if (collectionSelect) collectionSelect.addEventListener('change', render);
+        if (sortSelect) sortSelect.addEventListener('change', render);
+      })
+      .catch(function (e) {
+        loading.hidden = true;
+        if (errEl) { errEl.textContent = e && e.message ? e.message : 'Could not load uploads.'; errEl.hidden = false; }
+      });
+  })();
+</script>
+
 <style>
   .process-section {
     margin-top: calc(var(--space) * 3);
+  }
+  .uploads-section {
+    margin-top: calc(var(--space) * 3);
+  }
+  .uploads-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space) 1.5rem;
+    align-items: flex-end;
+    margin-bottom: var(--space);
+  }
+  .uploads-control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .uploads-control label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .uploads-control select {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    min-width: 10rem;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239d8bb8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+  }
+  .uploads-control select:hover,
+  .uploads-control select:focus {
+    border-color: var(--accent);
+    outline: none;
+  }
+  .uploads-grid-wrap {
+    position: relative;
+    min-height: 80px;
+  }
+  .uploads-loading,
+  .uploads-empty,
+  .uploads-error {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: var(--space) 0;
+  }
+  .uploads-error {
+    color: var(--color-error, #f87171);
+  }
+  .uploads-grid {
+    margin-top: 0;
+  }
+  .uploads-card {
+    cursor: default;
+  }
+  .uploads-collection {
+    text-transform: capitalize;
+    font-size: 0.8rem;
   }
 </style>
