@@ -1,17 +1,21 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import ArtCard from '../../components/ArtCard.astro';
-import { getAllArtworks } from '../../data/artworks';
+import { artworks } from '../../data/artworks';
 
-const artworks = await getAllArtworks();
+// Newest first if date is set
+const sorted = [...artworks].sort((a, b) => {
+  if (!a.date || !b.date) return 0;
+  return b.date.localeCompare(a.date);
+});
 ---
 <Layout title="Gallery" description="Full gallery of AI-generated art.">
   <h1 class="page-title">Gallery</h1>
   <p class="page-subtitle">{artworks.length} pieces</p>
 
   <ul class="gallery-grid">
-    {artworks.map((artwork) => (
-      <ArtCard artwork={artwork} base={import.meta.env.BASE_URL} />
+    {sorted.map((artwork) => (
+      <ArtCard artwork={artwork} />
     ))}
   </ul>
 </Layout>

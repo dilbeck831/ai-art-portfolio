@@ -7,8 +7,6 @@ interface Props {
 }
 
 const { artworks, base = import.meta.env.BASE_URL } = Astro.props;
-const img = (a: Artwork) => (a as { image_url?: string; image?: string }).image_url ?? (a as { image?: string }).image;
-const slug = (a: Artwork) => (a as { slug?: string; id?: string }).slug ?? (a as { id?: string }).id ?? '';
 
 // Slot 0 = hero (large left), slots 1-4 = 2x2 grid, slots 5-6 = bottom row
 const hero   = artworks[0];
@@ -29,12 +27,12 @@ const bottom = artworks.slice(5, 7);
       {/* Hero — large left cell */}
       {hero && (
         <a
-          href={`${base}work/ai-art/${slug(hero)}/`}
+          href={`${base}work/ai-art/${hero.slug}/`}
           class="featured-cell featured-cell--hero"
           aria-label={hero.title}
         >
           <img
-            src={img(hero)?.startsWith('http') ? img(hero) : `${base}art/${img(hero)}`}
+            src={`${base}art/${hero.image}`}
             alt={hero.title}
             loading="eager"
             decoding="async"
@@ -50,12 +48,12 @@ const bottom = artworks.slice(5, 7);
       <div class="featured-collection__grid2x2">
         {grid.map((artwork) => (
           <a
-            href={`${base}work/ai-art/${slug(artwork)}/`}
+            href={`${base}work/ai-art/${artwork.slug}/`}
             class="featured-cell featured-cell--sm"
             aria-label={artwork.title}
           >
             <img
-              src={img(artwork)?.startsWith('http') ? img(artwork) : `${base}art/${img(artwork)}`}
+              src={`${base}art/${artwork.image}`}
               alt={artwork.title}
               loading="lazy"
               decoding="async"
@@ -74,12 +72,12 @@ const bottom = artworks.slice(5, 7);
       <div class="featured-collection__bottom">
         {bottom.map((artwork) => (
           <a
-            href={`${base}work/ai-art/${slug(artwork)}/`}
+            href={`${base}work/ai-art/${artwork.slug}/`}
             class="featured-cell featured-cell--tall"
             aria-label={artwork.title}
           >
             <img
-              src={img(artwork)?.startsWith('http') ? img(artwork) : `${base}art/${img(artwork)}`}
+              src={`${base}art/${artwork.image}`}
               alt={artwork.title}
               loading="lazy"
               decoding="async"
