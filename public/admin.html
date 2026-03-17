@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TOXIQMYND · Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+    :root {
+      --bg: #0a0612;
+      --bg-elevated: #120c1a;
+      --surface: #16101f;
+      --surface-hover: #1e1628;
+      --border: rgba(139, 92, 246, 0.2);
+      --border-strong: rgba(139, 92, 246, 0.5);
+      --text: #f3eef9;
+      --text-muted: #9d8bb8;
+      --accent: #a78bfa;
+      --accent-bright: #c4b5fd;
+      --purple: #8b5cf6;
+      --fuchsia: #e879f9;
+      --gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 50%, #e879f9 100%);
+      --radius: 12px;
+      --radius-lg: 16px;
+      --glow: 0 0 40px -12px rgba(139, 92, 246, 0.5);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      font-family: 'DM Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139,92,246,0.18), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 50%, rgba(124,58,237,0.12), transparent),
+        var(--bg);
+    }
+
+    /* ---- Header ---- */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,6,18,0.8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      font-style: italic;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 0.05em;
+    }
+
+    .header-badge {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.75rem;
+      border-radius: 100px;
+    }
+
+    /* ---- Layout ---- */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 680px) {
+      .container { grid-template-columns: 1fr; padding: 1.5rem 1rem; }
+      header { padding: 1rem; }
+    }
+
+    /* ---- Panel ---- */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -20%;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .panel-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--accent-bright);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .panel-title::before {
+      content: '';
+      width: 3px;
+      height: 1em;
+      background: var(--gradient);
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    /* ---- Drop zone ---- */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      aspect-ratio: 4/3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.25s, background 0.25s;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-elevated);
+    }
+
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--purple);
+      background: rgba(139,92,246,0.06);
+    }
+
+    .dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .dropzone-icon {
+      font-size: 2rem;
+      opacity: 0.4;
+    }
+
+    .dropzone-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+
+    .dropzone-preview {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .dropzone-preview.visible { display: block; }
+
+    .dropzone-clear {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.65rem;
+      cursor: pointer;
+      z-index: 2;
+      display: none;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .dropzone-clear.visible { display: block; }
+
+    /* ---- Form fields ---- */
+    .fields { display: flex; flex-direction: column; gap: 1rem; }
+
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      padding: 0.65rem 0.875rem;
+      width: 100%;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.6;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239d8bb8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.875rem center;
+      padding-right: 2rem;
+      cursor: pointer;
+    }
+
+    /* Tags input */
+    .tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      padding: 0.5rem 0.875rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-height: 44px;
+      align-items: center;
+      cursor: text;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .tags-wrap:focus-within {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+    }
+
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: rgba(139,92,246,0.2);
+      border: 1px solid rgba(139,92,246,0.35);
+      border-radius: 100px;
+      padding: 0.15rem 0.6rem;
+      font-size: 0.7rem;
+      color: var(--accent-bright);
+      letter-spacing: 0.04em;
+    }
+
+    .tag-chip button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.8rem;
+      line-height: 1;
+      opacity: 0.7;
+      transition: opacity 0.15s;
+    }
+
+    .tag-chip button:hover { opacity: 1; }
+
+    .tags-input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      min-width: 80px;
+      flex: 1;
+      padding: 0;
+    }
+
+    .tags-hint {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+      margin-top: 0.25rem;
+    }
+
+    /* Toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      left: 3px;
+      top: 3px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .toggle input:checked + .toggle-slider {
+      background: rgba(139,92,246,0.3);
+      border-color: var(--purple);
+    }
+
+    .toggle input:checked + .toggle-slider::before {
+      transform: translateX(18px);
+      background: var(--accent-bright);
+    }
+
+    /* ---- Submit button ---- */
+    .btn-submit {
+      width: 100%;
+      padding: 0.875rem;
+      background: var(--gradient);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+      margin-top: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: var(--glow);
+    }
+
+    .btn-submit:active:not(:disabled) { transform: translateY(0); }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-submit .spinner {
+      display: none;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto;
+    }
+
+    .btn-submit.loading .btn-label { display: none; }
+    .btn-submit.loading .spinner { display: block; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 0.875rem 1.5rem;
+      font-size: 0.8rem;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      box-shadow: var(--glow);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.35s;
+      opacity: 0;
+      z-index: 100;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { border-color: rgba(74,222,128,0.4); color: #86efac; }
+    .toast.error { border-color: rgba(248,113,113,0.4); color: #fca5a5; }
+
+    /* ---- Recent gallery (right panel) ---- */
+    .gallery-panel {
+      grid-column: 1 / -1;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.875rem;
+      margin-top: 0;
+    }
+
+    .gallery-item {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      aspect-ratio: 1;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .gallery-item:hover { border-color: var(--purple); transform: scale(1.02); }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .gallery-item-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0.5rem 0.625rem;
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .gallery-item:hover .gallery-item-info { opacity: 1; }
+
+    .gallery-item-title {
+      font-size: 0.7rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .gallery-item-collection {
+      font-size: 0.6rem;
+      color: var(--accent);
+      margin-top: 0.15rem;
+    }
+
+    .gallery-item-delete {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(248,113,113,0.3);
+      color: #fca5a5;
+      border-radius: 6px;
+      padding: 0.2rem 0.4rem;
+      font-size: 0.6rem;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .gallery-item:hover .gallery-item-delete { opacity: 1; }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      grid-column: 1 / -1;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      grid-column: 1 / -1;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo">TOXIQMYND</span>
+  <span class="header-badge">Admin · Upload</span>
+</header>
+
+<div class="container">
+  <!-- Left: Drop zone -->
+  <div class="panel">
+    <div class="panel-title">Image</div>
+    <div class="dropzone" id="dropzone">
+      <input type="file" id="fileInput" accept="image/*" />
+      <span class="dropzone-icon">⬆</span>
+      <span class="dropzone-label">Drop image or tap to browse</span>
+      <img class="dropzone-preview" id="preview" alt="" />
+      <button class="dropzone-clear" id="clearBtn" type="button">✕ clear</button>
+    </div>
+  </div>
+
+  <!-- Right: Fields -->
+  <div class="panel">
+    <div class="panel-title">Metadata</div>
+    <div class="fields">
+
+      <div class="field">
+        <label for="titleInput">Title</label>
+        <input type="text" id="titleInput" placeholder="e.g. Fragment 01" />
+      </div>
+
+      <div class="field">
+        <label for="descInput">Description</label>
+        <textarea id="descInput" placeholder="Optional description…"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="collectionSelect">Collection</label>
+        <select id="collectionSelect">
+          <option value="fragment">Fragment</option>
+          <option value="dream-logs">Dream Logs</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tags</label>
+        <div class="tags-wrap" id="tagsWrap">
+          <input class="tags-input" id="tagsInput" type="text" placeholder="Add tag…" autocomplete="off" />
+        </div>
+        <span class="tags-hint">Press Enter or comma to add a tag</span>
+      </div>
+
+      <div class="field">
+        <div class="toggle-row">
+          <label for="favoriteToggle">Featured / Favorite</label>
+          <label class="toggle">
+            <input type="checkbox" id="favoriteToggle" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="submitBtn" type="button">
+        <span class="btn-label">Upload Artwork</span>
+        <span class="spinner"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Full width: Recent gallery -->
+  <div class="panel gallery-panel">
+    <div class="panel-title">Recent Uploads</div>
+    <div class="gallery-grid" id="galleryGrid">
+      <div class="loading-state">loading…</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://sbbmducevhpirnthzvtz.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
+
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ---- State ----
+  let selectedFile = null;
+  let tags = [];
+
+  // ---- Elements ----
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const preview = document.getElementById('preview');
+  const clearBtn = document.getElementById('clearBtn');
+  const titleInput = document.getElementById('titleInput');
+  const descInput = document.getElementById('descInput');
+  const collectionSelect = document.getElementById('collectionSelect');
+  const tagsWrap = document.getElementById('tagsWrap');
+  const tagsInput = document.getElementById('tagsInput');
+  const favoriteToggle = document.getElementById('favoriteToggle');
+  const submitBtn = document.getElementById('submitBtn');
+  const galleryGrid = document.getElementById('galleryGrid');
+  const toast = document.getElementById('toast');
+
+  // ---- Toast ----
+  function showToast(msg, type = 'success') {
+    toast.textContent = msg;
+    toast.className = `toast ${type} show`;
+    setTimeout(() => { toast.className = 'toast'; }, 3500);
+  }
+
+  // ---- File handling ----
+  function setFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    selectedFile = file;
+    const url = URL.createObjectURL(file);
+    preview.src = url;
+    preview.classList.add('visible');
+    clearBtn.classList.add('visible');
+    dropzone.querySelector('.dropzone-icon').style.display = 'none';
+    dropzone.querySelector('.dropzone-label').style.display = 'none';
+    if (!titleInput.value) {
+      titleInput.value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+    }
+  }
+
+  fileInput.addEventListener('change', (e) => setFile(e.target.files[0]));
+
+  dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('drag-over');
+    setFile(e.dataTransfer.files[0]);
+  });
+
+  clearBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectedFile = null;
+    preview.src = '';
+    preview.classList.remove('visible');
+    clearBtn.classList.remove('visible');
+    dropzone.querySelector('.dropzone-icon').style.display = '';
+    dropzone.querySelector('.dropzone-label').style.display = '';
+    fileInput.value = '';
+    titleInput.value = '';
+  });
+
+  // ---- Tags ----
+  function renderTags() {
+    document.querySelectorAll('.tag-chip').forEach(el => el.remove());
+    tags.forEach((tag, i) => {
+      const chip = document.createElement('span');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `${tag}<button type="button" data-i="${i}">×</button>`;
+      chip.querySelector('button').addEventListener('click', () => {
+        tags.splice(i, 1);
+        renderTags();
+      });
+      tagsWrap.insertBefore(chip, tagsInput);
+    });
+  }
+
+  tagsInput.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ',') && tagsInput.value.trim()) {
+      e.preventDefault();
+      const val = tagsInput.value.trim().replace(/,$/, '');
+      if (val && !tags.includes(val)) { tags.push(val); renderTags(); }
+      tagsInput.value = '';
+    }
+    if (e.key === 'Backspace' && !tagsInput.value && tags.length) {
+      tags.pop(); renderTags();
+    }
+  });
+
+  tagsWrap.addEventListener('click', () => tagsInput.focus());
+
+  // ---- Submit ----
+  submitBtn.addEventListener('click', async () => {
+    if (!selectedFile) return showToast('Please select an image', 'error');
+    if (!titleInput.value.trim()) return showToast('Please add a title', 'error');
+
+    submitBtn.classList.add('loading');
+    submitBtn.disabled = true;
+
+    try {
+      const ext = selectedFile.name.split('.').pop();
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+      // Upload image
+      const { error: uploadError } = await sb.storage
+        .from('artworks')
+        .upload(path, selectedFile, { contentType: selectedFile.type });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = sb.storage.from('artworks').getPublicUrl(path);
+
+      // Insert record
+      const { error: insertError } = await sb.from('artworks').insert({
+        title: titleInput.value.trim(),
+        description: descInput.value.trim() || null,
+        collection: collectionSelect.value,
+        tags: tags,
+        image_url: urlData.publicUrl,
+        image_path: path,
+        favorite: favoriteToggle.checked,
+      });
+
+      if (insertError) throw insertError;
+
+      showToast('✓ Artwork uploaded successfully');
+
+      // Reset form
+      clearBtn.click();
+      titleInput.value = '';
+      descInput.value = '';
+      collectionSelect.value = 'fragment';
+      tags = [];
+      renderTags();
+      favoriteToggle.checked = false;
+
+      loadGallery();
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Upload failed', 'error');
+    } finally {
+      submitBtn.classList.remove('loading');
+      submitBtn.disabled = false;
+    }
+  });
+
+  // ---- Gallery ----
+  async function loadGallery() {
+    galleryGrid.innerHTML = '<div class="loading-state">loading…</div>';
+    const { data, error } = await sb.from('artworks')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(24);
+
+    if (error) {
+      galleryGrid.innerHTML = '<div class="empty-state">Could not load gallery.</div>';
+      return;
+    }
+
+    if (!data.length) {
+      galleryGrid.innerHTML = '<div class="empty-state">No uploads yet — add your first piece above.</div>';
+      return;
+    }
+
+    galleryGrid.innerHTML = '';
+    data.forEach(artwork => {
+      const item = document.createElement('div');
+      item.className = 'gallery-item';
+      item.innerHTML = `
+        <img src="${artwork.image_url}" alt="${artwork.title}" loading="lazy" />
+        <div class="gallery-item-info">
+          <div class="gallery-item-title">${artwork.title}</div>
+          <div class="gallery-item-collection">${artwork.collection}</div>
+        </div>
+        <button class="gallery-item-delete" data-id="${artwork.id}" data-path="${artwork.image_path}">✕</button>
+      `;
+      item.querySelector('.gallery-item-delete').addEventListener('click', () => deleteArtwork(artwork.id, artwork.image_path));
+      galleryGrid.appendChild(item);
+    });
+  }
+
+  async function deleteArtwork(id, path) {
+    if (!confirm('Delete this artwork?')) return;
+    await sb.storage.from('artworks').remove([path]);
+    await sb.from('artworks').delete().eq('id', id);
+    showToast('Artwork deleted');
+    loadGallery();
+  }
+
+  loadGallery();
+</script>
+</body>
+</html>
