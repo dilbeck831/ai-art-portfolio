@@ -74,6 +74,16 @@ export const labTools: LabTool[] = [
     hasInlineApp: true,
     order: 7,
   },
+  {
+    slug: 'v2-danger-case',
+    title: 'V2 — Danger Case',
+    number: '008',
+    shortDescription: 'Experimental dark interface. Gold & black. Maximum movement.',
+    longDescription: 'An experimental full-screen experience — gold dust particles, parallax geometry, 3D card tilt, drag-scroll reel, and glitch typography. The unreleased interface.',
+    tech: ['GSAP', 'Canvas API', 'CSS'],
+    hasInlineApp: false,
+    order: 8,
+  },
 ];
 
 export function getLabToolBySlug(slug: string): LabTool | undefined {

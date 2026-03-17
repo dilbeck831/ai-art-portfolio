@@ -1,0 +1,987 @@
+---
+import { getFeaturedArtworks } from '../../data/artworks';
+const artworks = getFeaturedArtworks(7);
+const base = import.meta.env.BASE_URL;
+const siteTitle = 'V2 — DANGER CASE | TOXIQMYND';
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{siteTitle}</title>
+  <meta name="description" content="v2 Danger Case — experimental dark interface" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:     #050403;
+      --black-2:   #0a0806;
+      --black-3:   #110e09;
+      --gold-deep: #6b4c00;
+      --gold-dark: #9a6f00;
+      --gold-mid:  #c9a227;
+      --gold:      #d4af37;
+      --gold-bright: #f0c040;
+      --gold-shine: #fff4a3;
+      --amber:     #8b6914;
+      --surface:   #0d0b07;
+      --surface-2: #161108;
+      --border-gold: rgba(212, 175, 55, 0.18);
+      --border-gold-strong: rgba(212, 175, 55, 0.45);
+      --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--gold-mid);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── CUSTOM CURSOR ─────────────────────────────── */
+    #cursor-dot {
+      position: fixed; top: 0; left: 0; z-index: 9999;
+      width: 6px; height: 6px;
+      background: var(--gold-bright);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 8px 2px var(--gold-bright);
+      transition: transform 0.05s, width 0.2s, height 0.2s, background 0.2s;
+    }
+    #cursor-ring {
+      position: fixed; top: 0; left: 0; z-index: 9998;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(212, 175, 55, 0.55);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: transform 0.12s var(--ease-silk), width 0.25s, height 0.25s, border-color 0.25s, opacity 0.25s;
+    }
+
+    /* ── CANVAS PARTICLES ──────────────────────────── */
+    #dust-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    /* ── NOISE OVERLAY ─────────────────────────────── */
+    #noise {
+      position: fixed; inset: 0; z-index: 1;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 160px 160px;
+    }
+
+    /* ── SCANLINES ─────────────────────────────────── */
+    #scanlines {
+      position: fixed; inset: 0; z-index: 2;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,0.07) 3px,
+        rgba(0,0,0,0.07) 4px
+      );
+    }
+
+    /* ── SITE HEADER ───────────────────────────────── */
+    .site-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 2.5rem;
+      background: linear-gradient(to bottom, rgba(5,4,3,0.9) 0%, transparent 100%);
+      backdrop-filter: blur(2px);
+    }
+    .site-nav__logo {
+      font-size: 0.7rem; letter-spacing: 0.3em; font-weight: 700;
+      color: var(--gold);
+      text-decoration: none;
+      text-transform: uppercase;
+      opacity: 0.85;
+      transition: opacity 0.3s;
+    }
+    .site-nav__logo:hover { opacity: 1; }
+    .site-nav__back {
+      font-size: 0.65rem; letter-spacing: 0.2em;
+      color: rgba(212,175,55,0.5);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .site-nav__back:hover { color: var(--gold); }
+
+    /* ── HERO ──────────────────────────────────────── */
+    .hero {
+      position: relative; z-index: 10;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: flex-start;
+      padding: 0 clamp(1.5rem, 6vw, 6rem);
+      overflow: hidden;
+    }
+
+    /* radial ambient gold glow */
+    .hero::before {
+      content: '';
+      position: absolute; top: 20%; left: -10%;
+      width: 60vw; height: 60vh;
+      background: radial-gradient(ellipse at center, rgba(180,130,0,0.08) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+      animation: ambientDrift 18s ease-in-out infinite alternate;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; bottom: 10%; right: -5%;
+      width: 40vw; height: 50vh;
+      background: radial-gradient(ellipse at center, rgba(100,70,0,0.06) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+      animation: ambientDrift 24s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes ambientDrift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(4%, 3%) scale(1.08); }
+    }
+
+    .hero__eyebrow {
+      position: relative; z-index: 2;
+      font-size: clamp(0.6rem, 1vw, 0.72rem);
+      letter-spacing: 0.45em;
+      color: var(--gold-dark);
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+    }
+
+    .hero__title {
+      position: relative; z-index: 2;
+      font-size: clamp(3.5rem, 11vw, 11rem);
+      font-weight: 900;
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      background: linear-gradient(
+        135deg,
+        var(--gold-deep) 0%,
+        var(--gold-mid) 30%,
+        var(--gold-bright) 50%,
+        var(--gold-mid) 70%,
+        var(--gold-deep) 100%
+      );
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: goldShimmer 6s ease-in-out infinite;
+      will-change: background-position;
+    }
+
+    @keyframes goldShimmer {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* glitch layers */
+    .hero__title-wrap {
+      position: relative; display: inline-block;
+    }
+    .hero__title-wrap::before,
+    .hero__title-wrap::after {
+      content: attr(data-text);
+      position: absolute; top: 0; left: 0;
+      font-size: inherit; font-weight: inherit;
+      line-height: inherit; letter-spacing: inherit;
+      text-transform: inherit;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      pointer-events: none;
+    }
+    .hero__title-wrap::before {
+      background: linear-gradient(135deg, rgba(255,60,60,0.4), transparent);
+      -webkit-background-clip: text;
+      animation: glitchA 7s steps(1) infinite;
+    }
+    .hero__title-wrap::after {
+      background: linear-gradient(135deg, rgba(0,200,255,0.25), transparent);
+      -webkit-background-clip: text;
+      animation: glitchB 7s steps(1) infinite;
+    }
+    @keyframes glitchA {
+      0%,94%,100% { clip-path: none; transform: none; opacity: 0; }
+      95%  { clip-path: polygon(0 20%,100% 20%,100% 35%,0 35%); transform: translate(-3px,0); opacity: 1; }
+      96%  { clip-path: polygon(0 60%,100% 60%,100% 72%,0 72%); transform: translate(3px,0); opacity: 1; }
+      97%  { clip-path: polygon(0 40%,100% 40%,100% 50%,0 50%); transform: translate(-2px,0); opacity: 1; }
+      98%  { clip-path: none; opacity: 0; }
+    }
+    @keyframes glitchB {
+      0%,94%,100% { clip-path: none; transform: none; opacity: 0; }
+      95%  { clip-path: polygon(0 50%,100% 50%,100% 62%,0 62%); transform: translate(3px,0); opacity: 1; }
+      96%  { clip-path: polygon(0 78%,100% 78%,100% 88%,0 88%); transform: translate(-3px,0); opacity: 1; }
+      97%  { opacity: 0; }
+    }
+
+    .hero__sub {
+      position: relative; z-index: 2;
+      font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+      letter-spacing: 0.18em;
+      color: rgba(180, 140, 40, 0.6);
+      text-transform: uppercase;
+      max-width: 420px;
+      line-height: 1.9;
+      opacity: 0;
+    }
+
+    .hero__line {
+      position: absolute; z-index: 2;
+      right: clamp(1.5rem, 6vw, 6rem); top: 50%;
+      transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 0.5rem;
+      opacity: 0;
+    }
+    .hero__line-item {
+      font-size: 0.6rem; letter-spacing: 0.3em;
+      color: rgba(180,140,40,0.35);
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+
+    /* scrolling ticker line */
+    .hero__ticker-wrap {
+      position: absolute; bottom: 2.5rem; left: 0; right: 0; z-index: 3;
+      overflow: hidden;
+      border-top: 1px solid rgba(212,175,55,0.1);
+      padding-top: 0.75rem;
+    }
+    .hero__ticker {
+      display: flex; gap: 4rem;
+      white-space: nowrap;
+      animation: tickerMove 20s linear infinite;
+      font-size: 0.6rem; letter-spacing: 0.4em;
+      color: rgba(180,140,40,0.3);
+      text-transform: uppercase;
+    }
+    @keyframes tickerMove {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── FLOATING GEOMETRY ─────────────────────────── */
+    .geo-layer {
+      position: fixed; inset: 0; z-index: 3;
+      pointer-events: none; overflow: hidden;
+    }
+    .geo {
+      position: absolute;
+      border: 1px solid rgba(212,175,55,0.1);
+      border-radius: 2px;
+      animation: geoFloat linear infinite;
+      will-change: transform, opacity;
+    }
+    .geo--hex {
+      clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+      background: linear-gradient(135deg, rgba(180,130,0,0.04), rgba(212,175,55,0.08));
+    }
+    .geo--diamond {
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      background: linear-gradient(45deg, rgba(180,130,0,0.06), rgba(240,192,64,0.04));
+    }
+    .geo--ring {
+      background: transparent;
+      border-radius: 50%;
+    }
+    @keyframes geoFloat {
+      0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity: 0.4; }
+      25%  { opacity: 0.7; }
+      50%  { transform: translate(var(--tx),var(--ty)) rotate(180deg) scale(var(--ts)); opacity: 0.3; }
+      75%  { opacity: 0.6; }
+      100% { transform: translate(0,0) rotate(360deg) scale(1); opacity: 0.4; }
+    }
+
+    /* ── LIGHT LEAK ────────────────────────────────── */
+    #light-leak {
+      position: fixed; top: -30%; left: -10%; z-index: 4;
+      width: 50vw; height: 60vh;
+      background: radial-gradient(ellipse at 30% 50%,
+        rgba(220,170,0,0.06) 0%,
+        rgba(180,120,0,0.03) 40%,
+        transparent 70%
+      );
+      pointer-events: none;
+      animation: leakDrift 28s ease-in-out infinite alternate;
+    }
+    @keyframes leakDrift {
+      0%   { transform: translate(0, 0) rotate(-5deg); opacity: 0.6; }
+      33%  { transform: translate(8vw, 3vh) rotate(0deg); opacity: 1; }
+      66%  { transform: translate(15vw, -5vh) rotate(5deg); opacity: 0.7; }
+      100% { transform: translate(5vw, 8vh) rotate(-3deg); opacity: 0.9; }
+    }
+
+    /* ── DIVIDER ───────────────────────────────────── */
+    .section-divider {
+      position: relative; z-index: 10;
+      height: 1px;
+      margin: 0 clamp(1.5rem, 6vw, 6rem);
+      background: linear-gradient(to right, transparent, var(--gold-dark), var(--gold-mid), var(--gold-dark), transparent);
+      opacity: 0.3;
+    }
+
+    /* ── GALLERY REEL ──────────────────────────────── */
+    .gallery-section {
+      position: relative; z-index: 10;
+      padding: 5rem 0 6rem 0;
+      overflow: hidden;
+    }
+    .gallery-section__header {
+      display: flex; align-items: baseline; gap: 1.5rem;
+      padding: 0 clamp(1.5rem, 6vw, 6rem);
+      margin-bottom: 2.5rem;
+    }
+    .gallery-section__label {
+      font-size: 0.6rem; letter-spacing: 0.4em;
+      color: var(--gold-dark); text-transform: uppercase;
+      opacity: 0.7;
+    }
+    .gallery-section__title {
+      font-size: clamp(1.4rem, 3.5vw, 2.6rem);
+      font-weight: 800; letter-spacing: -0.02em;
+      color: var(--gold-mid);
+      background: linear-gradient(120deg, var(--gold-dark), var(--gold-mid), var(--gold-bright));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .reel-track {
+      display: flex; gap: 1.5rem;
+      padding: 1rem clamp(1.5rem, 6vw, 6rem) 1rem;
+      cursor: grab;
+      user-select: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .reel-track:active { cursor: grabbing; }
+
+    .reel-card {
+      flex: 0 0 auto;
+      width: clamp(220px, 28vw, 360px);
+      aspect-ratio: 3/4;
+      position: relative;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border-gold);
+      background: var(--surface-2);
+      transform-style: preserve-3d;
+      transition:
+        border-color 0.4s,
+        box-shadow 0.4s;
+      will-change: transform;
+    }
+    .reel-card:hover {
+      border-color: var(--border-gold-strong);
+      box-shadow:
+        0 0 0 1px rgba(212,175,55,0.12),
+        0 20px 60px rgba(0,0,0,0.7),
+        0 0 40px rgba(180,130,0,0.12) inset;
+    }
+    .reel-card__img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.7s var(--ease-silk), filter 0.4s;
+      filter: saturate(0.7) brightness(0.85);
+    }
+    .reel-card:hover .reel-card__img {
+      transform: scale(1.05);
+      filter: saturate(0.9) brightness(0.95);
+    }
+    .reel-card__overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top,
+        rgba(5,4,3,0.85) 0%,
+        rgba(5,4,3,0.2) 45%,
+        transparent 100%
+      );
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 1.25rem;
+      opacity: 0;
+      transition: opacity 0.35s;
+    }
+    .reel-card:hover .reel-card__overlay { opacity: 1; }
+    .reel-card__title {
+      font-size: 0.75rem; letter-spacing: 0.18em;
+      color: var(--gold-bright); text-transform: uppercase;
+      font-weight: 700;
+    }
+    .reel-card__series {
+      font-size: 0.58rem; letter-spacing: 0.3em;
+      color: var(--gold-dark); text-transform: uppercase;
+      margin-top: 0.25rem;
+    }
+    /* glossy sheen sweep on card */
+    .reel-card::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 2;
+      background: linear-gradient(
+        115deg,
+        transparent 30%,
+        rgba(255,240,160,0.04) 50%,
+        transparent 70%
+      );
+      background-size: 200% 200%;
+      background-position: 200% 0;
+      transition: background-position 0.7s var(--ease-silk);
+      pointer-events: none;
+    }
+    .reel-card:hover::before {
+      background-position: -50% 0;
+    }
+
+    /* ── STATEMENT SECTION ─────────────────────────── */
+    .statement {
+      position: relative; z-index: 10;
+      padding: 7rem clamp(1.5rem, 6vw, 6rem);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    @media (max-width: 700px) {
+      .statement { grid-template-columns: 1fr; gap: 2.5rem; }
+    }
+    .statement__quote {
+      font-size: clamp(1.6rem, 4vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--gold-mid);
+      opacity: 0;
+    }
+    .statement__quote em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--gold-mid), var(--gold-bright));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .statement__body {
+      opacity: 0;
+    }
+    .statement__body p {
+      font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+      line-height: 2;
+      color: rgba(180, 140, 40, 0.5);
+      letter-spacing: 0.04em;
+      margin-bottom: 1.25rem;
+    }
+    .statement__body p:last-child { margin-bottom: 0; }
+
+    /* ── MARQUEE BAND ──────────────────────────────── */
+    .marquee-band {
+      position: relative; z-index: 10;
+      border-top: 1px solid rgba(212,175,55,0.1);
+      border-bottom: 1px solid rgba(212,175,55,0.1);
+      padding: 0.85rem 0;
+      overflow: hidden;
+      background: rgba(180,130,0,0.03);
+    }
+    .marquee-inner {
+      display: flex; gap: 5rem;
+      white-space: nowrap;
+      font-size: 0.62rem; letter-spacing: 0.5em;
+      color: rgba(180,140,40,0.35);
+      text-transform: uppercase;
+      animation: marqueeRun 25s linear infinite;
+    }
+    @keyframes marqueeRun {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── GRID SECTION ──────────────────────────────── */
+    .grid-section {
+      position: relative; z-index: 10;
+      padding: 5rem clamp(1.5rem, 6vw, 6rem) 7rem;
+    }
+    .grid-section__label {
+      font-size: 0.6rem; letter-spacing: 0.45em;
+      color: var(--gold-dark); text-transform: uppercase;
+      margin-bottom: 3rem;
+      opacity: 0.6;
+    }
+    .art-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+    }
+    @media (max-width: 700px) {
+      .art-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .art-grid-cell {
+      aspect-ratio: 1;
+      overflow: hidden;
+      position: relative;
+      background: var(--surface);
+      opacity: 0;
+    }
+    .art-grid-cell img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(0.5) brightness(0.7);
+      transition: transform 0.8s var(--ease-silk), filter 0.5s;
+      transform-origin: center;
+    }
+    .art-grid-cell:hover img {
+      transform: scale(1.08);
+      filter: saturate(0.85) brightness(0.9);
+    }
+    /* gold tint overlay on cells */
+    .art-grid-cell::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(180,130,0,0.06) 0%,
+        transparent 60%
+      );
+      pointer-events: none;
+    }
+
+    /* ── FOOTER ────────────────────────────────────── */
+    .page-footer {
+      position: relative; z-index: 10;
+      padding: 3rem clamp(1.5rem, 6vw, 6rem);
+      border-top: 1px solid rgba(212,175,55,0.1);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .page-footer__brand {
+      font-size: 0.65rem; letter-spacing: 0.35em;
+      color: rgba(180,140,40,0.35); text-transform: uppercase;
+    }
+    .page-footer__tag {
+      font-size: 0.6rem; letter-spacing: 0.3em;
+      color: rgba(180,140,40,0.2); text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <!-- Cursor -->
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+
+  <!-- Atmosphere -->
+  <canvas id="dust-canvas"></canvas>
+  <div id="noise"></div>
+  <div id="scanlines"></div>
+  <div id="light-leak"></div>
+
+  <!-- Floating geometry -->
+  <div class="geo-layer" id="geo-layer"></div>
+
+  <!-- Nav -->
+  <nav class="site-nav">
+    <a class="site-nav__logo" href={`${base}`}>TØX!Q — TOXIQMYND</a>
+    <a class="site-nav__back" href={`${base}lab/`}>← Lab</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <p class="hero__eyebrow" id="hero-eyebrow">Experimental Interface · v2 · 2026</p>
+
+    <div class="hero__title-wrap" data-text="DANGER CASE" id="hero-title-wrap">
+      <h1 class="hero__title" id="hero-title">DANGER<br/>CASE</h1>
+    </div>
+
+    <p class="hero__sub" id="hero-sub">
+      Dark matter. Gold pressure.<br/>
+      Form against the void.
+    </p>
+
+    <div class="hero__line">
+      <span class="hero__line-item">Fragment Series</span>
+      <span class="hero__line-item">TOXIQMYND</span>
+      <span class="hero__line-item">2026</span>
+    </div>
+
+    <!-- Ticker -->
+    <div class="hero__ticker-wrap">
+      <div class="hero__ticker">
+        {Array(8).fill(null).map(() => (
+          <>
+            <span>V2 — DANGER CASE</span>
+            <span>·</span>
+            <span>TOXIQMYND</span>
+            <span>·</span>
+            <span>FRAGMENT SERIES</span>
+            <span>·</span>
+            <span>GOLD PRESSURE</span>
+            <span>·</span>
+          </>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- Gallery Reel -->
+  <section class="gallery-section" id="gallery-section">
+    <div class="gallery-section__header">
+      <span class="gallery-section__label">Collection</span>
+      <h2 class="gallery-section__title">Fragment Series</h2>
+    </div>
+    <div class="reel-track" id="reel-track">
+      {artworks.map((a) => (
+        <a
+          class="reel-card"
+          href={`${base}work/ai-art/${a.slug}/`}
+          draggable="false"
+        >
+          <img
+            class="reel-card__img"
+            src={`${base}art/${encodeURIComponent(a.image)}`}
+            alt={a.title}
+            loading="lazy"
+            draggable="false"
+          />
+          <div class="reel-card__overlay">
+            <span class="reel-card__title">{a.title}</span>
+            <span class="reel-card__series">{a.series}</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <div class="marquee-band" aria-hidden="true">
+    <div class="marquee-inner">
+      {Array(6).fill(null).map(() => (
+        <>
+          <span>Danger Case</span><span>·</span>
+          <span>v2</span><span>·</span>
+          <span>Gold & Obsidian</span><span>·</span>
+          <span>Motion Studies</span><span>·</span>
+          <span>TOXIQMYND 2026</span><span>·</span>
+          <span>Fragment I–XIV</span><span>·</span>
+        </>
+      ))}
+    </div>
+  </div>
+
+  <!-- Statement -->
+  <section class="statement" id="statement">
+    <h2 class="statement__quote">
+      Where gold meets <em>obsidian</em>, form becomes <em>dangerous</em>.
+    </h2>
+    <div class="statement__body">
+      <p>
+        The Fragment series lives in the space between mineral and memory. Each piece is a pressure event — gold compressed under the weight of nothing.
+      </p>
+      <p>
+        V2 Danger Case is the unreleased interface. Black lacquer. Gold wire. Maximum restraint carrying maximum tension.
+      </p>
+    </div>
+  </section>
+
+  <!-- Grid -->
+  <section class="grid-section" id="grid-section">
+    <p class="grid-section__label">Selected Works</p>
+    <div class="art-grid" id="art-grid">
+      {artworks.slice(0, 6).map((a) => (
+        <div class="art-grid-cell">
+          <img
+            src={`${base}art/${encodeURIComponent(a.image)}`}
+            alt={a.title}
+            loading="lazy"
+          />
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="page-footer">
+    <span class="page-footer__brand">TOXIQMYND — V2 Danger Case</span>
+    <span class="page-footer__tag">Experimental Interface · Gold &amp; Black</span>
+  </footer>
+
+<script>
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+gsap.registerPlugin(ScrollTrigger);
+
+// ── CUSTOM CURSOR ────────────────────────────────────
+const dot  = document.getElementById('cursor-dot')!;
+const ring = document.getElementById('cursor-ring')!;
+let mx = -100, my = -100;
+let rx = -100, ry = -100;
+
+document.addEventListener('mousemove', (e) => {
+  mx = e.clientX; my = e.clientY;
+  dot.style.left = mx + 'px';
+  dot.style.top  = my + 'px';
+});
+
+// ring follows with lag
+(function animateRing() {
+  rx += (mx - rx) * 0.14;
+  ry += (my - ry) * 0.14;
+  ring.style.left = rx + 'px';
+  ring.style.top  = ry + 'px';
+  requestAnimationFrame(animateRing);
+})();
+
+document.querySelectorAll('a, button').forEach((el) => {
+  el.addEventListener('mouseenter', () => {
+    dot.style.width = '10px';
+    dot.style.height = '10px';
+    ring.style.width = '60px';
+    ring.style.height = '60px';
+    ring.style.borderColor = 'rgba(240,192,64,0.8)';
+  });
+  el.addEventListener('mouseleave', () => {
+    dot.style.width = '6px';
+    dot.style.height = '6px';
+    ring.style.width = '36px';
+    ring.style.height = '36px';
+    ring.style.borderColor = 'rgba(212,175,55,0.55)';
+  });
+});
+
+// ── DUST PARTICLES ───────────────────────────────────
+const canvas = document.getElementById('dust-canvas') as HTMLCanvasElement;
+const ctx = canvas.getContext('2d')!;
+
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+interface Mote {
+  x: number; y: number;
+  vx: number; vy: number;
+  r: number; life: number; maxLife: number;
+  gold: number;
+}
+
+const motes: Mote[] = [];
+const MOTE_COUNT = 90;
+
+function spawnMote(): Mote {
+  return {
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: -Math.random() * 0.35 - 0.05,
+    r: Math.random() * 1.2 + 0.3,
+    life: 0,
+    maxLife: Math.random() * 300 + 150,
+    gold: Math.random(),
+  };
+}
+
+for (let i = 0; i < MOTE_COUNT; i++) {
+  const m = spawnMote();
+  m.life = Math.random() * m.maxLife; // stagger start
+  motes.push(m);
+}
+
+function lerpColor(t: number): string {
+  // amber → gold → pale gold
+  const r = Math.round(180 + t * 60);
+  const g = Math.round(120 + t * 80);
+  const b = Math.round(0 + t * 30);
+  return `rgb(${r},${g},${b})`;
+}
+
+function drawDust() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const m of motes) {
+    m.life++;
+    m.x += m.vx + Math.sin(m.life * 0.015) * 0.15;
+    m.y += m.vy;
+
+    const progress = m.life / m.maxLife;
+    const alpha = progress < 0.2
+      ? progress / 0.2
+      : progress > 0.8
+        ? 1 - (progress - 0.8) / 0.2
+        : 1;
+
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+    ctx.fillStyle = lerpColor(m.gold);
+    ctx.globalAlpha = alpha * 0.55;
+    ctx.fill();
+
+    // soft glow
+    if (m.r > 0.8) {
+      const grd = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r * 3);
+      grd.addColorStop(0, `rgba(212,175,55,${alpha * 0.18})`);
+      grd.addColorStop(1, 'transparent');
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.r * 3, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.globalAlpha = 1;
+      ctx.fill();
+    }
+
+    if (m.life >= m.maxLife) {
+      Object.assign(m, spawnMote());
+    }
+  }
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(drawDust);
+}
+drawDust();
+
+// ── FLOATING GEOMETRY ────────────────────────────────
+const geoLayer = document.getElementById('geo-layer')!;
+const GEO_DEFS = [
+  { type: 'hex',     size: 120, x: '8%',  y: '20%', dur: 28, tx: '6vw',  ty: '-8vh', ts: 1.1  },
+  { type: 'diamond', size: 60,  x: '80%', y: '15%', dur: 22, tx: '-4vw', ty: '6vh',  ts: 0.9  },
+  { type: 'ring',    size: 200, x: '70%', y: '60%', dur: 35, tx: '3vw',  ty: '-5vh', ts: 1.05 },
+  { type: 'hex',     size: 45,  x: '20%', y: '70%', dur: 18, tx: '-5vw', ty: '4vh',  ts: 1.15 },
+  { type: 'diamond', size: 90,  x: '90%', y: '80%', dur: 26, tx: '-3vw', ty: '-7vh', ts: 0.95 },
+  { type: 'ring',    size: 80,  x: '45%', y: '25%', dur: 30, tx: '5vw',  ty: '3vh',  ts: 1.08 },
+  { type: 'hex',     size: 30,  x: '35%', y: '85%', dur: 20, tx: '4vw',  ty: '-6vh', ts: 1.2  },
+];
+
+GEO_DEFS.forEach(({ type, size, x, y, dur, tx, ty, ts }) => {
+  const el = document.createElement('div');
+  el.className = `geo geo--${type}`;
+  el.style.cssText = `
+    width: ${size}px; height: ${size}px;
+    left: ${x}; top: ${y};
+    --tx: ${tx}; --ty: ${ty}; --ts: ${ts};
+    animation-duration: ${dur}s;
+    animation-delay: -${Math.random() * dur}s;
+  `;
+  geoLayer.appendChild(el);
+});
+
+// ── HERO PARALLAX ────────────────────────────────────
+const heroSection = document.getElementById('hero')!;
+const titleWrap   = document.getElementById('hero-title-wrap')!;
+const eyebrow     = document.getElementById('hero-eyebrow')!;
+const heroSub     = document.getElementById('hero-sub')!;
+
+let heroMx = 0.5, heroMy = 0.5;
+heroSection.addEventListener('mousemove', (e) => {
+  const rect = heroSection.getBoundingClientRect();
+  heroMx = (e.clientX - rect.left) / rect.width;
+  heroMy = (e.clientY - rect.top)  / rect.height;
+});
+
+let parMx = 0.5, parMy = 0.5;
+(function animatePar() {
+  parMx += (heroMx - parMx) * 0.06;
+  parMy += (heroMy - parMy) * 0.06;
+  const dx = (parMx - 0.5) * 24;
+  const dy = (parMy - 0.5) * 12;
+  titleWrap.style.transform = `translate(${dx * 0.6}px, ${dy * 0.4}px)`;
+  eyebrow.style.transform   = `translate(${dx * 0.2}px, ${dy * 0.2}px)`;
+  heroSub.style.transform   = `translate(${dx * 0.35}px, ${dy * 0.25}px)`;
+  requestAnimationFrame(animatePar);
+})();
+
+// ── ENTRANCE ANIMATIONS ──────────────────────────────
+const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+tl.from('#hero-eyebrow', { opacity: 0, y: 20, duration: 0.8, delay: 0.3 })
+  .to('#hero-eyebrow', { opacity: 1, duration: 0 }, '<')
+  .from('#hero-title',  { opacity: 0, y: 50, duration: 1.1, ease: 'power4.out' }, '-=0.5')
+  .from('#hero-sub',    { opacity: 0, y: 24, duration: 0.9 }, '-=0.6')
+  .to('#hero-sub', { opacity: 1, duration: 0 }, '<')
+  .from('.hero__line',  { opacity: 0, x: 16, duration: 0.7 }, '-=0.5');
+
+// statement reveal
+gsap.fromTo('.statement__quote',
+  { opacity: 0, y: 40 },
+  {
+    opacity: 1, y: 0, duration: 1.1, ease: 'power3.out',
+    scrollTrigger: { trigger: '#statement', start: 'top 75%', once: true },
+  }
+);
+gsap.fromTo('.statement__body',
+  { opacity: 0, y: 30 },
+  {
+    opacity: 1, y: 0, duration: 1.0, ease: 'power3.out', delay: 0.18,
+    scrollTrigger: { trigger: '#statement', start: 'top 75%', once: true },
+  }
+);
+
+// grid cells stagger
+const cells = document.querySelectorAll('.art-grid-cell');
+gsap.fromTo(cells,
+  { opacity: 0, scale: 0.94 },
+  {
+    opacity: 1, scale: 1, duration: 0.7, ease: 'power2.out',
+    stagger: { amount: 0.5, from: 'random' },
+    scrollTrigger: { trigger: '#grid-section', start: 'top 80%', once: true },
+  }
+);
+
+// ── 3D CARD TILT ─────────────────────────────────────
+document.querySelectorAll<HTMLElement>('.reel-card').forEach((card) => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width  - 0.5;
+    const y = (e.clientY - rect.top)  / rect.height - 0.5;
+    card.style.transform = `perspective(600px) rotateY(${x * 14}deg) rotateX(${-y * 10}deg) scale(1.02)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+    card.style.transition = 'transform 0.5s cubic-bezier(0.22,1,0.36,1), border-color 0.4s, box-shadow 0.4s';
+    setTimeout(() => { card.style.transition = ''; }, 500);
+  });
+  card.addEventListener('mouseenter', () => {
+    card.style.transition = 'border-color 0.4s, box-shadow 0.4s';
+  });
+});
+
+// ── DRAG-SCROLL REEL ─────────────────────────────────
+const reel = document.getElementById('reel-track') as HTMLElement;
+let isDown = false, startX = 0, scrollLeft = 0;
+let velX = 0, lastX = 0;
+
+reel.addEventListener('mousedown', (e) => {
+  isDown = true; startX = e.pageX - reel.offsetLeft;
+  scrollLeft = reel.scrollLeft; lastX = e.pageX;
+  velX = 0;
+});
+reel.addEventListener('mouseleave', () => { isDown = false; });
+reel.addEventListener('mouseup',    () => { isDown = false; });
+reel.addEventListener('mousemove',  (e) => {
+  if (!isDown) return;
+  e.preventDefault();
+  velX = e.pageX - lastX; lastX = e.pageX;
+  const x = e.pageX - reel.offsetLeft;
+  reel.scrollLeft = scrollLeft - (x - startX);
+});
+
+// momentum
+(function reelInertia() {
+  if (!isDown && Math.abs(velX) > 0.3) {
+    reel.scrollLeft -= velX;
+    velX *= 0.92;
+  }
+  requestAnimationFrame(reelInertia);
+})();
+</script>
+</body>
+</html>
