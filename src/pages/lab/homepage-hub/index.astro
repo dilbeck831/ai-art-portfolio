@@ -1,0 +1,246 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+const base = import.meta.env.BASE_URL;
+
+const cards = [
+  {
+    version: 'V1',
+    tags: ['FULL-BLEED', 'GSAP', 'SLIDESHOW', 'EDITORIAL'],
+    title: 'Cinematic',
+    description: 'Full-viewport letterbox hero. Art cycles as a full-bleed backdrop. TØX!Q floats huge over top. Horizontal gallery strip below.',
+    href: `${base}lab/homepage-hub/cinematic/`,
+    ready: true,
+    accent: 'purple',
+  },
+  {
+    version: 'V2',
+    tags: ['GOLD/BLACK', 'GSAP', 'PARTICLES', 'EXPERIMENTAL'],
+    title: 'Danger Case',
+    description: 'Dark matter. Gold pressure. Canvas dust, parallax geometry, 3D card tilt, glitch type, and a drag-scroll reel.',
+    href: `${base}lab/homepage-hub/v2-danger-case/`,
+    ready: true,
+    accent: 'gold',
+  },
+];
+---
+<Layout title="Homepage Hub" description="Experimental homepage designs. Each is a standalone vibe.">
+  <div class="hub-page">
+    <header class="hub-header">
+      <h1 class="hub-title">Homepage Hub</h1>
+      <p class="hub-subtitle">Experimental homepage designs. Each is a standalone vibe — pick what fits the mood.</p>
+    </header>
+
+    <div class="hub-grid">
+      {cards.map((card) => (
+        <div class:list={['hub-card', `hub-card--${card.accent}`, !card.ready && 'hub-card--dim']}>
+          <div class="hub-card__tags">
+            <span class="hub-card__version">{card.version}</span>
+            {card.tags.map((tag) => (
+              <span class="hub-card__tag">{tag}</span>
+            ))}
+          </div>
+          <h2 class:list={['hub-card__title', `hub-card__title--${card.accent}`]}>
+            {card.title}
+          </h2>
+          <p class="hub-card__desc">{card.description}</p>
+          {card.ready ? (
+            <a class:list={['hub-card__btn', `hub-card__btn--${card.accent}`]} href={card.href}>
+              Open →
+            </a>
+          ) : (
+            <p class="hub-card__soon">Another vibe is brewing.</p>
+          )}
+        </div>
+      ))}
+    </div>
+
+    <p class="hub-footer-note">
+      Each page is independently vibe-coded. Add a new <code>.astro</code> file under
+      <code>lab/homepage-hub/</code> and drop a card above.
+    </p>
+  </div>
+</Layout>
+
+<style>
+  .hub-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 2rem 5rem;
+  }
+
+  .hub-header {
+    margin-bottom: 3rem;
+  }
+  .hub-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--accent-bright);
+    margin-bottom: 0.75rem;
+  }
+  .hub-subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 560px;
+  }
+
+  .hub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3.5rem;
+  }
+
+  /* ── CARD BASE ── */
+  .hub-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+  }
+  .hub-card:hover {
+    background: var(--surface-hover);
+  }
+  .hub-card--dim {
+    opacity: 0.55;
+  }
+
+  /* purple accent */
+  .hub-card--purple:hover {
+    border-color: var(--border-strong);
+    box-shadow: 0 0 0 1px rgba(139,92,246,0.1), 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  /* gold accent */
+  .hub-card--gold {
+    border-color: rgba(180, 130, 0, 0.2);
+  }
+  .hub-card--gold:hover {
+    border-color: rgba(212, 175, 55, 0.45);
+    box-shadow: 0 0 0 1px rgba(180,130,0,0.08), 0 8px 32px rgba(0,0,0,0.5), 0 0 24px rgba(180,120,0,0.08) inset;
+  }
+
+  /* ── TAGS ── */
+  .hub-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .hub-card__version {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    color: var(--text);
+    background: var(--bg-elevated);
+  }
+  .hub-card--gold .hub-card__version {
+    border-color: rgba(212,175,55,0.35);
+    color: rgba(212,175,55,0.8);
+    background: rgba(180,130,0,0.08);
+  }
+  .hub-card__tag {
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    background: transparent;
+  }
+  .hub-card--gold .hub-card__tag {
+    border-color: rgba(180,130,0,0.2);
+    color: rgba(180,130,0,0.6);
+  }
+
+  /* ── TITLE ── */
+  .hub-card__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .hub-card__title--purple {
+    color: var(--accent);
+  }
+  .hub-card__title--gold {
+    background: linear-gradient(120deg, #9a6f00, #d4af37, #f0c040);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── DESCRIPTION ── */
+  .hub-card__desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin: 0;
+    flex: 1;
+  }
+
+  /* ── BUTTON ── */
+  .hub-card__btn {
+    display: inline-block;
+    align-self: flex-start;
+    margin-top: 0.5rem;
+    padding: 0.6rem 1.4rem;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .hub-card__btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  .hub-card__btn--purple {
+    background: var(--gradient-primary);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(139,92,246,0.35);
+  }
+  .hub-card__btn--purple:hover {
+    box-shadow: 0 6px 24px rgba(139,92,246,0.5);
+  }
+  .hub-card__btn--gold {
+    background: linear-gradient(135deg, #9a6f00, #d4af37 50%, #c9a227);
+    color: #0a0806;
+    box-shadow: 0 4px 18px rgba(180,130,0,0.3);
+  }
+  .hub-card__btn--gold:hover {
+    box-shadow: 0 6px 24px rgba(212,175,55,0.45);
+  }
+
+  .hub-card__soon {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    opacity: 0.6;
+    margin: 0;
+    font-style: italic;
+  }
+
+  /* ── FOOTER NOTE ── */
+  .hub-footer-note {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    opacity: 0.55;
+    text-align: center;
+  }
+  .hub-footer-note code {
+    font-family: monospace;
+    font-size: 0.78rem;
+    padding: 0.15rem 0.45rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--text);
+  }
+</style>
