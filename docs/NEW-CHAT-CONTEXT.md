@@ -20,7 +20,7 @@
 - **TypeScript** (strict)
 - **Vanilla CSS** — `src/styles/global.css`, CSS variables, no Tailwind
 - **Static data** — `src/data/*.ts` (no CMS, no database)
-- **GSAP + ScrollTrigger** — Hero uses CDN scripts in `Hero.astro`; rest of site uses npm GSAP in Layout and page scripts
+- **GSAP** — npm GSAP in Hero (text fade-in), Layout (header stagger), index (FeaturedCollection, about, gallery stagger). No CDN; Hero is static image + CSS motion gradients.
 - **No** React, Node runtime, Tailwind, or canvas/WebGL
 
 ---
@@ -29,10 +29,11 @@
 
 | Route | Purpose |
 |-------|--------|
-| `/` | Home: full-viewport Hero (fog + slideshow), FeaturedCollection mosaic, Recent work grid, About the artist block, Commission CTA |
+| `/` | Home: Hero (single image + gradients; mobile ≤700px: profile, name, heroDescription, social, Menu accordion), FeaturedCollection, Recent work, About, Commission CTA |
 | `/work/` | Work hub → AI Art, Music, UI/UX |
 | `/work/ai-art/` | Fragment gallery + process copy |
-| `/work/music/` | Placeholder (genres, “coming soon”) |
+| `/work/ai-art/[slug]/` | Single artwork page (image/video, prev/next) |
+| `/work/music/` | Suno embeds — single player, tabs below, one-at-a-time, autoplay on tab |
 | `/work/ux/` | Case studies list + capabilities |
 | `/work/ux/[slug]/` | Case study pages (4 slugs) |
 | `/lab/` | Lab tools grid (7 tools) |
@@ -45,21 +46,23 @@
 
 ## Key files
 
-- **Layout & nav:** `src/layouts/Layout.astro`, `src/components/Nav.astro` (Work dropdown, Lab, About, Contact)
-- **Home:** `src/pages/index.astro` — imports Hero, FeaturedCollection, ArtCard; builds `heroImages` from featured artworks
-- **Hero:** `src/components/Hero.astro` — full-viewport fog (CSS) + slideshow (GSAP CDN), text overlay “TØX!Q”, ScrollTrigger scrub
-- **FeaturedCollection:** `src/components/FeaturedCollection.astro` — mosaic (1 large, 2 tall, rest square), links to `work/ai-art/#slug`
-- **Data:** `src/data/artworks.ts` (Artwork[] with slug, series, image path), `meta.ts`, `case-studies.ts`, `lab-tools.ts`, `capabilities.ts`, `ai-art-process.ts`, `music.ts`
-- **Config:** `astro.config.mjs` — `base: '/ai-art-portfolio/'`, `site: 'https://dilbeck831.github.io'`; redirects for `/gallery` → `/work/ai-art`
-- **Full spec:** `docs/SITE-REBUILD-SPEC.md` — site map, data architecture, components, nav IA, GSAP plan, migration notes
+- **Layout & nav:** `src/layouts/Layout.astro`, `src/components/Nav.astro`, `src/components/SocialIcons.astro`. On mobile (≤700px): desktop nav/social hidden; on home the whole header is hidden; on other pages a “Menu” accordion shows in the header.
+- **Home:** `src/pages/index.astro` — Hero (single image + motion gradients), FeaturedCollection, Recent work, About artist, Commission CTA. Passes `profileImageUrl` (artist.jpeg), `heroDescription`, `base`, `currentPath` to Hero.
+- **Hero:** `src/components/Hero.astro` — Single hero image (from `getHomepageHeroArtwork()`) to the right of text; subtle motion gradients (CSS). **Desktop:** text left, image right, grid layout. **Mobile (≤700px):** stacked block only — circular profile image, “TØX!Q”, `heroDescription`, SocialIcons, then “Menu” accordion (nav links). Uses npm GSAP for text fade-in only.
+- **FeaturedCollection:** `src/components/FeaturedCollection.astro` — 1 hero cell + 2×2 grid + bottom row (7 featured); links to `work/ai-art/[slug]/`. `.featured-cell--sm` uses `aspect-ratio: auto`.
+- **AI Art detail:** `src/pages/work/ai-art/[slug].astro` — static page per artwork (image/video, title, series, description, prev/next in series). Data from `artworks.ts`.
+- **Music:** `src/pages/work/music/index.astro` — Suno embeds; single player at top, tab buttons below; one track at a time; `?autoplay=1` on tab switch. Data: `src/data/music.ts` — `sunoTracks[]` (id, title), `heroDescription` in meta.
+- **Data:** `src/data/artworks.ts` (Artwork[], `homepageHero`, `getHomepageHeroArtwork()`, `getFeaturedArtworks`, `getArtworkBySlug`), `meta.ts` (includes `heroDescription`), `case-studies.ts`, `lab-tools.ts`, `capabilities.ts`, `ai-art-process.ts`, `music.ts`.
+- **Config:** `astro.config.mjs` — `base: '/ai-art-portfolio/'`, `site: 'https://dilbeck831.github.io'`; redirects `/gallery` → `/work/ai-art`. For custom domain later: set `base: '/'`, `site: 'https://toxiqmynd.com'`.
+- **Full spec:** `docs/SITE-REBUILD-SPEC.md` — site map, data architecture, components, nav IA, migration notes.
 
 ---
 
 ## Adding images
 
-1. Put image files in **`public/art/`** (e.g. `fragment-01.jpg` or keep existing names like `0_0 (1).jpeg`).
-2. Edit **`src/data/artworks.ts`**: each entry has `image: "filename.jpeg"` (path relative to `public/art/`), plus `slug`, `title`, `series`, optional `favorite`, `date`.
-3. Featured pieces (`favorite: true`) appear in Hero slideshow and FeaturedCollection mosaic (up to 8 in mosaic). Hero uses first 6 featured for slideshow.
+1. **Artworks:** Put files in **`public/art/`**. In **`src/data/artworks.ts`** add/edit entries: `image: "filename.jpeg"`, `slug`, `title`, `series`, `favorite`, `date`. Set **`homepageHero: true`** on exactly one entry for the desktop hero image; that entry can use `id: 'homepage-hero'`.
+2. **About / mobile hero profile:** Use **`public/artist.jpeg`**. Referenced in index for About section and as Hero `profileImageUrl` on mobile.
+3. Featured pieces (`favorite: true`) drive FeaturedCollection (up to 7). Hero image is the one with `homepageHero: true`.
 
 ---
 
@@ -77,10 +80,14 @@ GitHub Actions builds and deploys. Do **not** commit `dist/` or `node_modules/` 
 
 ## Current state (as of last pack)
 
-- **Art:** Real images in `public/art/` (e.g. `0_0 (1).jpeg` … `0_0 (14).jpeg`), `artist.jpeg` for About. `artworks.ts` has multiple Fragment entries (some still share same image filename; can be updated to unique filenames per piece).
-- **Home:** Hero (fog + slideshow), FeaturedCollection mosaic, Recent work, About artist (with stats count-up), Commission CTA. GSAP on index for gallery stagger and about section.
-- **Work / Lab / About / Contact:** All routes and placeholder content in place. Case studies and lab tools have data; lab tool pages show placeholder “embed goes here.”
-- **Possible next steps:** (1) Point toxiqmynd.com at GitHub Pages and set `base: '/'`, `site: 'https://toxiqmynd.com'`. (2) Give each artwork in `artworks.ts` a unique `image` filename if you have 17 distinct images. (3) Implement each Lab tool on `/lab/[slug]/` (embed or inline script). (4) Add contact form (e.g. Formspree) or mailto on Contact page.
+- **Live:** https://dilbeck831.github.io/ai-art-portfolio/ — config reverted to this after testing toxiqmynd.com; site is stable here.
+- **Hero:** Single image from `getHomepageHeroArtwork()` (one artwork has `homepageHero: true`, id `homepage-hero`). Desktop: text left, image right, motion gradients. Mobile (≤700px): header hidden on home; hero shows profile image (`artist.jpeg`), “TØX!Q”, `heroDescription` from meta, SocialIcons, then “Menu” accordion. Breakpoint 700px; desktop nav/social hidden ≤700px; header mobile Menu only on non-home.
+- **Art:** `public/art/` has Fragment images; `artist.jpeg` for About and mobile hero. `artworks.ts`: 14 Fragment entries, 7 `favorite`, one `homepageHero: true`. AI Art detail pages at `/work/ai-art/[slug]/`.
+- **FeaturedCollection:** 7 featured, layout 1 hero + 2×2 + 2 bottom; links to `/work/ai-art/[slug]/`; `.featured-cell--sm` aspect-ratio auto.
+- **Music:** Suno embeds; 4 tracks in `music.ts`; single player, tabs below, one-at-a-time, autoplay on tab switch.
+- **Nav / header:** SocialIcons in header; `isHome` via pathNorm === baseNorm. Body gets `page-home` on home for CSS (hide header on mobile).
+- **DNS:** toxiqmynd.com — user can manage advanced DNS at Network Solutions; 4 A records for GitHub Pages added; old A records (208.91.197.27) could not be removed in UI; custom domain not yet switched (config kept on `/ai-art-portfolio/` for now).
+- **Possible next steps:** (1) When ready for toxiqmynd.com: remove/override old A records at Network Solutions, set GitHub Pages custom domain, then set `base: '/'`, `site: 'https://toxiqmynd.com'` and deploy. (2) Unique `image` filenames per artwork if desired. (3) Implement Lab tools on `/lab/[slug]/`. (4) Contact form (Formspree) or mailto on Contact.
 
 ---
 

@@ -16,8 +16,18 @@ const heroArtwork = getHomepageHeroArtwork();
 const heroImage = heroArtwork
   ? { src: `${base}art/${heroArtwork.image}`, alt: heroArtwork.title }
   : null;
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? '';
+const supabaseAnon = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.PUBLIC_SUPABASE_KEY ?? '').toString();
 ---
 <Layout title="Home" description={defaultDescription}>
+  <div
+    id="supabase-config"
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+    data-base={base}
+    hidden
+    aria-hidden="true"
+  />
   <Hero
     image={heroImage}
     profileImageUrl={artistImage}
@@ -35,6 +45,7 @@ const heroImage = heroArtwork
         <ArtCard artwork={artwork} base={base} />
       ))}
     </ul>
+    <ul class="gallery-grid" id="recent-uploads-supabase" aria-label="Recent uploads from Supabase" data-recents-status="pending"></ul>
     <div class="recent-links">
       <a href={`${base}work/`}>Work</a> — <a href={`${base}work/ai-art/`}>AI Art</a>, <a href={`${base}work/music/`}>Music</a>, <a href={`${base}work/ux/`}>UI/UX</a> · <a href={`${base}lab/`}>Lab</a>
     </div>
@@ -181,5 +192,48 @@ const heroImage = heroArtwork
     } else {
       initCountUp();
     }
+  </script>
+  <script define:vars={{ base }}>
+    (function () {
+      function run() {
+        var el = document.getElementById('supabase-config');
+        var container = document.getElementById('recent-uploads-supabase');
+        if (!el || !container) return;
+        var supabaseUrl = (el.getAttribute('data-supabase-url') || '').trim();
+        var supabaseAnon = (el.getAttribute('data-supabase-anon') || '').trim();
+        var baseUrl = (el.getAttribute('data-base') || base || '').trim();
+        if (!supabaseUrl || !supabaseAnon) {
+          if (container) container.setAttribute('data-recents-status', 'no-config');
+          return;
+        }
+        function doFetch(orderBy) {
+          var apiUrl = supabaseUrl.replace(/\/$/, '') + '/rest/v1/artworks?order=' + orderBy + '.desc&limit=4';
+          return fetch(apiUrl, {
+            method: 'GET',
+            headers: { 'apikey': supabaseAnon, 'Authorization': 'Bearer ' + supabaseAnon, 'Content-Type': 'application/json' }
+          }).then(function (res) { return res.text(); }).then(function (text) {
+            try { var data = JSON.parse(text); return Array.isArray(data) ? data : (data && data.data) || []; } catch (e) { return []; }
+          }).catch(function () { return []; });
+        }
+        doFetch('created_at').then(function (rows) {
+          if (rows.length === 0) return doFetch('inserted_at');
+          return rows;
+        }).then(function (rows) {
+          if (container) container.setAttribute('data-recents-status', rows.length ? 'loaded-' + rows.length : 'empty');
+          rows.forEach(function (row) {
+            var img = row.image_url || row.image || '';
+            var title = row.title || 'Untitled';
+            var slug = row.slug || row.id || '';
+            var href = baseUrl + 'work/ai-art/#' + slug;
+            var li = document.createElement('li');
+            li.className = 'art-card';
+            li.innerHTML = '<a href="' + href + '" class="art-card__link"><div class="art-card__media"><img src="' + (img.indexOf('http') === 0 ? img : baseUrl + 'art/' + img) + '" alt="' + title.replace(/"/g, '&quot;') + '" loading="lazy" decoding="async" /></div><div class="art-card__body"><h3 class="art-card__title">' + title.replace(/</g, '&lt;') + '</h3></div></a>';
+            container.appendChild(li);
+          });
+        });
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+      else run();
+    })();
   </script>
 </Layout>
