@@ -600,16 +600,81 @@
       letter-spacing: 0.1em;
       grid-column: 1 / -1;
     }
+
+    /* ---- Auth ---- */
+    #loginPanel {
+      max-width: 360px;
+      margin: 4rem auto;
+      padding: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    #loginPanel .panel-title { margin-bottom: 1rem; }
+    #loginPanel .fields { gap: 1rem; }
+    #loginPanel .btn-submit { margin-top: 0.75rem; }
+    .auth-error { font-size: 0.75rem; color: #fca5a5; margin-top: 0.25rem; min-height: 1.25rem; }
+    .header-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .header-actions .user-email { font-size: 0.75rem; color: var(--text-muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-signout {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+    }
+    .btn-signout:hover { border-color: var(--purple); color: var(--accent-bright); }
+    #adminApp { display: none; }
+    #adminApp.authenticated { display: block; }
+    #loginPanel.hidden { display: none; }
+    .auth-loading { text-align: center; padding: 4rem 2rem; color: var(--text-muted); font-size: 0.85rem; }
+    .auth-loading.hidden { display: none; }
+    input[type="email"], input[type="password"] {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      padding: 0.65rem 0.875rem;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
 
 <header>
   <span class="logo">TOXIQMYND</span>
-  <span class="header-badge">Admin · Upload</span>
+  <div class="header-actions">
+    <span class="user-email" id="userEmail"></span>
+    <button type="button" class="btn-signout" id="signOutBtn" style="display:none;">Sign out</button>
+    <span class="header-badge" id="headerBadge">Admin · Upload</span>
+  </div>
 </header>
 
-<div class="container">
+<div class="auth-loading" id="authLoading">Checking sign-in…</div>
+
+<div id="loginPanel" class="hidden">
+  <div class="panel-title">Sign in</div>
+  <form id="loginForm" class="fields">
+    <div class="field">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com" required autocomplete="email" />
+    </div>
+    <div class="field">
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
+    </div>
+    <p class="auth-error" id="loginError" aria-live="polite"></p>
+    <button type="submit" class="btn-submit"><span class="btn-label">Sign in</span></button>
+  </form>
+</div>
+
+<div id="adminApp" class="container">
   <!-- Left: Drop zone -->
   <div class="panel">
     <div class="panel-title">Image</div>
@@ -748,6 +813,82 @@
 
   const { createClient } = supabase;
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ---- Auth UI ----
+  const authLoading = document.getElementById('authLoading');
+  const loginPanel = document.getElementById('loginPanel');
+  const adminApp = document.getElementById('adminApp');
+  const loginForm = document.getElementById('loginForm');
+  const loginEmail = document.getElementById('loginEmail');
+  const loginPassword = document.getElementById('loginPassword');
+  const loginError = document.getElementById('loginError');
+  const signOutBtn = document.getElementById('signOutBtn');
+  const userEmail = document.getElementById('userEmail');
+
+  function setAuthLoading(show) {
+    authLoading.classList.toggle('hidden', !show);
+  }
+  function showLoginView() {
+    setAuthLoading(false);
+    loginPanel.classList.remove('hidden');
+    adminApp.classList.remove('authenticated');
+    signOutBtn.style.display = 'none';
+    userEmail.textContent = '';
+  }
+  function showAdminView(sessionUser) {
+    setAuthLoading(false);
+    loginPanel.classList.add('hidden');
+    adminApp.classList.add('authenticated');
+    if (sessionUser && sessionUser.email) {
+      userEmail.textContent = sessionUser.email;
+      signOutBtn.style.display = 'block';
+    }
+    if (typeof loadGallery === 'function') loadGallery();
+  }
+
+  sb.auth.getSession().then(function(res) {
+    var session = res.data.session;
+    setAuthLoading(false);
+    if (session && session.user) {
+      showAdminView(session.user);
+    } else {
+      showLoginView();
+    }
+  }).catch(function() {
+    setAuthLoading(false);
+    showLoginView();
+  });
+
+  sb.auth.onAuthStateChange(function(event, session) {
+    if (event === 'SIGNED_OUT') showLoginView();
+    else if (event === 'SIGNED_IN' && session && session.user) showAdminView(session.user);
+  });
+
+  loginForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    loginError.textContent = '';
+    var email = loginEmail.value.trim();
+    var password = loginPassword.value;
+    if (!email || !password) {
+      loginError.textContent = 'Email and password required.';
+      return;
+    }
+    sb.auth.signInWithPassword({ email: email, password: password })
+      .then(function(res) {
+        if (res.error) {
+          loginError.textContent = res.error.message || 'Sign in failed.';
+          return;
+        }
+        if (res.data.user) showAdminView(res.data.user);
+      })
+      .catch(function(err) {
+        loginError.textContent = err.message || 'Sign in failed.';
+      });
+  });
+
+  signOutBtn.addEventListener('click', function() {
+    sb.auth.signOut();
+  });
 
   // ---- State ----
   let selectedFile = null;
@@ -957,7 +1098,7 @@
     loadGallery();
   }
 
-  loadGallery();
+  // loadGallery() is called from showAdminView() after sign-in
 </script>
 </body>
 </html>
