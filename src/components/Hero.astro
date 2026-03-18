@@ -24,14 +24,12 @@ const carouselImages = images && images.length >= 2 ? images.slice(0, 3) : null;
 const singleImage = carouselImages ? null : (image || (images && images[0]) || null);
 const isActive = (path: string) => (path === base ? currentPath === base || currentPath === base.replace(/\/$/, '') : currentPath.startsWith(path));
 const navLinks = [
-  { href: base, label: 'Home' },
   { href: `${base}work/`, label: 'Work' },
   { href: `${base}work/ai-art/`, label: 'AI Art' },
   { href: `${base}work/music/`, label: 'Music' },
   { href: `${base}work/ux/`, label: 'UI/UX' },
   { href: `${base}lab/`, label: 'Lab' },
   { href: `${base}about/`, label: 'About' },
-  { href: `${base}contact/`, label: 'Contact' },
 ];
 ---
 
@@ -88,13 +86,13 @@ const navLinks = [
 
   <!-- Mobile only: profile, name, description, social, Menu accordion -->
   <div class="hero__mobile">
-    <div class="hero__mobile-profile">
+    <a href={base} class="hero__mobile-profile" aria-label="Home">
       {profileImageUrl ? (
         <img src={profileImageUrl} alt="" class="hero__mobile-avatar" width="160" height="160" loading="eager" decoding="async" />
       ) : (
         <div class="hero__mobile-avatar-placeholder" aria-hidden="true"></div>
       )}
-    </div>
+    </a>
     <h1 class="hero__mobile-name">TØX!Q</h1>
     {heroDescription && <p class="hero__mobile-desc">{heroDescription}</p>}
     <div class="hero__mobile-social">
@@ -158,8 +156,7 @@ const navLinks = [
     align-items: center;
     text-align: center;
     padding: 2rem 1.5rem 1.5rem;
-    min-height: 80vh;
-    min-height: 80dvh;
+    min-height: 50dvh;
   }
 
   @media (max-width: 700px) {
@@ -169,7 +166,10 @@ const navLinks = [
   }
 
   .hero__mobile-profile {
+    display: block;
     margin-bottom: 1rem;
+    color: inherit;
+    text-decoration: none;
   }
 
   .hero__mobile-avatar {
