@@ -1,79 +1,25 @@
 ---
 import WorkLayout from '../../layouts/WorkLayout.astro';
-import FeaturedCollection from '../../components/FeaturedCollection.astro';
-import FeaturedDatabaseCollection from '../../components/FeaturedDatabaseCollection.astro';
-import { getFeaturedArtworks } from '../../data/artworks';
-import { siteTitle } from '../../data/meta';
-const base = import.meta.env.BASE_URL;
-const featured = getFeaturedArtworks(7);
-const supabaseUrl = 'https://sbbmducevhpirnthzvtz.supabase.co';
-const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
+import TracksSection from '../../components/work/TracksSection.astro';
+import ToxUploadsSection from '../../components/work/ToxUploadsSection.astro';
+import ProcessBlock from '../../components/work/ProcessBlock.astro';
+import { sunoTracks } from '../../data/music';
+import { processSections } from '../../data/ai-art-process';
+const sunoEmbedBase = 'https://suno.com/embed';
 ---
 <WorkLayout title="Work" description="AI Art, Music, and UI/UX — TØX!Q / TOXIQMYND.">
   <h1 class="page-title">Work</h1>
   <p class="page-subtitle">AI Art, music, and UI/UX. One identity.</p>
-  <div class="work-hub">
-    <a href={`${base}work/ai-art/`} class="work-hub__card">
-      <span class="work-hub__label">AI Art</span>
-      <h2 class="work-hub__title">Fragment & series</h2>
-      <p class="work-hub__desc">Generative and animated work. Midjourney, Kling, Veo, baroque detail.</p>
-    </a>
-    <a href={`${base}work/music/`} class="work-hub__card">
-      <span class="work-hub__label">Music</span>
-      <h2 class="work-hub__title">Production & releases</h2>
-      <p class="work-hub__desc">Drum and bass, neurofunk, deep house. Suno and process notes coming soon.</p>
-    </a>
-    <a href={`${base}work/ux/`} class="work-hub__card">
-      <span class="work-hub__label">UI/UX</span>
-      <h2 class="work-hub__title">Case studies & IA</h2>
-      <p class="work-hub__desc">Enterprise UX, information architecture, design systems. AMD, Fortune 100.</p>
-    </a>
-  </div>
-
-  <FeaturedCollection artworks={featured} base={base} />
-
-  <FeaturedDatabaseCollection base={base} supabaseUrl={supabaseUrl} supabaseKey={supabaseKey} />
+  <TracksSection tracks={sunoTracks} embedBase={sunoEmbedBase} />
+  <ToxUploadsSection />
+  <section class="process-section">
+    <h2 class="section-title">Process</h2>
+    <ProcessBlock sections={processSections} />
+  </section>
 </WorkLayout>
 
 <style>
-  :global(main img),
-  :global(main video) {
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .work-hub {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: var(--space);
-    margin-top: calc(var(--space) * 2);
-  }
-  .work-hub__card {
-    display: block;
-    padding: var(--space);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    color: inherit;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .work-hub__card:hover {
-    border-color: var(--border-strong);
-    background: var(--surface-hover);
-  }
-  .work-hub__label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-  }
-  .work-hub__title {
-    font-size: 1.25rem;
-    margin: 0.25rem 0 0.5rem 0;
-  }
-  .work-hub__desc {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    margin: 0;
+  .process-section {
+    margin-top: calc(var(--space) * 3);
   }
 </style>

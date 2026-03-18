@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
+import SocialIcons from '../components/SocialIcons.astro';
 import { siteTitle, brandName, defaultDescription } from '../data/meta';
 
 interface Props {
@@ -10,6 +11,15 @@ interface Props {
 const { title, description = defaultDescription } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const fullTitle = `${title} · Lab · ${siteTitle}`;
+const currentPath = Astro.url.pathname;
+const isActive = (path: string) =>
+  path === base ? currentPath === base || currentPath === base.replace(/\/$/, '') : currentPath.startsWith(path);
+const navLinks = [
+  { href: base, label: 'Home' },
+  { href: `${base}work/`, label: 'Work' },
+  { href: `${base}lab/`, label: 'Lab' },
+  { href: `${base}about/`, label: 'About' },
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -21,10 +31,30 @@ const fullTitle = `${title} · Lab · ${siteTitle}`;
     <title>{fullTitle}</title>
   </head>
   <body>
-    <header class="site-header site-header--minimal">
-      <a href={base} class="logo">{brandName}</a>
-      <a href={`${base}lab/`} class="lab-back">← Lab</a>
-      <Nav currentPath={Astro.url.pathname} />
+    <header class="site-header">
+      <div class="site-header__left">
+        <a href={base} class="logo" aria-label={brandName}>
+          <img src={`${base}artist.jpeg`} alt="" class="logo__img" width="60" height="60" loading="eager" decoding="async" />
+        </a>
+        <span class="site-header__sep" aria-hidden="true"></span>
+        <Nav currentPath={Astro.url.pathname} />
+      </div>
+      <div class="site-header__right">
+        <span class="site-header__sep" aria-hidden="true"></span>
+        <SocialIcons />
+      </div>
+      <div class="site-header__mobile-menu">
+        <button type="button" class="site-header__menu-btn" aria-expanded="false" aria-controls="header-menu-nav" id="header-menu-btn">
+          Menu
+        </button>
+        <nav id="header-menu-nav" class="site-header__menu-nav" aria-label="Main" hidden>
+          <ul class="site-header__menu-list">
+            {navLinks.map(({ href, label }) => (
+              <li><a href={href} class:list={['site-header__menu-link', isActive(href) && 'site-header__menu-link--active']}>{label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      </div>
     </header>
     <main>
       <slot />
@@ -32,17 +62,19 @@ const fullTitle = `${title} · Lab · ${siteTitle}`;
     <footer class="site-footer">
       <p><a href={`${base}lab/`}>Lab</a> · <a href={base}>Home</a> · <a href="mailto:toxiqmynd@gmail.com">Contact</a></p>
     </footer>
+    <script>
+      const btn = document.getElementById('header-menu-btn');
+      const menu = document.getElementById('header-menu-nav');
+      if (btn && menu) {
+        btn.addEventListener('click', () => {
+          const expanded = btn.getAttribute('aria-expanded') === 'true';
+          btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+          menu.hidden = expanded;
+        });
+      }
+    </script>
   </body>
 </html>
 
 <style>
-  .lab-back {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-right: auto;
-    padding-right: 1rem;
-  }
-  .lab-back:hover {
-    color: var(--text);
-  }
 </style>

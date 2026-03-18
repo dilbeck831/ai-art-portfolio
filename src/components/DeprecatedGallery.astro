@@ -15,14 +15,14 @@ const bottom = artworks.slice(5, 7);
 ---
 
 {artworks.length > 0 && (
-  <section class="featured-collection" id="featured">
+  <section class="deprecated-gallery" id="deprecated-gallery">
 
-    <div class="featured-collection__header">
-      <p class="featured-collection__eyebrow">Selected Works</p>
-      <h2 class="featured-collection__heading">Featured Collection</h2>
+    <div class="deprecated-gallery__header">
+      <p class="deprecated-gallery__eyebrow">Selected Works</p>
+      <h2 class="deprecated-gallery__heading">Deprecated Gallery</h2>
     </div>
 
-    <div class="featured-collection__top">
+    <div class="deprecated-gallery__top">
 
       {/* Hero — large left cell */}
       {hero && (
@@ -45,7 +45,7 @@ const bottom = artworks.slice(5, 7);
       )}
 
       {/* 2×2 grid — right side */}
-      <div class="featured-collection__grid2x2">
+      <div class="deprecated-gallery__grid2x2">
         {grid.map((artwork) => (
           <a
             href={`${base}work/ai-art/${artwork.slug}/`}
@@ -69,7 +69,7 @@ const bottom = artworks.slice(5, 7);
     </div>
 
     {bottom.length > 0 && (
-      <div class="featured-collection__bottom">
+      <div class="deprecated-gallery__bottom">
         {bottom.map((artwork) => (
           <a
             href={`${base}work/ai-art/${artwork.slug}/`}
@@ -91,40 +91,40 @@ const bottom = artworks.slice(5, 7);
       </div>
     )}
 
-    <div class="featured-collection__cta">
-      <a href={`${base}work/ai-art/`} class="featured-collection__cta-link">
+    <div class="deprecated-gallery__cta">
+      <a href={`${base}work/ai-art/`} class="deprecated-gallery__cta-link">
         View All Works →
       </a>
     </div>
 
-    <div id="featured-lightbox" class="featured-lightbox" role="dialog" aria-modal="true" aria-label="Featured image lightbox" hidden>
-      <div class="featured-lightbox__backdrop" id="featured-lightbox-backdrop"></div>
-      <button type="button" class="featured-lightbox__close" id="featured-lightbox-close" aria-label="Close">×</button>
-      <button type="button" class="featured-lightbox__nav featured-lightbox__nav--prev" id="featured-lightbox-prev" aria-label="Previous image">‹</button>
-      <div class="featured-lightbox__content">
-        <img id="featured-lightbox-img" src="" alt="" />
-        <p class="featured-lightbox__caption" id="featured-lightbox-caption"></p>
-        <p class="featured-lightbox__counter" id="featured-lightbox-counter" aria-live="polite"></p>
+    <div id="deprecated-gallery-lightbox" class="deprecated-gallery-lightbox" role="dialog" aria-modal="true" aria-label="Deprecated gallery lightbox" hidden>
+      <div class="deprecated-gallery-lightbox__backdrop" id="deprecated-gallery-lightbox-backdrop"></div>
+      <button type="button" class="deprecated-gallery-lightbox__close" id="deprecated-gallery-lightbox-close" aria-label="Close">×</button>
+      <button type="button" class="deprecated-gallery-lightbox__nav deprecated-gallery-lightbox__nav--prev" id="deprecated-gallery-lightbox-prev" aria-label="Previous image">‹</button>
+      <div class="deprecated-gallery-lightbox__content">
+        <img id="deprecated-gallery-lightbox-img" src="" alt="" />
+        <p class="deprecated-gallery-lightbox__caption" id="deprecated-gallery-lightbox-caption"></p>
+        <p class="deprecated-gallery-lightbox__counter" id="deprecated-gallery-lightbox-counter" aria-live="polite"></p>
       </div>
-      <button type="button" class="featured-lightbox__nav featured-lightbox__nav--next" id="featured-lightbox-next" aria-label="Next image">›</button>
+      <button type="button" class="deprecated-gallery-lightbox__nav deprecated-gallery-lightbox__nav--next" id="deprecated-gallery-lightbox-next" aria-label="Next image">›</button>
     </div>
 
   </section>
 )}
 
 <style>
-  .featured-collection {
+  .deprecated-gallery {
     padding: var(--fc-pad, 5rem) 0 4rem;
     position: relative;
   }
 
   /* ── Header ── */
-  .featured-collection__header {
+  .deprecated-gallery__header {
     text-align: center;
     margin-bottom: 2.5rem;
   }
 
-  .featured-collection__eyebrow {
+  .deprecated-gallery__eyebrow {
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.22em;
@@ -133,7 +133,7 @@ const bottom = artworks.slice(5, 7);
     margin: 0 0 0.6rem;
   }
 
-  .featured-collection__heading {
+  .deprecated-gallery__heading {
     font-family: Georgia, "Times New Roman", serif;
     font-size: clamp(1.75rem, 4vw, 2.75rem);
     font-weight: 400;
@@ -143,14 +143,14 @@ const bottom = artworks.slice(5, 7);
   }
 
   /* ── Top row: hero + 2×2 ── */
-  .featured-collection__top {
+  .deprecated-gallery__top {
     display: grid;
     grid-template-columns: 1.15fr 1fr;
     gap: 6px;
     margin-bottom: 6px;
   }
 
-  .featured-collection__grid2x2 {
+  .deprecated-gallery__grid2x2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
@@ -158,14 +158,14 @@ const bottom = artworks.slice(5, 7);
   }
 
   /* ── Bottom row: 2 tall cells ── */
-  .featured-collection__bottom {
+  .deprecated-gallery__bottom {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 6px;
   }
 
   /* ── Shared cell styles ── */
-  .featured-cell {
+  .deprecated-gallery .featured-cell {
     display: block;
     position: relative;
     overflow: hidden;
@@ -174,7 +174,7 @@ const bottom = artworks.slice(5, 7);
     background: var(--bg-elevated);
   }
 
-  .featured-cell img {
+  .deprecated-gallery .featured-cell img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -182,27 +182,27 @@ const bottom = artworks.slice(5, 7);
     transition: transform 0.65s var(--ease-out);
   }
 
-  .featured-cell:hover img {
+  .deprecated-gallery .featured-cell:hover img {
     transform: scale(1.05);
   }
 
   /* Hero tall */
-  .featured-cell--hero {
+  .deprecated-gallery .featured-cell--hero {
     min-height: 540px;
   }
 
   /* 2×2 cells */
-  .featured-cell--sm {
+  .deprecated-gallery .featured-cell--sm {
     aspect-ratio: auto;
   }
 
   /* Bottom tall cells */
-  .featured-cell--tall {
+  .deprecated-gallery .featured-cell--tall {
     aspect-ratio: 3 / 4;
   }
 
   /* ── Hover overlay ── */
-  .featured-cell__overlay {
+  .deprecated-gallery .featured-cell__overlay {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -219,34 +219,33 @@ const bottom = artworks.slice(5, 7);
       transform 0.3s var(--ease-out);
   }
 
-  .featured-cell:hover .featured-cell__overlay {
+  .deprecated-gallery .featured-cell:hover .featured-cell__overlay {
     opacity: 1;
     transform: translateY(0);
   }
 
-  /* Also show overlay on focus (keyboard nav) */
-  .featured-cell:focus-visible .featured-cell__overlay {
+  .deprecated-gallery .featured-cell:focus-visible .featured-cell__overlay {
     opacity: 1;
     transform: translateY(0);
   }
 
-  .featured-cell:focus-visible {
+  .deprecated-gallery .featured-cell:focus-visible {
     outline: 2px solid var(--purple-500);
     outline-offset: 3px;
   }
 
-  .featured-cell {
+  .deprecated-gallery .featured-cell {
     cursor: pointer;
   }
 
-  .featured-cell__title {
+  .deprecated-gallery .featured-cell__title {
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--text);
     letter-spacing: 0.01em;
   }
 
-  .featured-cell__cat {
+  .deprecated-gallery .featured-cell__cat {
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -255,12 +254,12 @@ const bottom = artworks.slice(5, 7);
   }
 
   /* ── CTA ── */
-  .featured-collection__cta {
+  .deprecated-gallery__cta {
     text-align: center;
     margin-top: 2.25rem;
   }
 
-  .featured-collection__cta-link {
+  .deprecated-gallery__cta-link {
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.16em;
@@ -274,42 +273,42 @@ const bottom = artworks.slice(5, 7);
       border-color 0.2s var(--ease-out);
   }
 
-  .featured-collection__cta-link:hover {
+  .deprecated-gallery__cta-link:hover {
     color: var(--accent-bright);
     border-color: var(--border-strong);
   }
 
   /* ── Responsive ── */
   @media (max-width: 900px) {
-    .featured-collection__top {
+    .deprecated-gallery__top {
       grid-template-columns: 1fr;
     }
 
-    .featured-cell--hero {
+    .deprecated-gallery .featured-cell--hero {
       min-height: 420px;
     }
 
-    .featured-collection__bottom {
+    .deprecated-gallery__bottom {
       grid-template-columns: 1fr 1fr;
     }
   }
 
   @media (max-width: 600px) {
-    .featured-collection__grid2x2 {
+    .deprecated-gallery__grid2x2 {
       grid-template-columns: 1fr 1fr;
     }
 
-    .featured-collection__bottom {
+    .deprecated-gallery__bottom {
       grid-template-columns: 1fr;
     }
 
-    .featured-cell--tall {
+    .deprecated-gallery .featured-cell--tall {
       aspect-ratio: 4 / 3;
     }
   }
 
   /* ── Lightbox ── */
-  .featured-lightbox {
+  .deprecated-gallery-lightbox {
     position: fixed;
     inset: 0;
     z-index: 1000;
@@ -318,16 +317,16 @@ const bottom = artworks.slice(5, 7);
     justify-content: center;
     padding: 2rem;
   }
-  .featured-lightbox[hidden] {
+  .deprecated-gallery-lightbox[hidden] {
     display: none !important;
   }
-  .featured-lightbox__backdrop {
+  .deprecated-gallery-lightbox__backdrop {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.88);
     cursor: pointer;
   }
-  .featured-lightbox__content {
+  .deprecated-gallery-lightbox__content {
     position: relative;
     z-index: 2;
     max-width: 90vw;
@@ -337,7 +336,7 @@ const bottom = artworks.slice(5, 7);
     align-items: center;
     gap: 0.75rem;
   }
-  .featured-lightbox__content img {
+  .deprecated-gallery-lightbox__content img {
     max-width: 100%;
     max-height: 80vh;
     width: auto;
@@ -349,26 +348,26 @@ const bottom = artworks.slice(5, 7);
     transform-origin: center;
   }
   @media (hover: hover) {
-    .featured-lightbox__content img {
+    .deprecated-gallery-lightbox__content img {
       cursor: zoom-in;
     }
-    .featured-lightbox__content img:hover {
+    .deprecated-gallery-lightbox__content img:hover {
       transform: scale(1.3);
     }
   }
-  .featured-lightbox__caption {
+  .deprecated-gallery-lightbox__caption {
     color: var(--text);
     font-size: 1rem;
     font-weight: 600;
     margin: 0;
     text-align: center;
   }
-  .featured-lightbox__counter {
+  .deprecated-gallery-lightbox__counter {
     color: var(--text-muted);
     font-size: 0.8rem;
     margin: 0;
   }
-  .featured-lightbox__close {
+  .deprecated-gallery-lightbox__close {
     position: absolute;
     top: 1rem;
     right: 1rem;
@@ -384,11 +383,11 @@ const bottom = artworks.slice(5, 7);
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;
   }
-  .featured-lightbox__close:hover {
+  .deprecated-gallery-lightbox__close:hover {
     background: rgba(0, 0, 0, 0.75);
     border-color: rgba(255, 255, 255, 0.5);
   }
-  .featured-lightbox__nav {
+  .deprecated-gallery-lightbox__nav {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -404,29 +403,29 @@ const bottom = artworks.slice(5, 7);
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;
   }
-  .featured-lightbox__nav:hover {
+  .deprecated-gallery-lightbox__nav:hover {
     background: rgba(0, 0, 0, 0.65);
     border-color: rgba(255, 255, 255, 0.5);
   }
-  .featured-lightbox__nav--prev { left: 1rem; }
-  .featured-lightbox__nav--next { right: 1rem; }
+  .deprecated-gallery-lightbox__nav--prev { left: 1rem; }
+  .deprecated-gallery-lightbox__nav--next { right: 1rem; }
 </style>
 
 <script>
   (function () {
-    var section = document.getElementById('featured');
+    var section = document.getElementById('deprecated-gallery');
     if (!section) return;
     var cells = section.querySelectorAll('.featured-cell');
     if (cells.length === 0) return;
 
-    var lightbox = document.getElementById('featured-lightbox');
-    var lightboxImg = document.getElementById('featured-lightbox-img');
-    var lightboxCaption = document.getElementById('featured-lightbox-caption');
-    var lightboxCounter = document.getElementById('featured-lightbox-counter');
-    var lightboxPrev = document.getElementById('featured-lightbox-prev');
-    var lightboxNext = document.getElementById('featured-lightbox-next');
-    var lightboxClose = document.getElementById('featured-lightbox-close');
-    var lightboxBackdrop = document.getElementById('featured-lightbox-backdrop');
+    var lightbox = document.getElementById('deprecated-gallery-lightbox');
+    var lightboxImg = document.getElementById('deprecated-gallery-lightbox-img');
+    var lightboxCaption = document.getElementById('deprecated-gallery-lightbox-caption');
+    var lightboxCounter = document.getElementById('deprecated-gallery-lightbox-counter');
+    var lightboxPrev = document.getElementById('deprecated-gallery-lightbox-prev');
+    var lightboxNext = document.getElementById('deprecated-gallery-lightbox-next');
+    var lightboxClose = document.getElementById('deprecated-gallery-lightbox-close');
+    var lightboxBackdrop = document.getElementById('deprecated-gallery-lightbox-backdrop');
 
     function buildList() {
       var list = [];

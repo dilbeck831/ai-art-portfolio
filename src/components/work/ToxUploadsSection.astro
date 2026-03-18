@@ -1,61 +1,47 @@
 ---
-import WorkLayout from '../../../layouts/WorkLayout.astro';
-import ArtGallery from '../../../components/work/ArtGallery.astro';
-import ProcessBlock from '../../../components/work/ProcessBlock.astro';
-import { getArtworksBySeries } from '../../../data/artworks';
-import { processSections } from '../../../data/ai-art-process';
-import { siteTitle } from '../../../data/meta';
-const base = import.meta.env.BASE_URL;
-const fragmentPieces = getArtworksBySeries('fragment');
+const supabaseUrl = 'https://sbbmducevhpirnthzvtz.supabase.co';
+const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
 ---
-<WorkLayout
-  title="AI Art"
-  description="Fragment series and generative AI art. TØX!Q / TOXIQMYND."
-  breadcrumb={[{ label: 'AI Art', href: `${base}work/ai-art/` }]}
->
-  <h1 class="page-title">AI Art</h1>
-  <p class="page-subtitle">Fragment series and process. Baroque detail, animation, style profiles.</p>
-  <ArtGallery artworks={fragmentPieces} base={base} />
-  <section class="uploads-section" id="tox-uploads" aria-label="TØX!Q Uploads" data-supabase-url="https://sbbmducevhpirnthzvtz.supabase.co" data-supabase-key="sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX">
-    <h2 class="section-title">TØX!Q Uploads</h2>
-    <div class="uploads-controls" id="uploads-controls" hidden>
-      <div class="uploads-control">
-        <label for="uploads-collection">Collection</label>
-        <select id="uploads-collection" aria-label="Filter by collection">
-          <option value="">All</option>
-        </select>
-      </div>
-      <div class="uploads-control">
-        <label for="uploads-sort">Sort by date</label>
-        <select id="uploads-sort" aria-label="Sort by date added">
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-        </select>
-      </div>
+<section class="uploads-section" id="tox-uploads" aria-label="TØX!Q Uploads" data-supabase-url={supabaseUrl} data-supabase-key={supabaseKey}>
+  <h2 class="section-title">TØX!Q Uploads</h2>
+  <div class="uploads-controls" id="uploads-controls" hidden>
+    <div class="uploads-control">
+      <label for="uploads-collection">Collection</label>
+      <select id="uploads-collection" aria-label="Filter by collection">
+        <option value="">All</option>
+      </select>
     </div>
-    <div class="uploads-grid-wrap">
-      <div class="uploads-loading" id="uploads-loading">loading…</div>
-      <ul class="gallery-grid uploads-grid" id="uploads-grid" aria-live="polite" hidden></ul>
-      <div class="uploads-empty" id="uploads-empty" hidden>No uploads yet.</div>
-      <div class="uploads-error" id="uploads-error" hidden></div>
+    <div class="uploads-control">
+      <label for="uploads-sort">Sort by date</label>
+      <select id="uploads-sort" aria-label="Sort by date added">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+      </select>
     </div>
-    <div id="uploads-lightbox" class="uploads-lightbox" role="dialog" aria-modal="true" aria-label="Image lightbox" hidden>
-      <div class="uploads-lightbox__backdrop" id="uploads-lightbox-backdrop"></div>
-      <button type="button" class="uploads-lightbox__close" id="uploads-lightbox-close" aria-label="Close">×</button>
-      <button type="button" class="uploads-lightbox__nav uploads-lightbox__nav--prev" id="uploads-lightbox-prev" aria-label="Previous image">‹</button>
-      <div class="uploads-lightbox__content">
-        <img id="uploads-lightbox-img" src="" alt="" />
-        <p class="uploads-lightbox__caption" id="uploads-lightbox-caption"></p>
-        <p class="uploads-lightbox__counter" id="uploads-lightbox-counter" aria-live="polite"></p>
-      </div>
-      <button type="button" class="uploads-lightbox__nav uploads-lightbox__nav--next" id="uploads-lightbox-next" aria-label="Next image">›</button>
+  </div>
+  <div class="uploads-grid-wrap">
+    <div class="uploads-loading" id="uploads-loading">loading…</div>
+    <ul class="gallery-grid uploads-grid" id="uploads-grid" aria-live="polite" hidden></ul>
+    <div class="uploads-empty" id="uploads-empty" hidden>No uploads yet.</div>
+    <div class="uploads-error" id="uploads-error" hidden></div>
+    <nav class="uploads-pagination" id="uploads-pagination" aria-label="Uploads pagination" hidden>
+      <button type="button" class="uploads-pagination__btn uploads-pagination__prev" id="uploads-pagination-prev" aria-label="Previous page">Previous</button>
+      <span class="uploads-pagination__info" id="uploads-pagination-info" aria-live="polite"></span>
+      <button type="button" class="uploads-pagination__btn uploads-pagination__next" id="uploads-pagination-next" aria-label="Next page">Next</button>
+    </nav>
+  </div>
+  <div id="uploads-lightbox" class="uploads-lightbox" role="dialog" aria-modal="true" aria-label="Image lightbox" hidden>
+    <div class="uploads-lightbox__backdrop" id="uploads-lightbox-backdrop"></div>
+    <button type="button" class="uploads-lightbox__close" id="uploads-lightbox-close" aria-label="Close">×</button>
+    <button type="button" class="uploads-lightbox__nav uploads-lightbox__nav--prev" id="uploads-lightbox-prev" aria-label="Previous image">‹</button>
+    <div class="uploads-lightbox__content">
+      <img id="uploads-lightbox-img" src="" alt="" />
+      <p class="uploads-lightbox__caption" id="uploads-lightbox-caption"></p>
+      <p class="uploads-lightbox__counter" id="uploads-lightbox-counter" aria-live="polite"></p>
     </div>
-  </section>
-  <section class="process-section">
-    <h2 class="section-title">Process</h2>
-    <ProcessBlock sections={processSections} />
-  </section>
-</WorkLayout>
+    <button type="button" class="uploads-lightbox__nav uploads-lightbox__nav--next" id="uploads-lightbox-next" aria-label="Next image">›</button>
+  </div>
+</section>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" is:inline></script>
 <script is:inline>
@@ -101,7 +87,14 @@ const fragmentPieces = getArtworksBySeries('fragment');
       }
       var allData = [];
       var currentList = [];
+      var fullList = [];
+      var currentPage = 1;
+      var pageSize = 12;
       var lightboxIndex = 0;
+      var paginationEl = document.getElementById('uploads-pagination');
+      var paginationPrev = document.getElementById('uploads-pagination-prev');
+      var paginationNext = document.getElementById('uploads-pagination-next');
+      var paginationInfo = document.getElementById('uploads-pagination-info');
       var lightboxEl = document.getElementById('uploads-lightbox');
       var lightboxImg = document.getElementById('uploads-lightbox-img');
       var lightboxCaption = document.getElementById('uploads-lightbox-caption');
@@ -145,7 +138,8 @@ const fragmentPieces = getArtworksBySeries('fragment');
       if (e.key === 'ArrowLeft') { lightboxIndex = (lightboxIndex - 1 + currentList.length) % currentList.length; updateLightboxImage(); }
       if (e.key === 'ArrowRight') { lightboxIndex = (lightboxIndex + 1) % currentList.length; updateLightboxImage(); }
     }
-    function render() {
+    function render(resetPage) {
+      if (resetPage !== false) currentPage = 1;
       var collection = (collectionSelect && collectionSelect.value) || '';
       var sortNewest = !sortSelect || sortSelect.value !== 'oldest';
       var list = allData.slice();
@@ -155,22 +149,43 @@ const fragmentPieces = getArtworksBySeries('fragment');
         var b = y.created_at || '';
         return sortNewest ? (b < a ? -1 : b > a ? 1 : 0) : (a < b ? -1 : a > b ? 1 : 0);
       });
-      currentList = list;
+      fullList = list;
+      var totalPages = Math.ceil(fullList.length / pageSize) || 1;
+      currentPage = Math.min(Math.max(1, currentPage), totalPages);
+      currentList = fullList.slice((currentPage - 1) * pageSize, currentPage * pageSize);
       grid.innerHTML = '';
-      if (list.length === 0) {
+      if (currentList.length === 0) {
         grid.hidden = true;
         if (empty) { empty.textContent = 'No uploads in this collection.'; empty.hidden = false; }
+        if (paginationEl) paginationEl.hidden = true;
         return;
       }
       if (empty) empty.hidden = true;
       grid.hidden = false;
-      list.forEach(function (a, i) {
+      currentList.forEach(function (a, i) {
         var li = document.createElement('li');
         li.className = 'art-card uploads-card';
         li.innerHTML = cardHtml(a);
         li.addEventListener('click', function () { openLightbox(i); });
         grid.appendChild(li);
       });
+      if (paginationEl) {
+        if (fullList.length > pageSize) {
+          paginationEl.hidden = false;
+          if (paginationPrev) {
+            paginationPrev.disabled = currentPage <= 1;
+            paginationPrev.setAttribute('aria-disabled', currentPage <= 1);
+          }
+          if (paginationNext) {
+            paginationNext.disabled = currentPage >= totalPages;
+            paginationNext.setAttribute('aria-disabled', currentPage >= totalPages);
+          }
+          if (paginationInfo) paginationInfo.textContent = 'Page ' + currentPage + ' of ' + totalPages;
+        } else {
+          paginationEl.hidden = true;
+        }
+      }
+
     }
     var done = false;
     function finish() {
@@ -214,8 +229,18 @@ const fragmentPieces = getArtworksBySeries('fragment');
           }
           if (controls) controls.hidden = false;
           render();
-          if (collectionSelect) collectionSelect.addEventListener('change', render);
-          if (sortSelect) sortSelect.addEventListener('change', render);
+          if (collectionSelect) collectionSelect.addEventListener('change', function () { render(true); });
+          if (sortSelect) sortSelect.addEventListener('change', function () { render(true); });
+          if (paginationPrev) paginationPrev.addEventListener('click', function () {
+            if (currentPage <= 1) return;
+            currentPage--;
+            render(false);
+          });
+          if (paginationNext) paginationNext.addEventListener('click', function () {
+            if (currentPage >= Math.ceil(fullList.length / pageSize)) return;
+            currentPage++;
+            render(false);
+          });
           if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
           if (lightboxBackdrop) lightboxBackdrop.addEventListener('click', closeLightbox);
           if (lightboxPrev) lightboxPrev.addEventListener('click', function () {
@@ -242,9 +267,6 @@ const fragmentPieces = getArtworksBySeries('fragment');
 </script>
 
 <style>
-  .process-section {
-    margin-top: calc(var(--space) * 3);
-  }
   .uploads-section {
     margin-top: calc(var(--space) * 3);
   }
@@ -312,6 +334,41 @@ const fragmentPieces = getArtworksBySeries('fragment');
   .uploads-collection {
     text-transform: capitalize;
     font-size: 0.8rem;
+  }
+
+  .uploads-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: calc(var(--space) * 2);
+    padding-top: var(--space);
+    border-top: 1px solid var(--border);
+  }
+  .uploads-pagination__btn {
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .uploads-pagination__btn:hover:not(:disabled) {
+    color: var(--text);
+    border-color: var(--accent);
+    background: var(--surface-hover);
+  }
+  .uploads-pagination__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .uploads-pagination__info {
+    font-size: 0.9rem;
+    color: var(--text-muted);
   }
 
   /* ----- Lightbox ----- */

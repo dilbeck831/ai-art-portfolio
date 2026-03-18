@@ -414,8 +414,9 @@ main {
   border: 1px solid var(--border);
 }
 
-/* ----- Suno embeds (Music page) ----- */
+/* ----- Suno embeds (Tracks section) ----- */
 .suno-embeds {
+  margin-top: calc(var(--space) * 3);
   margin-bottom: calc(var(--space) * 3);
 }
 

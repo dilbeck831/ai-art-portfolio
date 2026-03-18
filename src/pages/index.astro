@@ -1,14 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
-import FeaturedCollection from '../components/FeaturedCollection.astro';
-import { getFeaturedArtworks, getHeroCarouselArtworks } from '../data/artworks';
+import FeaturedDatabaseCollection from '../components/FeaturedDatabaseCollection.astro';
+import { getHeroCarouselArtworks } from '../data/artworks';
 import { brandName, defaultDescription, heroDescription } from '../data/meta';
 
-const featured = getFeaturedArtworks(7);
 const base = import.meta.env.BASE_URL;
 const artistImage = `${base}artist.jpeg?v=1`;
 const currentPath = Astro.url.pathname.replace(/\/$/, '') || base.replace(/\/$/, '');
+const supabaseUrl = 'https://sbbmducevhpirnthzvtz.supabase.co';
+const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
 
 const heroCarouselArtworks = getHeroCarouselArtworks();
 const heroCarouselImages = heroCarouselArtworks.map((a) => ({ src: `${base}art/${a.image}`, alt: a.title }));
@@ -22,7 +23,7 @@ const heroCarouselImages = heroCarouselArtworks.map((a) => ({ src: `${base}art/$
     currentPath={currentPath}
   />
 
-  <FeaturedCollection artworks={featured} base={base} />
+  <FeaturedDatabaseCollection base={base} supabaseUrl={supabaseUrl} supabaseKey={supabaseKey} />
 
   <section class="about-artist" id="about-artist">
     <div class="about-artist__inner">
@@ -59,34 +60,20 @@ const heroCarouselImages = heroCarouselArtworks.map((a) => ({ src: `${base}art/$
     <p>Custom AI art, UX/IA consulting, or Lab tooling. <a href="mailto:toxiqmynd@gmail.com">Get in touch →</a></p>
   </section>
 
+  <style>
+    :global(main img),
+    :global(main video) {
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+
   <script>
     import gsap from 'gsap';
     import { ScrollTrigger } from 'gsap/ScrollTrigger';
     gsap.registerPlugin(ScrollTrigger);
 
     /* Hero text/slideshow/scroll are handled in Hero.astro (CDN GSAP + ScrollTrigger) */
-
-    function initFeaturedAnimation() {
-      const featuredCells = document.querySelectorAll('.featured-cell');
-      if (featuredCells.length) {
-        gsap.set(featuredCells, { opacity: 0, y: 32 });
-        ScrollTrigger.create({
-          trigger: '.featured-collection',
-          start: 'top 85%',
-          onEnter: () => {
-            gsap.to(featuredCells, {
-              opacity: 1,
-              y: 0,
-              duration: 0.7,
-              stagger: 0.06,
-              ease: 'power2.out',
-            });
-          },
-          once: true,
-        });
-      }
-    }
-    initFeaturedAnimation();
 
     const about = document.querySelector('.about-artist');
     if (about) {

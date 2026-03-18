@@ -8,10 +8,10 @@ interface Props {
 const { base = import.meta.env.BASE_URL, supabaseUrl, supabaseKey } = Astro.props;
 ---
 
-<section class="featured-collection featured-database-collection" id="featured-database" aria-label="Featured Database Collection" data-supabase-url={supabaseUrl} data-supabase-key={supabaseKey} data-base={base}>
+<section class="featured-collection featured-database-collection" id="featured-database" aria-label="Featured Art" data-supabase-url={supabaseUrl} data-supabase-key={supabaseKey} data-base={base}>
   <div class="featured-collection__header">
     <p class="featured-collection__eyebrow">Selected Works</p>
-    <h2 class="featured-collection__heading">Featured Database Collection</h2>
+    <h2 class="featured-collection__heading">Featured Art</h2>
   </div>
 
   <div class="featured-database-collection__wrap">
@@ -22,12 +22,12 @@ const { base = import.meta.env.BASE_URL, supabaseUrl, supabaseKey } = Astro.prop
   </div>
 
   <div class="featured-collection__cta" id="featured-database-cta" hidden>
-    <a href={`${base}work/ai-art/`} class="featured-collection__cta-link">
+    <a href={`${base}work/`} class="featured-collection__cta-link">
       View All Works →
     </a>
   </div>
 
-  <div id="featured-database-lightbox" class="featured-lightbox" role="dialog" aria-modal="true" aria-label="Featured Database Collection lightbox" hidden>
+  <div id="featured-database-lightbox" class="featured-lightbox" role="dialog" aria-modal="true" aria-label="Featured Art lightbox" hidden>
     <div class="featured-lightbox__backdrop" id="featured-database-lightbox-backdrop"></div>
     <button type="button" class="featured-lightbox__close" id="featured-database-lightbox-close" aria-label="Close">×</button>
     <button type="button" class="featured-lightbox__nav featured-lightbox__nav--prev" id="featured-database-lightbox-prev" aria-label="Previous image">‹</button>
@@ -125,7 +125,8 @@ const { base = import.meta.env.BASE_URL, supabaseUrl, supabaseKey } = Astro.prop
     cursor: pointer;
   }
 
-  :global(.featured-database-collection__wrap .featured-cell) img {
+  /* Injected grid images: fill the cell (no gaps) */
+  :global(.featured-database-collection__wrap .featured-cell img) {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -133,16 +134,17 @@ const { base = import.meta.env.BASE_URL, supabaseUrl, supabaseKey } = Astro.prop
     object-fit: cover;
     object-position: center;
     display: block;
+    transform-origin: center;
     transition: transform 0.65s var(--ease-out);
   }
 
-  :global(.featured-database-collection__wrap .featured-cell:hover) img {
-    transform: scale(1.05);
+  :global(.featured-database-collection__wrap .featured-cell:hover img) {
+    transform: scale(1.03);
   }
 
-  /* Last two images (bottom row) only: height auto so they fill width without gap */
+  /* Bottom row images: match the cell height (no gaps) */
   :global(.featured-database-collection__wrap .featured-cell__img--bottom) {
-    height: auto;
+    height: 100%;
   }
 
   :global(.featured-database-collection__wrap .featured-cell--hero) {
@@ -399,7 +401,7 @@ const { base = import.meta.env.BASE_URL, supabaseUrl, supabaseKey } = Astro.prop
       var hero = list[0];
       var grid = list.slice(1, 5);
       var bottom = list.slice(5, 7);
-      var aiArtUrl = baseUrl + 'work/ai-art/';
+      var aiArtUrl = baseUrl + 'work/';
 
       var html = '<div class="featured-collection__top">';
       if (hero) {
