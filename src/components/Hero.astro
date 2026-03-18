@@ -7,8 +7,10 @@ interface HeroImage {
 }
 
 interface Props {
-  /** Single hero image shown to the right of the text. From getHomepageHeroArtwork() in artworks.ts. */
+  /** Single hero image (legacy). Ignored if images is provided. */
   image?: HeroImage | null;
+  /** Up to 3 images for Z-space carousel. When length >= 2, carousel is shown. */
+  images?: HeroImage[];
   /** Profile image URL for mobile hero (e.g. artist photo). Circular crop. */
   profileImageUrl?: string | null;
   /** Brief description for mobile hero (editable in meta.ts). */
@@ -17,7 +19,9 @@ interface Props {
   currentPath?: string;
 }
 
-const { image = null, profileImageUrl = null, heroDescription = '', base = '/', currentPath = '' } = Astro.props;
+const { image = null, images = null, profileImageUrl = null, heroDescription = '', base = '/', currentPath = '' } = Astro.props;
+const carouselImages = images && images.length >= 2 ? images.slice(0, 3) : null;
+const singleImage = carouselImages ? null : (image || (images && images[0]) || null);
 const isActive = (path: string) => (path === base ? currentPath === base || currentPath === base.replace(/\/$/, '') : currentPath.startsWith(path));
 const navLinks = [
   { href: base, label: 'Home' },
@@ -47,8 +51,35 @@ const navLinks = [
       <p class="hero__subline">Where vision becomes obsidian</p>
     </div>
     <div class="hero__image-wrap">
-      {image ? (
-        <img src={image.src} alt={image.alt} class="hero__image" loading="eager" decoding="async" width="800" height="1000" />
+      {carouselImages ? (
+        <div class="hero__carousel" id="hero-carousel" aria-roledescription="carousel" aria-label="Hero images">
+          <div class="hero__carousel-track">
+            {carouselImages.map((img, i) => (
+              <div class="hero__slide" data-slide-index={i} aria-hidden="true">
+                <img src={img.src} alt={img.alt} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" width="800" height="1000" />
+              </div>
+            ))}
+          </div>
+          <button type="button" class="hero__carousel-btn hero__carousel-btn--prev" aria-label="Previous image" title="Previous">
+            <span aria-hidden="true">‹</span>
+          </button>
+          <button type="button" class="hero__carousel-btn hero__carousel-btn--next" aria-label="Next image" title="Next">
+            <span aria-hidden="true">›</span>
+          </button>
+          <div class="hero__carousel-controls">
+            <div class="hero__carousel-dots" role="tablist" aria-label="Slide index">
+              {carouselImages.map((_, i) => (
+                <button type="button" class="hero__carousel-dot" role="tab" aria-selected={i === 0} aria-label={`Image ${i + 1}`} data-index={i}></button>
+              ))}
+            </div>
+            <button type="button" class="hero__carousel-pause" id="hero-carousel-pause" aria-label="Pause auto-rotate" title="Pause" aria-pressed="false">
+              <span class="hero__carousel-pause-icon hero__carousel-pause-icon--pause" aria-hidden="true">⏸</span>
+              <span class="hero__carousel-pause-icon hero__carousel-pause-icon--play" aria-hidden="true" hidden>▶</span>
+            </button>
+          </div>
+        </div>
+      ) : singleImage ? (
+        <img src={singleImage.src} alt={singleImage.alt} class="hero__image" loading="eager" decoding="async" width="800" height="1000" />
       ) : (
         <div class="hero__image-placeholder" aria-hidden="true"></div>
       )}
@@ -91,7 +122,7 @@ const navLinks = [
     min-height: 100vh;
     min-height: 100dvh;
     min-height: 480px;
-    overflow: hidden;
+    overflow: visible;
     padding: 0;
     max-width: var(--max-width, 1400px);
     margin: 0 auto;
@@ -104,7 +135,7 @@ const navLinks = [
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 0.5fr 1.5fr;
     gap: 2rem;
     align-items: center;
     width: 100%;
@@ -270,19 +301,23 @@ const navLinks = [
     inset: 0;
     z-index: 0;
     pointer-events: none;
+    overflow: visible;
   }
 
   .hero__gradient {
     position: absolute;
     border-radius: 50%;
     opacity: 0;
+    /* Large centered blobs so they bleed past the hero with no visible edges */
+    width: 160vmax;
+    height: 160vmax;
+    left: 50%;
+    top: 50%;
+    margin-left: -80vmax;
+    margin-top: -80vmax;
   }
 
   .hero__gradient--1 {
-    width: 120%;
-    height: 120%;
-    top: -20%;
-    left: -30%;
     background: radial-gradient(
       ellipse 70% 70% at 50% 50%,
       rgba(88, 28, 135, 0.2) 0%,
@@ -293,10 +328,6 @@ const navLinks = [
   }
 
   .hero__gradient--2 {
-    width: 100%;
-    height: 100%;
-    top: -10%;
-    right: -20%;
     background: radial-gradient(
       ellipse 60% 80% at 60% 40%,
       rgba(139, 92, 246, 0.15) 0%,
@@ -307,10 +338,6 @@ const navLinks = [
   }
 
   .hero__gradient--3 {
-    width: 80%;
-    height: 80%;
-    bottom: -15%;
-    left: -10%;
     background: radial-gradient(
       ellipse 80% 60% at 30% 70%,
       rgba(30, 27, 75, 0.12) 0%,
@@ -411,10 +438,268 @@ const navLinks = [
     border: 1px solid rgba(139, 92, 246, 0.2);
     border-radius: var(--radius-lg, 16px);
   }
+
+  /* ----- Z-space carousel ----- */
+  .hero__carousel {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero__carousel-track {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    aspect-ratio: 4 / 5;
+    max-height: 85vh;
+  }
+
+  .hero__slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg, 16px);
+    overflow: hidden;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.5s ease, box-shadow 0.5s ease;
+    pointer-events: none;
+  }
+
+  .hero__slide.is-left {
+    transform: translateX(-28%) scale(0.88);
+    z-index: 1;
+    opacity: 0.92;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+  }
+
+  .hero__slide.is-center {
+    transform: translateX(0) scale(1);
+    z-index: 2;
+    opacity: 1;
+    box-shadow: 0px 0px 50px 15px rgb(0 0 0 / 60%), 0 0 0 1px rgb(176 132 255 / 48%);
+    pointer-events: auto;
+  }
+
+  .hero__slide.is-right {
+    transform: translateX(28%) scale(0.88);
+    z-index: 1;
+    opacity: 0.92;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+  }
+
+  .hero__slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: var(--radius-lg, 16px);
+  }
+
+  .hero__carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    font-size: 1.5rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+  }
+
+  .hero__carousel-btn:hover {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .hero__carousel-btn--prev { left: -8px; }
+  .hero__carousel-btn--next { right: -8px; }
+
+  .hero__carousel-controls {
+    position: absolute;
+    bottom: -2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero__carousel-dots {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .hero__carousel-pause {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(0, 0, 0, 0.35);
+    color: #fff;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .hero__carousel-pause:hover {
+    background: rgba(0, 0, 0, 0.55);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .hero__carousel-pause[aria-pressed="true"] .hero__carousel-pause-icon--pause {
+    display: none;
+  }
+
+  .hero__carousel-pause[aria-pressed="true"] .hero__carousel-pause-icon--play {
+    display: inline !important;
+  }
+
+  .hero__carousel-pause-icon--play {
+    display: none;
+  }
+
+  .hero__carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .hero__carousel-dot:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  .hero__carousel-dot[aria-selected="true"] {
+    background: var(--accent-bright, #c4b5fd);
+    border-color: var(--accent-bright, #c4b5fd);
+    transform: scale(1.2);
+  }
 </style>
 
 <script>
   import gsap from 'gsap';
+
+  function initCarousel() {
+    const carousel = document.getElementById('hero-carousel');
+    if (!carousel) return;
+
+    const track = carousel.querySelector('.hero__carousel-track');
+    const slides = Array.from(carousel.querySelectorAll('.hero__slide'));
+    const prevBtn = carousel.querySelector('.hero__carousel-btn--prev');
+    const nextBtn = carousel.querySelector('.hero__carousel-btn--next');
+    const dots = Array.from(carousel.querySelectorAll('.hero__carousel-dot'));
+    const pauseBtn = document.getElementById('hero-carousel-pause');
+    const total = slides.length;
+    if (total < 2) return;
+
+    let currentIndex = 0;
+    let autoTimer: ReturnType<typeof setInterval> | null = null;
+    let paused = false;
+    const AUTO_MS = 5000;
+
+    function slotFor(slideIndex: number): 'left' | 'center' | 'right' {
+      const diff = (slideIndex - currentIndex + total) % total;
+      if (diff === 0) return 'center';
+      if (total === 2) return diff === 1 ? 'right' : 'left';
+      if (diff === 1) return 'right';
+      return 'left';
+    }
+
+    function updateSlots() {
+      slides.forEach((el, i) => {
+        const slot = slotFor(i);
+        el.classList.remove('is-left', 'is-center', 'is-right');
+        el.classList.add(`is-${slot}`);
+        el.setAttribute('aria-hidden', slot === 'center' ? 'false' : 'true');
+      });
+      dots.forEach((dot, i) => {
+        dot.setAttribute('aria-selected', i === currentIndex ? 'true' : 'false');
+      });
+    }
+
+    function goTo(index: number) {
+      currentIndex = (index + total) % total;
+      updateSlots();
+      resetAuto();
+    }
+
+    function next() {
+      goTo(currentIndex + 1);
+    }
+
+    function prev() {
+      goTo(currentIndex - 1);
+    }
+
+    function resetAuto() {
+      if (autoTimer) clearInterval(autoTimer);
+      autoTimer = null;
+      if (!paused) autoTimer = setInterval(next, AUTO_MS);
+    }
+
+    function setPaused(value: boolean) {
+      paused = value;
+      if (pauseBtn) {
+        pauseBtn.setAttribute('aria-pressed', String(value));
+        pauseBtn.setAttribute('aria-label', value ? 'Play auto-rotate' : 'Pause auto-rotate');
+        pauseBtn.setAttribute('title', value ? 'Play' : 'Pause');
+      }
+      if (paused && autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+      } else if (!paused) {
+        resetAuto();
+      }
+    }
+
+    updateSlots();
+    resetAuto();
+
+    nextBtn?.addEventListener('click', next);
+    prevBtn?.addEventListener('click', prev);
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => goTo(i));
+    });
+    pauseBtn?.addEventListener('click', () => setPaused(!paused));
+
+    carousel.addEventListener('mouseenter', () => {
+      if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+      }
+    });
+    carousel.addEventListener('mouseleave', () => {
+      if (!paused) resetAuto();
+    });
+  }
 
   function initHero() {
     const hero = document.getElementById('hero');
@@ -445,6 +730,8 @@ const navLinks = [
         menuNav.hidden = expanded;
       });
     }
+
+    initCarousel();
   }
 
   if (document.readyState === 'loading') {

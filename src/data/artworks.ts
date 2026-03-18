@@ -165,3 +165,11 @@ export function getArtworkBySlug(slug: string): Artwork | undefined {
 export function getHomepageHeroArtwork(): Artwork | undefined {
   return artworks.find((a) => a.homepageHero === true);
 }
+
+/** Returns 3 artworks for the hero carousel: hero first, then next 2 from favorites. */
+export function getHeroCarouselArtworks(): Artwork[] {
+  const hero = getHomepageHeroArtwork();
+  const rest = artworks.filter((a) => a.id !== hero?.id);
+  const ordered = hero ? [hero, ...rest] : rest;
+  return ordered.slice(0, 3);
+}
