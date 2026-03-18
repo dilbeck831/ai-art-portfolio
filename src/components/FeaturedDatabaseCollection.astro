@@ -1,0 +1,568 @@
+---
+interface Props {
+  base?: string;
+  supabaseUrl: string;
+  supabaseKey: string;
+}
+
+const { base = import.meta.env.BASE_URL, supabaseUrl, supabaseKey } = Astro.props;
+---
+
+<section class="featured-collection featured-database-collection" id="featured-database" aria-label="Featured Database Collection" data-supabase-url={supabaseUrl} data-supabase-key={supabaseKey} data-base={base}>
+  <div class="featured-collection__header">
+    <p class="featured-collection__eyebrow">Selected Works</p>
+    <h2 class="featured-collection__heading">Featured Database Collection</h2>
+  </div>
+
+  <div class="featured-database-collection__wrap">
+    <div class="featured-database-collection__loading" id="featured-database-loading">Loading…</div>
+    <div id="featured-database-mount" class="featured-database-collection__mount" aria-live="polite" hidden></div>
+    <p class="featured-database-collection__empty" id="featured-database-empty" hidden>No favorites in the database yet.</p>
+    <p class="featured-database-collection__error" id="featured-database-error" hidden></p>
+  </div>
+
+  <div class="featured-collection__cta" id="featured-database-cta" hidden>
+    <a href={`${base}work/ai-art/`} class="featured-collection__cta-link">
+      View All Works →
+    </a>
+  </div>
+
+  <div id="featured-database-lightbox" class="featured-lightbox" role="dialog" aria-modal="true" aria-label="Featured Database Collection lightbox" hidden>
+    <div class="featured-lightbox__backdrop" id="featured-database-lightbox-backdrop"></div>
+    <button type="button" class="featured-lightbox__close" id="featured-database-lightbox-close" aria-label="Close">×</button>
+    <button type="button" class="featured-lightbox__nav featured-lightbox__nav--prev" id="featured-database-lightbox-prev" aria-label="Previous image">‹</button>
+    <div class="featured-lightbox__content">
+      <img id="featured-database-lightbox-img" src="" alt="" />
+      <p class="featured-lightbox__caption" id="featured-database-lightbox-caption"></p>
+      <p class="featured-lightbox__counter" id="featured-database-lightbox-counter" aria-live="polite"></p>
+    </div>
+    <button type="button" class="featured-lightbox__nav featured-lightbox__nav--next" id="featured-database-lightbox-next" aria-label="Next image">›</button>
+  </div>
+</section>
+
+<style>
+  .featured-database-collection {
+    padding: var(--fc-pad, 5rem) 0 4rem;
+    position: relative;
+  }
+
+  .featured-database-collection__wrap {
+    position: relative;
+    min-height: 80px;
+  }
+
+  /* Mount uses display: contents so injected grid is layout sibling of Featured Collection */
+  .featured-database-collection__mount {
+    display: contents;
+  }
+
+  .featured-database-collection__loading,
+  .featured-database-collection__empty,
+  .featured-database-collection__error {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .featured-database-collection .featured-collection__header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .featured-database-collection .featured-collection__eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+  }
+
+  .featured-database-collection .featured-collection__heading {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  /* Same grid layout as Featured Collection — :global() so injected content gets layout (no Astro scope) */
+  :global(.featured-database-collection__wrap .featured-collection__top) {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 6px;
+    margin-bottom: 6px;
+    min-height: 540px;
+    align-items: stretch;
+  }
+
+  :global(.featured-database-collection__wrap .featured-collection__grid2x2) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  :global(.featured-database-collection__wrap .featured-collection__bottom) {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    align-items: stretch;
+  }
+
+  /* Cell and overlay — :global() so injected content gets hover/overlay (match Featured Collection) */
+  :global(.featured-database-collection__wrap .featured-cell) {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    border-radius: 3px;
+    text-decoration: none;
+    background: var(--bg-elevated);
+    height: 100%;
+    min-height: 0;
+    cursor: pointer;
+  }
+
+  :global(.featured-database-collection__wrap .featured-cell) img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.65s var(--ease-out);
+  }
+
+  :global(.featured-database-collection__wrap .featured-cell:hover) img {
+    transform: scale(1.05);
+  }
+
+  /* Last two images (bottom row) only: height auto so they fill width without gap */
+  :global(.featured-database-collection__wrap .featured-cell__img--bottom) {
+    height: auto;
+  }
+
+  :global(.featured-database-collection__wrap .featured-cell--hero) {
+    min-height: 540px;
+  }
+
+  :global(.featured-database-collection__wrap .featured-cell--sm) {
+    aspect-ratio: auto;
+  }
+
+  :global(.featured-database-collection__wrap .featured-cell--tall) {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    aspect-ratio: 3 / 4;
+  }
+
+  :global(.featured-database-collection__wrap .featured-cell__overlay) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem 1.25rem 1.1rem;
+    background: linear-gradient(to top, rgba(10, 6, 18, 0.82) 0%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 0.3s var(--ease-out),
+      transform 0.3s var(--ease-out);
+  }
+
+  :global(.featured-database-collection__wrap .featured-cell:hover .featured-cell__overlay),
+  :global(.featured-database-collection__wrap .featured-cell:focus-visible .featured-cell__overlay) {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  :global(.featured-database-collection__wrap .featured-cell:focus-visible) {
+    outline: 2px solid var(--purple-500);
+    outline-offset: 3px;
+  }
+
+  :global(.featured-database-collection__wrap .featured-cell__title) {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+
+  :global(.featured-database-collection__wrap .featured-cell__cat) {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .featured-database-collection .featured-collection__cta {
+    text-align: center;
+    margin-top: 2.25rem;
+  }
+
+  .featured-database-collection .featured-collection__cta-link {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 3px;
+    transition:
+      color 0.2s var(--ease-out),
+      border-color 0.2s var(--ease-out);
+  }
+
+  .featured-database-collection .featured-collection__cta-link:hover {
+    color: var(--accent-bright);
+    border-color: var(--border-strong);
+  }
+
+  @media (max-width: 900px) {
+    :global(.featured-database-collection__wrap .featured-collection__top) {
+      grid-template-columns: 1fr;
+      min-height: 420px;
+    }
+
+    :global(.featured-database-collection__wrap .featured-cell--hero) {
+      min-height: 420px;
+    }
+
+    :global(.featured-database-collection__wrap .featured-collection__bottom) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    :global(.featured-database-collection__wrap .featured-collection__grid2x2) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    :global(.featured-database-collection__wrap .featured-collection__bottom) {
+      grid-template-columns: 1fr;
+    }
+
+    :global(.featured-database-collection__wrap .featured-cell--tall) {
+      width: 100%;
+      min-width: 0;
+      height: auto;
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  #featured-database-lightbox.featured-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  #featured-database-lightbox.featured-lightbox[hidden] {
+    display: none !important;
+  }
+  #featured-database-lightbox .featured-lightbox__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.88);
+    cursor: pointer;
+  }
+  #featured-database-lightbox .featured-lightbox__content {
+    position: relative;
+    z-index: 2;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  #featured-database-lightbox .featured-lightbox__content img {
+    max-width: 100%;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius-lg, 16px);
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease;
+    transform-origin: center;
+  }
+  @media (hover: hover) {
+    #featured-database-lightbox .featured-lightbox__content img {
+      cursor: zoom-in;
+    }
+    #featured-database-lightbox .featured-lightbox__content img:hover {
+      transform: scale(1.3);
+    }
+  }
+  #featured-database-lightbox .featured-lightbox__caption {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    text-align: center;
+  }
+  #featured-database-lightbox .featured-lightbox__counter {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin: 0;
+  }
+  #featured-database-lightbox .featured-lightbox__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 3;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  #featured-database-lightbox .featured-lightbox__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  #featured-database-lightbox .featured-lightbox__nav--prev { left: 1rem; }
+  #featured-database-lightbox .featured-lightbox__nav--next { right: 1rem; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" is:inline></script>
+<script is:inline>
+  (function () {
+    var section = document.getElementById('featured-database');
+    var supabaseUrl = (section && section.getAttribute('data-supabase-url')) || '';
+    var supabaseKey = (section && section.getAttribute('data-supabase-key')) || '';
+    var baseUrl = (section && section.getAttribute('data-base')) || '/';
+    if (baseUrl && !baseUrl.endsWith('/')) baseUrl += '/';
+
+    var loading = document.getElementById('featured-database-loading');
+    var mount = document.getElementById('featured-database-mount');
+    var empty = document.getElementById('featured-database-empty');
+    var errEl = document.getElementById('featured-database-error');
+    var cta = document.getElementById('featured-database-cta');
+    if (!section || !loading || !mount) return;
+
+    var currentList = [];
+    var lightboxIndex = 0;
+    var lightbox = document.getElementById('featured-database-lightbox');
+    var lightboxImg = document.getElementById('featured-database-lightbox-img');
+    var lightboxCaption = document.getElementById('featured-database-lightbox-caption');
+    var lightboxCounter = document.getElementById('featured-database-lightbox-counter');
+    var lightboxPrev = document.getElementById('featured-database-lightbox-prev');
+    var lightboxNext = document.getElementById('featured-database-lightbox-next');
+    var lightboxClose = document.getElementById('featured-database-lightbox-close');
+    var lightboxBackdrop = document.getElementById('featured-database-lightbox-backdrop');
+
+    function hideLoading() { loading.hidden = true; }
+    function showError(msg) {
+      hideLoading();
+      if (errEl) { errEl.textContent = msg || 'Could not load collection.'; errEl.hidden = false; }
+    }
+    function escapeAttr(s) { return (s || '').replace(/"/g, '&quot;'); }
+    function escapeHtml(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    function cellOverlayHtml(a) {
+      var cat = (a.collection || 'Fine Art').trim() || 'Fine Art';
+      return '<div class="featured-cell__overlay">' +
+        '<span class="featured-cell__title">' + escapeHtml(a.title || 'Untitled') + '</span>' +
+        '<span class="featured-cell__cat">' + escapeHtml(cat) + '</span></div>';
+    }
+
+    function renderGrid(list) {
+      currentList = list;
+      var hero = list[0];
+      var grid = list.slice(1, 5);
+      var bottom = list.slice(5, 7);
+      var aiArtUrl = baseUrl + 'work/ai-art/';
+
+      var html = '<div class="featured-collection__top">';
+      if (hero) {
+        html += '<a href="' + escapeAttr(aiArtUrl) + '" class="featured-cell featured-cell--hero" aria-label="' + escapeAttr(hero.title || 'Artwork') + '" data-index="0">';
+        html += '<img src="' + escapeAttr(hero.image_url) + '" alt="' + escapeAttr(hero.title || 'Artwork') + '" loading="eager" decoding="async" />';
+        html += cellOverlayHtml(hero) + '</a>';
+      }
+      html += '<div class="featured-collection__grid2x2">';
+      grid.forEach(function (a, i) {
+        html += '<a href="' + escapeAttr(aiArtUrl) + '" class="featured-cell featured-cell--sm" aria-label="' + escapeAttr(a.title || 'Artwork') + '" data-index="' + (i + 1) + '">';
+        html += '<img src="' + escapeAttr(a.image_url) + '" alt="' + escapeAttr(a.title || 'Artwork') + '" loading="lazy" decoding="async" />';
+        html += cellOverlayHtml(a) + '</a>';
+      });
+      html += '</div></div>';
+      if (bottom.length > 0) {
+        html += '<div class="featured-collection__bottom">';
+        bottom.forEach(function (a, i) {
+          html += '<a href="' + escapeAttr(aiArtUrl) + '" class="featured-cell featured-cell--tall" aria-label="' + escapeAttr(a.title || 'Artwork') + '" data-index="' + (i + 5) + '">';
+          html += '<img class="featured-cell__img--bottom" src="' + escapeAttr(a.image_url) + '" alt="' + escapeAttr(a.title || 'Artwork') + '" loading="lazy" decoding="async" />';
+          html += cellOverlayHtml(a) + '</a>';
+        });
+        html += '</div>';
+      }
+      mount.innerHTML = html;
+      mount.hidden = false;
+      if (empty) empty.hidden = true;
+      if (errEl) errEl.hidden = true;
+      if (cta) cta.hidden = false;
+
+      var cells = mount.querySelectorAll('.featured-cell');
+      cells.forEach(function (cell) {
+        cell.addEventListener('click', function (e) {
+          e.preventDefault();
+          var idx = parseInt(cell.getAttribute('data-index'), 10);
+          if (!isNaN(idx)) openLightbox(idx);
+        });
+      });
+
+      // #region agent log
+      if (bottom.length > 0) {
+        function logDebug(payload) {
+          fetch('http://127.0.0.1:7942/ingest/e9039904-945a-4d3b-b67a-c995fafda067',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d668c7'},body:JSON.stringify({sessionId:'d668c7',location:'FeaturedDatabaseCollection.astro:renderGrid',timestamp:Date.now(),...payload})}).catch(function(){});
+        }
+        function measureBottomRow(runId) {
+          var wrap = section && section.querySelector('.featured-database-collection__wrap');
+          var bottomEl = mount && mount.querySelector('.featured-collection__bottom');
+          var tallCells = bottomEl ? bottomEl.querySelectorAll('.featured-cell--tall') : [];
+          var cellWidths = [];
+          var imgWidths = [];
+          var imgComputed = [];
+          for (var i = 0; i < tallCells.length; i++) {
+            var c = tallCells[i];
+            cellWidths.push(c.offsetWidth);
+            var img = c.querySelector('img');
+            if (img) {
+              imgWidths.push(img.offsetWidth);
+              var cs = window.getComputedStyle(img);
+              imgComputed.push({width:cs.width,height:cs.height,position:cs.position,display:cs.display,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,complete:img.complete});
+            } else { imgWidths.push(0); imgComputed.push(null); }
+          }
+          logDebug({message:'bottom row layout',runId:runId,data:{wrapWidth:wrap?wrap.offsetWidth:0,bottomWidth:bottomEl?bottomEl.offsetWidth:0,cellWidths:cellWidths,imgWidths:imgWidths,imgComputed:imgComputed},hypothesisId:'D,F,G'});
+        }
+        setTimeout(function(){ measureBottomRow('200ms'); }, 200);
+        setTimeout(function(){ measureBottomRow('2s'); }, 2000);
+        var bottomEl = mount && mount.querySelector('.featured-collection__bottom');
+        if (bottomEl) {
+          var imgs = bottomEl.querySelectorAll('.featured-cell--tall img');
+          var loaded = 0;
+          function onLoad() { loaded++; if (loaded >= imgs.length) setTimeout(function(){ measureBottomRow('afterLoad'); }, 50); }
+          for (var j = 0; j < imgs.length; j++) { if (imgs[j].complete) onLoad(); else imgs[j].addEventListener('load', onLoad); }
+          if (imgs.length === 0) setTimeout(function(){ measureBottomRow('afterLoad'); }, 50);
+        }
+      }
+      // #endregion
+    }
+
+    function updateLightboxImage() {
+      if (!lightboxImg || !currentList.length) return;
+      var a = currentList[lightboxIndex];
+      lightboxImg.src = a.image_url || '';
+      lightboxImg.alt = a.title || 'Artwork';
+      if (lightboxCaption) lightboxCaption.textContent = a.title || 'Untitled';
+      if (lightboxCounter) lightboxCounter.textContent = (lightboxIndex + 1) + ' / ' + currentList.length;
+      if (lightboxPrev) lightboxPrev.style.visibility = currentList.length <= 1 ? 'hidden' : 'visible';
+      if (lightboxNext) lightboxNext.style.visibility = currentList.length <= 1 ? 'hidden' : 'visible';
+    }
+    function openLightbox(index) {
+      lightboxIndex = index;
+      updateLightboxImage();
+      if (lightbox) { lightbox.hidden = false; document.body.style.overflow = 'hidden'; }
+      document.addEventListener('keydown', lightboxKeydown);
+    }
+    function closeLightbox() {
+      if (lightbox) { lightbox.hidden = true; document.body.style.overflow = ''; }
+      document.removeEventListener('keydown', lightboxKeydown);
+    }
+    function lightboxKeydown(e) {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') { lightboxIndex = (lightboxIndex - 1 + currentList.length) % currentList.length; updateLightboxImage(); }
+      if (e.key === 'ArrowRight') { lightboxIndex = (lightboxIndex + 1) % currentList.length; updateLightboxImage(); }
+    }
+
+    if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+    if (lightboxBackdrop) lightboxBackdrop.addEventListener('click', closeLightbox);
+    if (lightboxPrev) lightboxPrev.addEventListener('click', function () {
+      lightboxIndex = (lightboxIndex - 1 + currentList.length) % currentList.length;
+      updateLightboxImage();
+    });
+    if (lightboxNext) lightboxNext.addEventListener('click', function () {
+      lightboxIndex = (lightboxIndex + 1) % currentList.length;
+      updateLightboxImage();
+    });
+
+    function runWhenSupabaseReady(fn) {
+      if (typeof window.supabase !== 'undefined') { fn(); return; }
+      var attempts = 0;
+      var t = setInterval(function () {
+        attempts++;
+        if (typeof window.supabase !== 'undefined') { clearInterval(t); fn(); return; }
+        if (attempts > 50) { clearInterval(t); showError('Could not load collection.'); }
+      }, 100);
+    }
+
+    runWhenSupabaseReady(function () {
+      if (!supabaseUrl || !supabaseUrl.startsWith('http')) {
+        showError('Could not load collection.');
+        return;
+      }
+      var timeout = setTimeout(function () {
+        hideLoading();
+        if (errEl) { errEl.textContent = 'Request timed out.'; errEl.hidden = false; }
+      }, 12000);
+      try {
+        var sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+        sb.from('artworks')
+          .select('id,title,description,collection,image_url,created_at')
+          .eq('favorite', true)
+          .order('created_at', { ascending: false })
+          .limit(7)
+          .then(function (r) {
+            clearTimeout(timeout);
+            hideLoading();
+            if (r.error) {
+              if (errEl) { errEl.textContent = r.error.message || 'Could not load collection.'; errEl.hidden = false; }
+              return;
+            }
+            var list = r.data || [];
+            if (list.length === 0) {
+              if (empty) { empty.hidden = false; }
+              return;
+            }
+            renderGrid(list);
+          })
+          .catch(function (e) {
+            clearTimeout(timeout);
+            hideLoading();
+            if (errEl) { errEl.textContent = (e && e.message) ? e.message : 'Could not load collection.'; errEl.hidden = false; }
+          });
+      } catch (e) {
+        clearTimeout(timeout);
+        hideLoading();
+        if (errEl) { errEl.textContent = (e && e.message) ? e.message : 'Could not load collection.'; errEl.hidden = false; }
+      }
+    });
+  })();
+</script>

@@ -269,7 +269,7 @@ main {
 }
 
 .art-card__media {
-  aspect-ratio: 4/3;
+  aspect-ratio: 3 / 4;
   background: var(--bg-elevated);
   position: relative;
   overflow: hidden;

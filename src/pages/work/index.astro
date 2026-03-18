@@ -1,7 +1,13 @@
 ---
 import WorkLayout from '../../layouts/WorkLayout.astro';
+import FeaturedCollection from '../../components/FeaturedCollection.astro';
+import FeaturedDatabaseCollection from '../../components/FeaturedDatabaseCollection.astro';
+import { getFeaturedArtworks } from '../../data/artworks';
 import { siteTitle } from '../../data/meta';
 const base = import.meta.env.BASE_URL;
+const featured = getFeaturedArtworks(7);
+const supabaseUrl = 'https://sbbmducevhpirnthzvtz.supabase.co';
+const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
 ---
 <WorkLayout title="Work" description="AI Art, Music, and UI/UX — TØX!Q / TOXIQMYND.">
   <h1 class="page-title">Work</h1>
@@ -23,9 +29,19 @@ const base = import.meta.env.BASE_URL;
       <p class="work-hub__desc">Enterprise UX, information architecture, design systems. AMD, Fortune 100.</p>
     </a>
   </div>
+
+  <FeaturedCollection artworks={featured} base={base} />
+
+  <FeaturedDatabaseCollection base={base} supabaseUrl={supabaseUrl} supabaseKey={supabaseKey} />
 </WorkLayout>
 
 <style>
+  :global(main img),
+  :global(main video) {
+    height: 100%;
+    object-fit: cover;
+  }
+
   .work-hub {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

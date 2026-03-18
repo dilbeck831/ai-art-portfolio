@@ -18,6 +18,7 @@ const fullTitle = title === 'Home' ? `${brandName} · ${siteTitle}` : `${title} 
 const isHome = pathNorm === baseNorm;
 const isActive = (path: string) => (path === base ? currentPath === base || currentPath === base.replace(/\/$/, '') : currentPath.startsWith(path));
 const navLinks = [
+  { href: base, label: 'Home' },
   { href: `${base}work/`, label: 'Work' },
   { href: `${base}work/ai-art/`, label: 'AI Art' },
   { href: `${base}work/music/`, label: 'Music' },

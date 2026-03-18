@@ -9,6 +9,7 @@ const labActive = currentPath.startsWith(base + 'lab/');
 const isActive = (path: string) => (path === base ? currentPath === base || currentPath === base.replace(/\/$/, '') : currentPath.startsWith(path));
 ---
 <nav class="nav" aria-label="Main">
+  <a href={base} class={isActive(base) ? 'nav__link nav__link--active' : 'nav__link'}>Home</a>
   <div class="nav__dropdown">
     <a href={`${base}work/`} class={`nav__link ${workActive ? 'nav__link--active' : ''}`}>Work</a>
     <ul class="nav__sub">
