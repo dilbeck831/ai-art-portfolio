@@ -34,6 +34,9 @@ const navLinks = [
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="preconnect" href="https://sbbmducevhpirnthzvtz.supabase.co" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preload" href={`${base}artist.jpeg`} as="image" />
     <title>{fullTitle}</title>
   </head>
   <body class:list={[isHome && 'page-home']}>
