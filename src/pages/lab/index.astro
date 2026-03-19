@@ -1,235 +1,154 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+const base = import.meta.env.BASE_URL;
+const supabaseUrl = 'https://sbbmducevhpirnthzvtz.supabase.co';
+const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
 ---
 <Layout title="Lab" description="Browser tools and experiments. TØX!Q / TOXIQMYND.">
-  <section class="lab-soon">
-    <div class="lab-soon__bg" aria-hidden="true">
-      <div class="lab-soon__orb lab-soon__orb--a"></div>
-      <div class="lab-soon__orb lab-soon__orb--b"></div>
-      <div class="lab-soon__grid"></div>
-    </div>
-
+  <section class="lab-soon" data-base={base}>
     <div class="lab-soon__frame">
       <p class="lab-soon__eyebrow">The Lab</p>
       <h1 class="lab-soon__title">Coming soon</h1>
-      <p class="lab-soon__subtitle">
-        Browser tools for sound, motion, and weird little experiments.
-      </p>
+      <p class="lab-soon__subtitle">Browser tools for sound, motion, and weird little experiments.</p>
+      <div class="lab-soon__chips"><span class="lab-soon__chip">Web Audio</span><span class="lab-soon__chip">3D</span><span class="lab-soon__chip">Prompt tooling</span><span class="lab-soon__chip">AI APIs</span></div>
+    </div>
+  </section>
 
-      <div class="lab-soon__chips" aria-label="Planned tools">
-        <span class="lab-soon__chip">Web Audio</span>
-        <span class="lab-soon__chip">3D</span>
-        <span class="lab-soon__chip">Prompt tooling</span>
-        <span class="lab-soon__chip">AI APIs</span>
-      </div>
-
-      <div class="lab-soon__actions">
-        <a class="lab-soon__btn lab-soon__btn--primary" href="mailto:toxiqmynd@gmail.com?subject=Lab%20waitlist">
-          Join the waitlist
-        </a>
-        <a class="lab-soon__btn" href={`${import.meta.env.BASE_URL}`}>
-          Back to home
-        </a>
-      </div>
-
-      <p class="lab-soon__note">
-        Want a specific tool? Email an idea — I’ll build the best ones first.
-      </p>
+  <section class="lab-artifacts" id="lab-artifacts">
+    <h2 class="section-title">Claude Artifacts</h2>
+    <p class="lab-artifacts__sub">Uploaded HTML artifacts appear here automatically.</p>
+    <div class="artifact-cards" id="artifact-cards">
+      <div class="loading-state">loading…</div>
     </div>
   </section>
 </Layout>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" is:inline></script>
+<script is:inline>
+  (function () {
+    var cardsEl = document.getElementById('artifact-cards');
+    if (!cardsEl) return;
+    var sb = supabase.createClient('https://sbbmducevhpirnthzvtz.supabase.co', 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX');
+
+    async function openArtifact(url) {
+      if (!url) return;
+      var popup = window.open('', '_blank');
+      if (!popup) {
+        window.location.href = url;
+        return;
+      }
+      try {
+        var resp = await fetch(url, { method: 'GET' });
+        if (!resp.ok) throw new Error('Artifact fetch failed');
+        var html = await resp.text();
+        if (!html) throw new Error('Artifact HTML empty');
+        var blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+        popup.location.replace(blobUrl);
+        try { popup.opener = null; } catch (e) {}
+      } catch (e) {
+        popup.location.replace(url);
+      }
+    }
+
+    function renderCards(data) {
+      if (!data || !data.length) { cardsEl.innerHTML = '<div class="empty-state">No artifacts published yet.</div>'; return; }
+      cardsEl.innerHTML = '';
+      data.forEach(function (a) {
+        var card = document.createElement('article');
+        card.className = 'artifact-card';
+        var tag = (a.collection || 'ART').toUpperCase().slice(0, 3);
+        card.innerHTML = '<h3>' + (a.title || 'Untitled artifact') + '</h3>' +
+          '<p class="artifact-card__tag">' + tag + '</p>' +
+          '<p class="artifact-card__meta">' + (a.collection || 'claude-html') + '</p>' +
+          '<button type="button" class="artifact-card__open" data-open-artifact>Open</button>';
+        var openBtn = card.querySelector('[data-open-artifact]');
+        if (openBtn) {
+          openBtn.addEventListener('click', function () {
+            openArtifact(a.artifact_url);
+          });
+        }
+        cardsEl.appendChild(card);
+      });
+    }
+
+    sb.from('artifacts').select('id,title,collection,artifact_url,created_at').order('created_at', { ascending: false }).limit(60)
+      .then(function (r) {
+        if (r.error) { cardsEl.innerHTML = '<div class="empty-state">Could not load artifacts.</div>'; return; }
+        renderCards(r.data || []);
+      })
+      .catch(function () { cardsEl.innerHTML = '<div class="empty-state">Could not load artifacts.</div>'; });
+  })();
+</script>
+
 <style>
-  .lab-soon {
-    position: relative;
-    min-height: clamp(520px, 70vh, 720px);
-    display: grid;
-    place-items: center;
-    padding: calc(var(--space) * 3) 0;
-    overflow: hidden;
-  }
+  .lab-soon { padding: calc(var(--space) * 2) 0; }
+  .lab-soon__frame { border: 1px solid var(--border); border-radius: 18px; padding: 1.25rem; background: var(--surface); }
+  .lab-soon__eyebrow { margin: 0; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
+  .lab-soon__title { margin: .4rem 0; font-size: clamp(2rem, 5vw, 3rem); background: var(--gradient-primary); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lab-soon__subtitle { margin: 0; color: var(--text-muted); }
+  .lab-soon__chips { margin-top: 1rem; display: flex; gap: .5rem; flex-wrap: wrap; }
+  .lab-soon__chip { border: 1px solid var(--border); border-radius: 999px; padding: .3rem .6rem; font-size: .8rem; color: var(--text-muted); }
 
-  .lab-soon__bg {
-    position: absolute;
-    inset: -20%;
-    pointer-events: none;
-    filter: saturate(1.15);
+  .lab-artifacts { margin-top: calc(var(--space) * 3); }
+  .lab-artifacts__sub { color: var(--text-muted); margin: 0 0 var(--space) 0; }
+  .artifact-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space); }
+  :global(.artifact-card) {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: calc(var(--space) * 1.25);
+    transition: transform 0.3s var(--ease-spring), box-shadow 0.3s var(--ease-out), border-color 0.3s;
   }
-
-  .lab-soon__grid {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(circle at 50% 20%, rgba(139, 92, 246, 0.18), transparent 55%),
-      radial-gradient(circle at 30% 70%, rgba(236, 72, 153, 0.14), transparent 52%),
-      radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.12), transparent 50%),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent 40%, rgba(0, 0, 0, 0.15));
+  :global(.artifact-card:hover) {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--border-strong);
   }
-
-  .lab-soon__grid::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-    background-size: 56px 56px;
-    mask-image: radial-gradient(circle at 50% 45%, rgba(0,0,0,0.95), transparent 70%);
-    opacity: 0.25;
-    transform: perspective(900px) rotateX(55deg) translateY(8%);
-    transform-origin: center;
-  }
-
-  .lab-soon__orb {
-    position: absolute;
-    width: 520px;
-    height: 520px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(139, 92, 246, 0.35), rgba(139, 92, 246, 0.08) 55%, transparent 72%);
-    filter: blur(2px);
-    opacity: 0.9;
-    animation: labFloat 9s ease-in-out infinite;
-  }
-  .lab-soon__orb--a {
-    left: 10%;
-    top: 8%;
-  }
-  .lab-soon__orb--b {
-    right: 8%;
-    bottom: 10%;
-    width: 460px;
-    height: 460px;
-    background: radial-gradient(circle at 40% 35%, rgba(236, 72, 153, 0.28), rgba(236, 72, 153, 0.08) 55%, transparent 72%);
-    animation-duration: 11s;
-    animation-delay: -2s;
-  }
-
-  @keyframes labFloat {
-    0%, 100% { transform: translate3d(0, 0, 0); }
-    50% { transform: translate3d(0, -18px, 0); }
-  }
-
-  .lab-soon__frame {
-    position: relative;
-    width: min(880px, 92vw);
-    border-radius: 22px;
-    padding: clamp(1.25rem, 3.2vw, 2.25rem);
-    background: rgba(15, 15, 20, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    box-shadow:
-      0 24px 70px rgba(0, 0, 0, 0.45),
-      0 0 0 1px rgba(139, 92, 246, 0.12) inset;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    overflow: hidden;
-  }
-
-  .lab-soon__frame::before {
-    content: "";
-    position: absolute;
-    inset: -2px;
-    background: conic-gradient(
-      from 180deg,
-      rgba(139, 92, 246, 0.0),
-      rgba(139, 92, 246, 0.55),
-      rgba(236, 72, 153, 0.5),
-      rgba(59, 130, 246, 0.45),
-      rgba(139, 92, 246, 0.0)
-    );
-    filter: blur(14px);
-    opacity: 0.25;
-    pointer-events: none;
-  }
-
-  .lab-soon__eyebrow {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin: 0 0 0.75rem 0;
-  }
-
-  .lab-soon__title {
-    margin: 0;
-    font-size: clamp(2.05rem, 5vw, 3.25rem);
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
-  .lab-soon__subtitle {
-    margin: 0.85rem 0 0 0;
-    font-size: 1.05rem;
-    line-height: 1.7;
-    max-width: 56ch;
-    color: var(--text-muted);
-  }
-
-  .lab-soon__chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: calc(var(--space) * 2);
-  }
-
-  .lab-soon__chip {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.82);
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    padding: 0.45rem 0.75rem;
-    border-radius: 999px;
-  }
-
-  .lab-soon__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: calc(var(--space) * 2);
-  }
-
-  .lab-soon__btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.7rem 1rem;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--text);
-    text-decoration: none;
+  :global(.artifact-card__tag) {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.65rem;
     font-weight: 600;
-    transition: transform 0.18s var(--ease-out), border-color 0.18s var(--ease-out), background 0.18s var(--ease-out);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--purple-500);
   }
-
-  .lab-soon__btn:hover {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.22);
-    background: rgba(255, 255, 255, 0.09);
+  :global(.artifact-card h3) {
+    margin: 0 0 .45rem 0;
+    font-size: .98rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
   }
-
-  .lab-soon__btn--primary {
-    border-color: rgba(139, 92, 246, 0.55);
-    background: rgba(139, 92, 246, 0.18);
-  }
-
-  .lab-soon__btn--primary:hover {
-    border-color: rgba(139, 92, 246, 0.85);
-    background: rgba(139, 92, 246, 0.24);
-  }
-
-  .lab-soon__note {
-    margin: calc(var(--space) * 2) 0 0 0;
-    font-size: 0.95rem;
+  :global(.artifact-card__meta) {
+    margin: 0 0 1rem 0;
     color: var(--text-muted);
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    line-height: 1.45;
+  }
+  :global(.artifact-card__open) {
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    border-radius: 999px;
+    padding: .45rem .9rem;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color .25s var(--ease-out), transform .25s var(--ease-spring), filter .25s var(--ease-out);
+  }
+  :global(.artifact-card__open:hover) {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    transform: translateY(-1px);
+    filter: brightness(1.05);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .lab-soon__orb { animation: none; }
-    .lab-soon__btn { transition: none; }
+  @media (max-width: 768px) {
+    .artifact-cards { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 480px) {
+    .artifact-cards { grid-template-columns: 1fr; }
   }
 </style>

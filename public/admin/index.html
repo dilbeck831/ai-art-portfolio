@@ -538,6 +538,39 @@
       display: block;
     }
 
+    .gallery-item-featured {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      background: rgba(8, 6, 20, 0.82);
+      border: 1px solid rgba(139, 92, 246, 0.45);
+      border-radius: 999px;
+      padding: .2rem .45rem .2rem .3rem;
+      z-index: 2;
+    }
+    .gallery-item-featured input {
+      margin: 0;
+      accent-color: #8b5cf6;
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+    .gallery-item-featured span {
+      font-family: 'DM Mono', monospace;
+      font-size: .6rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .gallery-item-featured.is-on {
+      border-color: rgba(74, 222, 128, 0.45);
+      background: rgba(12, 30, 22, 0.78);
+    }
+    .gallery-item-featured.is-on span { color: #86efac; }
+
     .gallery-item-info {
       position: absolute;
       bottom: 0;
@@ -582,6 +615,10 @@
     }
 
     .gallery-item:hover .gallery-item-delete { opacity: 1; }
+    @media (max-width: 768px) {
+      .gallery-item-delete { opacity: 1; }
+      .gallery-item-info { opacity: 1; }
+    }
 
     .empty-state {
       text-align: center;
@@ -630,6 +667,10 @@
     .btn-signout:hover { border-color: var(--purple); color: var(--accent-bright); }
     #adminApp { display: none; }
     #adminApp.authenticated { display: block; }
+    #artifactApp { display: none; }
+    #artifactApp.authenticated { display: block; }
+    #adminHub { display: none; max-width: 980px; margin: 2.5rem auto; padding: 0 1.5rem; }
+    #adminHub.authenticated { display: block; }
     #loginPanel.hidden { display: none; }
     .auth-loading { text-align: center; padding: 4rem 2rem; color: var(--text-muted); font-size: 0.85rem; }
     .auth-loading.hidden { display: none; }
@@ -643,12 +684,121 @@
       padding: 0.65rem 0.875rem;
       width: 100%;
     }
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .hub-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.2rem;
+      background: var(--surface);
+      cursor: pointer;
+      transition: border-color .2s, transform .2s, background .2s;
+    }
+    .hub-card:hover {
+      border-color: var(--border-strong);
+      background: var(--surface-hover);
+      transform: translateY(-1px);
+    }
+    .hub-card h3 {
+      margin: 0 0 .35rem 0;
+      color: var(--accent-bright);
+      font-size: .95rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .hub-card p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: .78rem;
+      line-height: 1.6;
+    }
+    .view-back {
+      margin-bottom: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      padding: .35rem .65rem;
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem;
+      cursor: pointer;
+    }
+    .view-back:hover { color: var(--accent-bright); border-color: var(--purple); }
+    .artifact-drop {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      min-height: 140px;
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      background: var(--bg-elevated);
+    }
+    .artifact-drop input {
+      width: 100%;
+      margin-top: .65rem;
+    }
+    .artifact-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: .75rem;
+    }
+    .artifact-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-elevated);
+      padding: .75rem;
+    }
+    .artifact-item h4 {
+      margin: 0 0 .2rem 0;
+      color: var(--text);
+      font-size: .75rem;
+      line-height: 1.35;
+    }
+    .artifact-item p {
+      margin: 0 0 .6rem 0;
+      color: var(--text-muted);
+      font-size: .65rem;
+      letter-spacing: .03em;
+    }
+    .artifact-actions { display: flex; gap: .45rem; }
+    .artifact-actions button {
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .25rem .45rem;
+      cursor: pointer;
+    }
+    .artifact-actions button:hover { border-color: var(--purple); color: var(--accent-bright); }
+    .artifact-actions button[data-delete] {
+      border-color: rgba(255, 95, 109, 0.45);
+      color: #ff8b98;
+    }
+    .artifact-actions button[data-delete]:hover {
+      border-color: #ff5f6d;
+      color: #ffd9dd;
+      background: rgba(255, 95, 109, 0.14);
+    }
+    @media (max-width: 680px) {
+      #adminHub { padding: 0 1rem; }
+      .hub-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <span class="logo">TOXIQMYND</span>
+  <a class="logo" href="/ai-art-portfolio/">TØX!Q</a>
   <div class="header-actions">
     <span class="user-email" id="userEmail"></span>
     <button type="button" class="btn-signout" id="signOutBtn" style="display:none;">Sign out</button>
@@ -674,9 +824,26 @@
   </form>
 </div>
 
+<div id="adminHub">
+  <div class="panel">
+    <div class="panel-title">Upload Hub</div>
+    <div class="hub-grid">
+      <button type="button" class="hub-card" id="openImageFlow">
+        <h3>Image Upload</h3>
+        <p>Current artwork upload flow with metadata, tags, and featured toggle.</p>
+      </button>
+      <button type="button" class="hub-card" id="openArtifactFlow">
+        <h3>Claude HTML Artifact</h3>
+        <p>Upload an HTML artifact, publish it, and auto-list it on the Lab page.</p>
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="adminApp" class="container">
   <!-- Left: Drop zone -->
   <div class="panel">
+    <button type="button" class="view-back" id="backToHubFromImages">← Back to hub</button>
     <div class="panel-title">Image</div>
     <div class="dropzone" id="dropzone">
       <input type="file" id="fileInput" accept="image/*" />
@@ -805,6 +972,38 @@
   </div>
 </div>
 
+<div id="artifactApp" class="container">
+  <div class="panel">
+    <button type="button" class="view-back" id="backToHubFromArtifacts">← Back to hub</button>
+    <div class="panel-title">HTML Artifact</div>
+    <div class="fields">
+      <div class="field">
+        <label for="artifactTitleInput">Title</label>
+        <input type="text" id="artifactTitleInput" placeholder="e.g. Claude experiment 01" />
+      </div>
+      <div class="field">
+        <label for="artifactCollectionInput">Collection</label>
+        <input type="text" id="artifactCollectionInput" value="claude-html" />
+      </div>
+      <div class="artifact-drop">
+        <div>Drop HTML file or browse</div>
+        <input type="file" id="artifactFileInput" accept=".html,text/html" />
+      </div>
+      <button class="btn-submit" id="artifactSubmitBtn" type="button">
+        <span class="btn-label">Upload Artifact</span>
+        <span class="spinner"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Recent Artifacts</div>
+    <div class="artifact-list" id="artifactList">
+      <div class="loading-state">loading…</div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -817,13 +1016,41 @@
   // ---- Auth UI ----
   const authLoading = document.getElementById('authLoading');
   const loginPanel = document.getElementById('loginPanel');
+  const adminHub = document.getElementById('adminHub');
   const adminApp = document.getElementById('adminApp');
+  const artifactApp = document.getElementById('artifactApp');
   const loginForm = document.getElementById('loginForm');
   const loginEmail = document.getElementById('loginEmail');
   const loginPassword = document.getElementById('loginPassword');
   const loginError = document.getElementById('loginError');
   const signOutBtn = document.getElementById('signOutBtn');
   const userEmail = document.getElementById('userEmail');
+  const headerBadge = document.getElementById('headerBadge');
+  const openImageFlow = document.getElementById('openImageFlow');
+  const openArtifactFlow = document.getElementById('openArtifactFlow');
+  const backToHubFromImages = document.getElementById('backToHubFromImages');
+  const backToHubFromArtifacts = document.getElementById('backToHubFromArtifacts');
+
+  function showHub() {
+    adminHub.classList.add('authenticated');
+    adminApp.classList.remove('authenticated');
+    artifactApp.classList.remove('authenticated');
+    if (headerBadge) headerBadge.textContent = 'Admin · Hub';
+  }
+  function showImageFlow() {
+    adminHub.classList.remove('authenticated');
+    adminApp.classList.add('authenticated');
+    artifactApp.classList.remove('authenticated');
+    if (headerBadge) headerBadge.textContent = 'Admin · Image Upload';
+    if (typeof loadGallery === 'function') loadGallery();
+  }
+  function showArtifactFlow() {
+    adminHub.classList.remove('authenticated');
+    adminApp.classList.remove('authenticated');
+    artifactApp.classList.add('authenticated');
+    if (headerBadge) headerBadge.textContent = 'Admin · Artifact Upload';
+    if (typeof loadArtifacts === 'function') loadArtifacts();
+  }
 
   function setAuthLoading(show) {
     authLoading.classList.toggle('hidden', !show);
@@ -831,19 +1058,20 @@
   function showLoginView() {
     setAuthLoading(false);
     loginPanel.classList.remove('hidden');
+    adminHub.classList.remove('authenticated');
     adminApp.classList.remove('authenticated');
+    artifactApp.classList.remove('authenticated');
     signOutBtn.style.display = 'none';
     userEmail.textContent = '';
   }
   function showAdminView(sessionUser) {
     setAuthLoading(false);
     loginPanel.classList.add('hidden');
-    adminApp.classList.add('authenticated');
+    showHub();
     if (sessionUser && sessionUser.email) {
       userEmail.textContent = sessionUser.email;
       signOutBtn.style.display = 'block';
     }
-    if (typeof loadGallery === 'function') loadGallery();
   }
 
   sb.auth.getSession().then(function(res) {
@@ -889,6 +1117,10 @@
   signOutBtn.addEventListener('click', function() {
     sb.auth.signOut();
   });
+  openImageFlow.addEventListener('click', showImageFlow);
+  openArtifactFlow.addEventListener('click', showArtifactFlow);
+  backToHubFromImages.addEventListener('click', showHub);
+  backToHubFromArtifacts.addEventListener('click', showHub);
 
   // ---- State ----
   let selectedFile = null;
@@ -907,6 +1139,11 @@
   const favoriteToggle = document.getElementById('favoriteToggle');
   const submitBtn = document.getElementById('submitBtn');
   const galleryGrid = document.getElementById('galleryGrid');
+  const artifactTitleInput = document.getElementById('artifactTitleInput');
+  const artifactCollectionInput = document.getElementById('artifactCollectionInput');
+  const artifactFileInput = document.getElementById('artifactFileInput');
+  const artifactSubmitBtn = document.getElementById('artifactSubmitBtn');
+  const artifactList = document.getElementById('artifactList');
   const toast = document.getElementById('toast');
 
   // ---- Toast ----
@@ -1077,14 +1314,41 @@
     data.forEach(artwork => {
       const item = document.createElement('div');
       item.className = 'gallery-item';
+      const isFeatured = !!artwork.favorite;
       item.innerHTML = `
         <img src="${artwork.image_url}" alt="${artwork.title}" loading="lazy" />
+        <label class="gallery-item-featured ${isFeatured ? 'is-on' : ''}">
+          <input type="checkbox" data-featured-toggle ${isFeatured ? 'checked' : ''} />
+          <span>${isFeatured ? 'Featured' : 'Not featured'}</span>
+        </label>
         <div class="gallery-item-info">
           <div class="gallery-item-title">${artwork.title}</div>
           <div class="gallery-item-collection">${artwork.collection}</div>
         </div>
         <button class="gallery-item-delete" data-id="${artwork.id}" data-path="${artwork.image_path}">✕</button>
       `;
+      const featuredToggle = item.querySelector('[data-featured-toggle]');
+      const featuredWrap = item.querySelector('.gallery-item-featured');
+      const featuredLabel = featuredWrap ? featuredWrap.querySelector('span') : null;
+      if (featuredToggle && featuredWrap && featuredLabel) {
+        featuredToggle.addEventListener('change', async function () {
+          const nextValue = !!featuredToggle.checked;
+          featuredToggle.disabled = true;
+          try {
+            const { error: updateError } = await sb.from('artworks').update({ favorite: nextValue }).eq('id', artwork.id);
+            if (updateError) throw updateError;
+            featuredWrap.classList.toggle('is-on', nextValue);
+            featuredLabel.textContent = nextValue ? 'Featured' : 'Not featured';
+            showToast(nextValue ? 'Marked as featured' : 'Removed from featured', 'success');
+          } catch (err) {
+            console.error(err);
+            featuredToggle.checked = !nextValue;
+            showToast((err && err.message) || 'Could not update featured status', 'error');
+          } finally {
+            featuredToggle.disabled = false;
+          }
+        });
+      }
       item.querySelector('.gallery-item-delete').addEventListener('click', () => deleteArtwork(artwork.id, artwork.image_path));
       galleryGrid.appendChild(item);
     });
@@ -1096,6 +1360,125 @@
     await sb.from('artworks').delete().eq('id', id);
     showToast('Artwork deleted');
     loadGallery();
+  }
+
+  // ---- Artifacts ----
+  function getLabBasePath() {
+    return window.location.pathname.indexOf('/ai-art-portfolio/') === 0 ? '/ai-art-portfolio/lab/' : '/lab/';
+  }
+  function artifactViewUrl(id) {
+    return getLabBasePath() + '?artifact=' + encodeURIComponent(String(id));
+  }
+  function inferredTitleFromFile(file) {
+    if (!file || !file.name) return '';
+    return file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+  }
+
+  artifactFileInput.addEventListener('change', function () {
+    var f = artifactFileInput.files && artifactFileInput.files[0];
+    if (!f) return;
+    if (!artifactTitleInput.value.trim()) artifactTitleInput.value = inferredTitleFromFile(f);
+  });
+
+  artifactSubmitBtn.addEventListener('click', async function () {
+    var file = artifactFileInput.files && artifactFileInput.files[0];
+    if (!file) return showToast('Please choose an HTML file', 'error');
+    var name = (file.name || '').toLowerCase();
+    if (!(file.type === 'text/html' || name.endsWith('.html') || name.endsWith('.htm'))) {
+      return showToast('Only .html files are allowed', 'error');
+    }
+
+    var title = (artifactTitleInput.value || '').trim() || inferredTitleFromFile(file) || 'Claude Artifact';
+    var collection = (artifactCollectionInput.value || '').trim() || 'claude-html';
+    artifactSubmitBtn.classList.add('loading');
+    artifactSubmitBtn.disabled = true;
+    try {
+      var path = Date.now() + '-' + Math.random().toString(36).slice(2) + '.html';
+      var uploadRes = await sb.storage.from('artifacts-html').upload(path, file, { contentType: 'text/html', upsert: false });
+      if (uploadRes.error) throw uploadRes.error;
+      var urlData = sb.storage.from('artifacts-html').getPublicUrl(path);
+      var publicUrl = urlData && urlData.data && urlData.data.publicUrl ? urlData.data.publicUrl : null;
+      var insertRes = await sb.from('artifacts').insert({
+        title: title,
+        collection: collection,
+        artifact_path: path,
+        artifact_url: publicUrl
+      }).select('id').single();
+      if (insertRes.error) throw insertRes.error;
+
+      var id = insertRes.data && insertRes.data.id;
+      showToast('✓ Artifact uploaded', 'success');
+      artifactFileInput.value = '';
+      artifactTitleInput.value = '';
+      artifactCollectionInput.value = 'claude-html';
+      loadArtifacts();
+      if (id) window.open(artifactViewUrl(id), '_blank');
+    } catch (err) {
+      console.error(err);
+      showToast((err && err.message) || 'Artifact upload failed', 'error');
+    } finally {
+      artifactSubmitBtn.classList.remove('loading');
+      artifactSubmitBtn.disabled = false;
+    }
+  });
+
+  async function loadArtifacts() {
+    artifactList.innerHTML = '<div class="loading-state">loading…</div>';
+    var r = await sb.from('artifacts').select('id,title,collection,artifact_path,artifact_url,created_at').order('created_at', { ascending: false }).limit(24);
+    if (r.error) {
+      artifactList.innerHTML = '<div class="empty-state">Could not load artifacts.</div>';
+      return;
+    }
+    var data = r.data || [];
+    if (!data.length) {
+      artifactList.innerHTML = '<div class="empty-state">No artifacts uploaded yet.</div>';
+      return;
+    }
+    artifactList.innerHTML = '';
+    data.forEach(function (a) {
+      var el = document.createElement('div');
+      el.className = 'artifact-item';
+      el.innerHTML = '<h4>' + (a.title || 'Untitled artifact') + '</h4>' +
+        '<p>' + (a.collection || 'claude-html') + '</p>' +
+        '<div class="artifact-actions">' +
+        '<button type="button" data-open>Open</button>' +
+        '<button type="button" data-copy>Copy link</button>' +
+        '<button type="button" data-delete aria-label="Delete artifact">✕</button>' +
+        '</div>';
+      var openBtn = el.querySelector('[data-open]');
+      var copyBtn = el.querySelector('[data-copy]');
+      var deleteBtn = el.querySelector('[data-delete]');
+      if (openBtn) openBtn.addEventListener('click', function () {
+        window.open(artifactViewUrl(a.id), '_blank');
+      });
+      if (copyBtn) copyBtn.addEventListener('click', async function () {
+        try {
+          var url = window.location.origin + artifactViewUrl(a.id);
+          await navigator.clipboard.writeText(url);
+          showToast('Link copied');
+        } catch (e) {
+          showToast('Could not copy link', 'error');
+        }
+      });
+      if (deleteBtn) deleteBtn.addEventListener('click', async function () {
+        var confirmed = window.confirm('Are you sure you want to permanently delete?');
+        if (!confirmed) return;
+        try {
+          if (a.artifact_path) {
+            var storageRes = await sb.storage.from('artifacts-html').remove([a.artifact_path]);
+            if (storageRes.error) throw storageRes.error;
+          }
+          var deleteRes = await sb.from('artifacts').delete().eq('id', a.id);
+          if (deleteRes.error) throw deleteRes.error;
+          showToast('Artifact deleted', 'success');
+          loadArtifacts();
+        } catch (err) {
+          console.error(err);
+          showToast((err && err.message) || 'Delete failed', 'error');
+        }
+      });
+      artifactList.appendChild(el);
+    });
   }
 
   // loadGallery() is called from showAdminView() after sign-in

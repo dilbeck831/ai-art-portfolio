@@ -1,0 +1,20 @@
+---
+const base = import.meta.env.BASE_URL;
+const target = `${base}admin/index.html`;
+const targetJson = JSON.stringify(target);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <title>Redirecting…</title>
+    <script is:inline>
+      var t = {targetJson};
+      location.replace(t);
+    </script>
+  </head>
+  <body>
+    Redirecting to <a data-target href={target}>{target}</a>…
+  </body>
+</html>
