@@ -1009,12 +1009,6 @@
 <script>
   const SUPABASE_URL = 'https://sbbmducevhpirnthzvtz.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
-  function dbg(runId, hypothesisId, location, message, data) {
-    // #region agent log
-    fetch('http://127.0.0.1:7942/ingest/e9039904-945a-4d3b-b67a-c995fafda067',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d668c7'},body:JSON.stringify({sessionId:'d668c7',runId:runId,hypothesisId:hypothesisId,location:location,message:message,data:data||{},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-  }
-  dbg('live-admin-1', 'H2', 'public/admin/index.html:1014', 'admin script loaded', { path: window.location.pathname, origin: window.location.origin });
 
   const { createClient } = supabase;
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1082,7 +1076,6 @@
 
   sb.auth.getSession().then(function(res) {
     var session = res.data.session;
-    dbg('live-admin-1', 'H3', 'public/admin/index.html:1081', 'getSession resolved', { hasSession: !!session, hasUser: !!(session && session.user), error: res.error ? res.error.message : null });
     setAuthLoading(false);
     if (session && session.user) {
       showAdminView(session.user);
@@ -1090,13 +1083,11 @@
       showLoginView();
     }
   }).catch(function() {
-    dbg('live-admin-1', 'H3', 'public/admin/index.html:1089', 'getSession rejected', {});
     setAuthLoading(false);
     showLoginView();
   });
 
   sb.auth.onAuthStateChange(function(event, session) {
-    dbg('live-admin-1', 'H4', 'public/admin/index.html:1094', 'auth state changed', { event: event, hasSession: !!session, hasUser: !!(session && session.user) });
     if (event === 'SIGNED_OUT') showLoginView();
     else if (event === 'SIGNED_IN' && session && session.user) showAdminView(session.user);
   });
@@ -1112,7 +1103,6 @@
     }
     sb.auth.signInWithPassword({ email: email, password: password })
       .then(function(res) {
-        dbg('live-admin-1', 'H5', 'public/admin/index.html:1109', 'signInWithPassword resolved', { hasUser: !!(res.data && res.data.user), error: res.error ? res.error.message : null });
         if (res.error) {
           loginError.textContent = res.error.message || 'Sign in failed.';
           return;
