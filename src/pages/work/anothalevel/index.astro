@@ -59,10 +59,18 @@ const artworksJson = JSON.stringify(artworks).replace(/</g, '\\u003c');
     </div>
     <button type="button" class="mosaic-lightbox__nav mosaic-lightbox__nav--next" id="mosaic-lightbox-next" aria-label="Next image">›</button>
   </div>
+  <script id="anotha-artworks-json" type="application/json" set:html={artworksJson}></script>
   <script is:inline>
     (function () {
       var gridEl = document.getElementById('mosaic-grid');
-      var artworks = JSON.parse('{artworksJson}');
+      var artworks = [];
+      try {
+        var jsonEl = document.getElementById('anotha-artworks-json');
+        var rawJson = jsonEl ? (jsonEl.textContent || '[]') : '[]';
+        artworks = JSON.parse(rawJson);
+      } catch (e) {
+        artworks = [];
+      }
       var lightbox = document.getElementById('mosaic-lightbox');
       var lbImg = document.getElementById('mosaic-lightbox-img');
       var lbCounter = document.getElementById('mosaic-lightbox-counter');
