@@ -12,7 +12,7 @@ const { tracks, embedBase = 'https://suno.com/embed' } = Astro.props;
     <div class="suno-embeds__player-wrap" aria-live="polite">
       <iframe
         id="suno-embed-iframe"
-        src={`${embedBase}/${tracks[0].id}?autoplay=1`}
+        src={`${embedBase}/${tracks[0].id}?autoplay=0`}
         title={`${tracks[0].title} — Suno`}
         class="suno-embeds__iframe"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope"
