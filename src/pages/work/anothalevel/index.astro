@@ -2,10 +2,10 @@
 import WorkLayout from '../../../layouts/WorkLayout.astro';
 import { readdirSync } from 'node:fs';
 import { existsSync } from 'node:fs';
-import { extname } from 'node:path';
+import { extname, resolve } from 'node:path';
 
 const base = import.meta.env.BASE_URL;
-const artDir = new URL('../../../../public/art/anothalevel', import.meta.url);
+const artDir = resolve(process.cwd(), 'public', 'art', 'anothalevel');
 const imageExt = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif']);
 
 const dirExists = existsSync(artDir);
