@@ -4,26 +4,28 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
 ---
 <section class="uploads-section" id="tox-uploads" aria-label="TØX!Q Uploads" data-supabase-url={supabaseUrl} data-supabase-key={supabaseKey}>
   <h2 class="section-title">TØX!Q Uploads</h2>
-  <div class="uploads-controls" id="uploads-controls" hidden>
-    <div class="uploads-control">
-      <label for="uploads-collection">Collection</label>
-      <select id="uploads-collection" aria-label="Filter by collection">
-        <option value="">All</option>
-      </select>
+  <div class="uploads-toolbar" id="uploads-toolbar" hidden>
+    <div class="uploads-controls" id="uploads-controls">
+      <div class="uploads-control">
+        <label for="uploads-collection">Collection</label>
+        <select id="uploads-collection" aria-label="Filter by collection">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="uploads-control">
+        <label for="uploads-sort">Sort by date</label>
+        <select id="uploads-sort" aria-label="Sort by date added">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+      </div>
     </div>
-    <div class="uploads-control">
-      <label for="uploads-sort">Sort by date</label>
-      <select id="uploads-sort" aria-label="Sort by date added">
-        <option value="newest">Newest first</option>
-        <option value="oldest">Oldest first</option>
-      </select>
-    </div>
+    <nav class="uploads-pagination uploads-pagination--top" id="uploads-pagination-top" aria-label="Uploads pagination" hidden>
+      <button type="button" class="uploads-pagination__btn uploads-pagination__prev" id="uploads-pagination-prev-top" aria-label="Previous page">Previous</button>
+      <span class="uploads-pagination__info" id="uploads-pagination-info-top" aria-live="polite"></span>
+      <button type="button" class="uploads-pagination__btn uploads-pagination__next" id="uploads-pagination-next-top" aria-label="Next page">Next</button>
+    </nav>
   </div>
-  <nav class="uploads-pagination uploads-pagination--top" id="uploads-pagination-top" aria-label="Uploads pagination" hidden>
-    <button type="button" class="uploads-pagination__btn uploads-pagination__prev" id="uploads-pagination-prev-top" aria-label="Previous page">Previous</button>
-    <span class="uploads-pagination__info" id="uploads-pagination-info-top" aria-live="polite"></span>
-    <button type="button" class="uploads-pagination__btn uploads-pagination__next" id="uploads-pagination-next-top" aria-label="Next page">Next</button>
-  </nav>
   <div class="uploads-grid-wrap">
     <div class="uploads-loading" id="uploads-loading">loading…</div>
     <ul class="gallery-grid uploads-grid" id="uploads-grid" aria-live="polite" hidden></ul>
@@ -59,6 +61,7 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
     var empty = document.getElementById('uploads-empty');
     var errEl = document.getElementById('uploads-error');
     var controls = document.getElementById('uploads-controls');
+    var toolbar = document.getElementById('uploads-toolbar');
     var collectionSelect = document.getElementById('uploads-collection');
     var sortSelect = document.getElementById('uploads-sort');
     if (!loading || !grid) return;
@@ -256,7 +259,7 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
               collectionSelect.appendChild(opt);
             });
           }
-          if (controls) controls.hidden = false;
+          if (toolbar) toolbar.hidden = false;
           render();
           if (collectionSelect) collectionSelect.addEventListener('change', function () { render(true); });
           if (sortSelect) sortSelect.addEventListener('change', function () { render(true); });
@@ -293,12 +296,23 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
   .uploads-section {
     margin-top: calc(var(--space) * 3);
   }
+  .uploads-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space) 1rem;
+    margin-bottom: var(--space);
+    padding-bottom: var(--space);
+    border-bottom: 1px solid var(--border);
+  }
   .uploads-controls {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space) 1.5rem;
     align-items: flex-end;
-    margin-bottom: var(--space);
+    flex: 1 1 auto;
+    min-width: 0;
   }
   .uploads-control {
     display: flex;
@@ -367,10 +381,23 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
     flex-wrap: wrap;
   }
   .uploads-pagination--top {
-    margin-top: 0.25rem;
-    margin-bottom: calc(var(--space) * 1.25);
-    padding-bottom: var(--space);
-    border-bottom: 1px solid var(--border);
+    margin: 0;
+    padding: 0;
+    border: none;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+    align-self: flex-end;
+  }
+  @media (max-width: 640px) {
+    .uploads-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .uploads-pagination--top {
+      justify-content: center;
+      width: 100%;
+      align-self: center;
+    }
   }
   .uploads-pagination--bottom {
     margin-top: calc(var(--space) * 2);
