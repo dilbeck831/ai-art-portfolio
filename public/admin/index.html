@@ -4,7 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TOXIQMYND · Admin</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Explicit UMD build so `supabase` global exists (default @2 entry is often ESM-only and breaks the inline script). -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script>
+    (function () {
+      var p = location.pathname;
+      var i = p.indexOf('/admin');
+      window.__SITE_BASE__ = i > 0 ? (p.slice(0, i).replace(/\/?$/, '/') || '/') : '/';
+    })();
+  </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
 
@@ -669,6 +677,8 @@
     #adminApp.authenticated { display: block; }
     #artifactApp { display: none; }
     #artifactApp.authenticated { display: block; }
+    #sunoApp { display: none; }
+    #sunoApp.authenticated { display: block; }
     #adminHub { display: none; max-width: 980px; margin: 2.5rem auto; padding: 0 1.5rem; }
     #adminHub.authenticated { display: block; }
     #loginPanel.hidden { display: none; }
@@ -789,6 +799,65 @@
       color: #ffd9dd;
       background: rgba(255, 95, 109, 0.14);
     }
+    .suno-track-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .suno-track-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-elevated);
+      padding: 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .suno-track-item h4 {
+      margin: 0 0 0.2rem 0;
+      font-size: 0.75rem;
+      color: var(--text);
+      line-height: 1.35;
+    }
+    .suno-track-item .suno-id {
+      margin: 0;
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+      word-break: break-all;
+      max-width: 100%;
+    }
+    .suno-track-item__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .suno-track-item__actions button {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.25rem 0.45rem;
+      cursor: pointer;
+    }
+    .suno-track-item__actions button:hover {
+      border-color: var(--purple);
+      color: var(--accent-bright);
+    }
+    .suno-track-item__actions button[data-delete] {
+      border-color: rgba(255, 95, 109, 0.45);
+      color: #ff8b98;
+    }
+    .suno-track-item__actions button[data-delete]:hover {
+      border-color: #ff5f6d;
+      color: #ffd9dd;
+      background: rgba(255, 95, 109, 0.14);
+    }
     @media (max-width: 680px) {
       #adminHub { padding: 0 1rem; }
       .hub-grid { grid-template-columns: 1fr; }
@@ -798,7 +867,7 @@
 <body>
 
 <header>
-  <a class="logo" href="/">TØX!Q</a>
+  <a class="logo" id="adminLogo" href="/">TØX!Q</a>
   <div class="header-actions">
     <span class="user-email" id="userEmail"></span>
     <button type="button" class="btn-signout" id="signOutBtn" style="display:none;">Sign out</button>
@@ -835,6 +904,10 @@
       <button type="button" class="hub-card" id="openArtifactFlow">
         <h3>Claude HTML Artifact</h3>
         <p>Upload an HTML artifact, publish it, and auto-list it on the Lab page.</p>
+      </button>
+      <button type="button" class="hub-card" id="openSunoFlow">
+        <h3>Suno tracks</h3>
+        <p>Paste Suno song links for the Work page embed. Reorder or set which plays first.</p>
       </button>
     </div>
   </div>
@@ -1004,12 +1077,53 @@
   </div>
 </div>
 
+<div id="sunoApp" class="container">
+  <div class="panel">
+    <button type="button" class="view-back" id="backToHubFromSuno">← Back to hub</button>
+    <div class="panel-title">Add Suno track</div>
+    <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.55;">Paste a Suno share URL (<code style="color:var(--accent);">suno.com/song/…</code> or <code style="color:var(--accent);">/s/…</code>) or the song UUID. The first track in the list is the default embed on /work.</p>
+    <div class="field">
+      <label for="sunoLinkInput">Suno link or ID</label>
+      <input type="text" id="sunoLinkInput" placeholder="https://suno.com/song/…" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="sunoTitleInput">Title</label>
+      <input type="text" id="sunoTitleInput" placeholder="Shown on Work page" autocomplete="off" />
+    </div>
+    <button type="button" class="btn-submit" id="sunoAddBtn">
+      <span class="btn-label">Add track</span>
+      <span class="spinner"></span>
+    </button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Work page playlist</div>
+    <div id="sunoTrackList">
+      <div class="loading-state">loading…</div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
   const SUPABASE_URL = 'https://sbbmducevhpirnthzvtz.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
 
+  (function () {
+    var logo = document.getElementById('adminLogo');
+    if (logo && typeof window.__SITE_BASE__ === 'string') {
+      logo.href = window.__SITE_BASE__;
+    }
+  })();
+
+  if (typeof supabase === 'undefined' || !supabase.createClient) {
+    var al = document.getElementById('authLoading');
+    if (al) {
+      al.textContent = 'Could not load Supabase client. Try disabling blockers or check the network.';
+      al.classList.remove('hidden');
+    }
+  } else {
   const { createClient } = supabase;
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -1019,6 +1133,7 @@
   const adminHub = document.getElementById('adminHub');
   const adminApp = document.getElementById('adminApp');
   const artifactApp = document.getElementById('artifactApp');
+  const sunoApp = document.getElementById('sunoApp');
   const loginForm = document.getElementById('loginForm');
   const loginEmail = document.getElementById('loginEmail');
   const loginPassword = document.getElementById('loginPassword');
@@ -1028,19 +1143,27 @@
   const headerBadge = document.getElementById('headerBadge');
   const openImageFlow = document.getElementById('openImageFlow');
   const openArtifactFlow = document.getElementById('openArtifactFlow');
+  const openSunoFlow = document.getElementById('openSunoFlow');
   const backToHubFromImages = document.getElementById('backToHubFromImages');
   const backToHubFromArtifacts = document.getElementById('backToHubFromArtifacts');
+  const backToHubFromSuno = document.getElementById('backToHubFromSuno');
+  const sunoLinkInput = document.getElementById('sunoLinkInput');
+  const sunoTitleInput = document.getElementById('sunoTitleInput');
+  const sunoAddBtn = document.getElementById('sunoAddBtn');
+  const sunoTrackList = document.getElementById('sunoTrackList');
 
   function showHub() {
     adminHub.classList.add('authenticated');
     adminApp.classList.remove('authenticated');
     artifactApp.classList.remove('authenticated');
+    if (sunoApp) sunoApp.classList.remove('authenticated');
     if (headerBadge) headerBadge.textContent = 'Admin · Hub';
   }
   function showImageFlow() {
     adminHub.classList.remove('authenticated');
     adminApp.classList.add('authenticated');
     artifactApp.classList.remove('authenticated');
+    if (sunoApp) sunoApp.classList.remove('authenticated');
     if (headerBadge) headerBadge.textContent = 'Admin · Image Upload';
     if (typeof loadGallery === 'function') loadGallery();
   }
@@ -1048,8 +1171,17 @@
     adminHub.classList.remove('authenticated');
     adminApp.classList.remove('authenticated');
     artifactApp.classList.add('authenticated');
+    if (sunoApp) sunoApp.classList.remove('authenticated');
     if (headerBadge) headerBadge.textContent = 'Admin · Artifact Upload';
     if (typeof loadArtifacts === 'function') loadArtifacts();
+  }
+  function showSunoFlow() {
+    adminHub.classList.remove('authenticated');
+    adminApp.classList.remove('authenticated');
+    artifactApp.classList.remove('authenticated');
+    if (sunoApp) sunoApp.classList.add('authenticated');
+    if (headerBadge) headerBadge.textContent = 'Admin · Suno tracks';
+    if (typeof loadSunoTracks === 'function') loadSunoTracks();
   }
 
   function setAuthLoading(show) {
@@ -1061,6 +1193,7 @@
     adminHub.classList.remove('authenticated');
     adminApp.classList.remove('authenticated');
     artifactApp.classList.remove('authenticated');
+    if (sunoApp) sunoApp.classList.remove('authenticated');
     signOutBtn.style.display = 'none';
     userEmail.textContent = '';
   }
@@ -1119,8 +1252,10 @@
   });
   openImageFlow.addEventListener('click', showImageFlow);
   openArtifactFlow.addEventListener('click', showArtifactFlow);
+  if (openSunoFlow) openSunoFlow.addEventListener('click', showSunoFlow);
   backToHubFromImages.addEventListener('click', showHub);
   backToHubFromArtifacts.addEventListener('click', showHub);
+  if (backToHubFromSuno) backToHubFromSuno.addEventListener('click', showHub);
 
   // ---- State ----
   let selectedFile = null;
@@ -1363,8 +1498,16 @@
   }
 
   // ---- Artifacts ----
+  function getSiteBase() {
+    if (typeof window.__SITE_BASE__ === 'string') return window.__SITE_BASE__;
+    var p = location.pathname;
+    var i = p.indexOf('/admin');
+    if (i <= 0) return '/';
+    return (p.slice(0, i).replace(/\/?$/, '/') || '/') || '/';
+  }
   function getLabBasePath() {
-    return window.location.pathname.indexOf('/ai-art-portfolio/') === 0 ? '/ai-art-portfolio/lab/' : '/lab/';
+    var b = getSiteBase();
+    return b === '/' ? '/lab/' : b.replace(/\/?$/, '/') + 'lab/';
   }
   function artifactViewUrl(id) {
     return getLabBasePath() + '?artifact=' + encodeURIComponent(String(id));
@@ -1481,7 +1624,193 @@
     });
   }
 
+  // ---- Suno tracks (Work page) ----
+  function extractSunoSongId(raw) {
+    var s = String(raw || '').trim();
+    if (!s) return null;
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)) return s;
+    try {
+      var u = new URL(s, 'https://suno.com');
+      var path = u.pathname;
+      var m = path.match(/\/(?:song|s)\/([0-9a-f-]{36})/i);
+      if (m) return m[1];
+    } catch (e) {}
+    return null;
+  }
+
+  async function fetchSunoRowsOrdered() {
+    var r = await sb.from('work_suno_tracks').select('id,suno_song_id,title,sort_order').order('sort_order', { ascending: true });
+    if (r.error) throw r.error;
+    return r.data || [];
+  }
+
+  async function renumberSunoRows(rows) {
+    for (var i = 0; i < rows.length; i++) {
+      var u = await sb.from('work_suno_tracks').update({ sort_order: i }).eq('id', rows[i].id);
+      if (u.error) throw u.error;
+    }
+  }
+
+  async function loadSunoTracks() {
+    if (!sunoTrackList) return;
+    sunoTrackList.innerHTML = '<div class="loading-state">loading…</div>';
+    var r = await sb.from('work_suno_tracks').select('id,suno_song_id,title,sort_order').order('sort_order', { ascending: true });
+    if (r.error) {
+      sunoTrackList.innerHTML = '<div class="empty-state">Could not load tracks. Apply the migration in Supabase if you haven’t yet.</div>';
+      return;
+    }
+    var rows = r.data || [];
+    if (!rows.length) {
+      sunoTrackList.innerHTML = '<div class="empty-state">No tracks yet. Add one above — or run <code>supabase/seed_work_suno_tracks.sql</code> in the SQL editor.</div>';
+      return;
+    }
+    sunoTrackList.innerHTML = '';
+    var list = document.createElement('div');
+    list.className = 'suno-track-list';
+    rows.forEach(function (row, idx) {
+      var item = document.createElement('div');
+      item.className = 'suno-track-item';
+      var main = document.createElement('div');
+      var h4 = document.createElement('h4');
+      h4.textContent = row.title || 'Untitled';
+      var pid = document.createElement('p');
+      pid.className = 'suno-id';
+      pid.textContent = row.suno_song_id || '';
+      main.appendChild(h4);
+      main.appendChild(pid);
+      var actions = document.createElement('div');
+      actions.className = 'suno-track-item__actions';
+      function addBtn(label, hint, onClick, isDelete) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.setAttribute('title', hint);
+        if (isDelete) b.setAttribute('data-delete', 'true');
+        b.addEventListener('click', onClick);
+        return b;
+      }
+      if (idx > 0) actions.appendChild(addBtn('↑', 'Move up', function () { sunoMoveUp(row.id); }, false));
+      if (idx < rows.length - 1) actions.appendChild(addBtn('↓', 'Move down', function () { sunoMoveDown(row.id); }, false));
+      if (idx > 0) actions.appendChild(addBtn('First', 'Make first (default embed)', function () { sunoMoveFirst(row.id); }, false));
+      actions.appendChild(addBtn('✕', 'Delete', function () { sunoDelete(row.id); }, true));
+      item.appendChild(main);
+      item.appendChild(actions);
+      list.appendChild(item);
+    });
+    sunoTrackList.appendChild(list);
+  }
+
+  async function sunoMoveUp(id) {
+    try {
+      var rows = await fetchSunoRowsOrdered();
+      var i = rows.findIndex(function (x) { return x.id === id; });
+      if (i <= 0) return;
+      var t = rows[i - 1];
+      rows[i - 1] = rows[i];
+      rows[i] = t;
+      await renumberSunoRows(rows);
+      showToast('Order updated');
+      loadSunoTracks();
+    } catch (e) {
+      console.error(e);
+      showToast((e && e.message) || 'Could not reorder', 'error');
+    }
+  }
+
+  async function sunoMoveDown(id) {
+    try {
+      var rows = await fetchSunoRowsOrdered();
+      var i = rows.findIndex(function (x) { return x.id === id; });
+      if (i < 0 || i >= rows.length - 1) return;
+      var t = rows[i + 1];
+      rows[i + 1] = rows[i];
+      rows[i] = t;
+      await renumberSunoRows(rows);
+      showToast('Order updated');
+      loadSunoTracks();
+    } catch (e) {
+      console.error(e);
+      showToast((e && e.message) || 'Could not reorder', 'error');
+    }
+  }
+
+  async function sunoMoveFirst(id) {
+    try {
+      var rows = await fetchSunoRowsOrdered();
+      var i = rows.findIndex(function (x) { return x.id === id; });
+      if (i <= 0) return;
+      var row = rows.splice(i, 1)[0];
+      rows.unshift(row);
+      await renumberSunoRows(rows);
+      showToast('Now first on Work page');
+      loadSunoTracks();
+    } catch (e) {
+      console.error(e);
+      showToast((e && e.message) || 'Could not reorder', 'error');
+    }
+  }
+
+  async function sunoDelete(id) {
+    if (!confirm('Remove this track from the Work page?')) return;
+    try {
+      var d = await sb.from('work_suno_tracks').delete().eq('id', id);
+      if (d.error) throw d.error;
+      var rows = await fetchSunoRowsOrdered();
+      await renumberSunoRows(rows);
+      showToast('Track removed');
+      loadSunoTracks();
+    } catch (e) {
+      console.error(e);
+      showToast((e && e.message) || 'Delete failed', 'error');
+    }
+  }
+
+  async function addSunoTrack() {
+    var raw = (sunoLinkInput && sunoLinkInput.value) || '';
+    var title = ((sunoTitleInput && sunoTitleInput.value) || '').trim();
+    var songId = extractSunoSongId(raw);
+    if (!songId) {
+      showToast('Could not parse Suno song ID from link or UUID', 'error');
+      return;
+    }
+    if (!title) title = 'Untitled track';
+    if (sunoAddBtn) {
+      sunoAddBtn.classList.add('loading');
+      sunoAddBtn.disabled = true;
+    }
+    try {
+      var maxR = await sb.from('work_suno_tracks').select('sort_order').order('sort_order', { ascending: false }).limit(1);
+      var nextOrder = 0;
+      if (maxR.data && maxR.data[0] && maxR.data[0].sort_order != null) {
+        nextOrder = maxR.data[0].sort_order + 1;
+      }
+      var ins = await sb.from('work_suno_tracks').insert({ suno_song_id: songId, title: title, sort_order: nextOrder });
+      if (ins.error) {
+        if (ins.error.code === '23505' || (ins.error.message && ins.error.message.indexOf('duplicate') !== -1)) {
+          showToast('That song is already in the playlist', 'error');
+          return;
+        }
+        throw ins.error;
+      }
+      showToast('Track added');
+      if (sunoLinkInput) sunoLinkInput.value = '';
+      if (sunoTitleInput) sunoTitleInput.value = '';
+      loadSunoTracks();
+    } catch (err) {
+      console.error(err);
+      showToast((err && err.message) || 'Add failed', 'error');
+    } finally {
+      if (sunoAddBtn) {
+        sunoAddBtn.classList.remove('loading');
+        sunoAddBtn.disabled = false;
+      }
+    }
+  }
+
+  if (sunoAddBtn) sunoAddBtn.addEventListener('click', addSunoTrack);
+
   // loadGallery() is called from showAdminView() after sign-in
+  }
 </script>
 </body>
 </html>

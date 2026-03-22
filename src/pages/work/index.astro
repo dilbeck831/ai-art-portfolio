@@ -1,12 +1,10 @@
 ---
 import WorkLayout from '../../layouts/WorkLayout.astro';
-import TracksSection from '../../components/work/TracksSection.astro';
+import SunoTracksSection from '../../components/work/SunoTracksSection.astro';
 import ToxUploadsSection from '../../components/work/ToxUploadsSection.astro';
 import ProcessBlock from '../../components/work/ProcessBlock.astro';
 import WorkPagesDropdown from '../../components/work/WorkPagesDropdown.astro';
-import { sunoTracks } from '../../data/music';
 import { processSections } from '../../data/ai-art-process';
-const sunoEmbedBase = 'https://suno.com/embed';
 ---
 <WorkLayout title="Work" description="AI Art, Music, and UI/UX — TØX!Q / TOXIQMYND.">
   <div class="work-page-intro">
@@ -16,7 +14,7 @@ const sunoEmbedBase = 'https://suno.com/embed';
     </div>
     <WorkPagesDropdown current="work" />
   </div>
-  <TracksSection tracks={sunoTracks} embedBase={sunoEmbedBase} />
+  <SunoTracksSection />
   <ToxUploadsSection />
   <section class="process-section">
     <h2 class="section-title">Process</h2>

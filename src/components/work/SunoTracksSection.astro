@@ -1,0 +1,143 @@
+---
+import { sunoTracks as fallbackTracks } from '../../data/music';
+const supabaseUrl = 'https://sbbmducevhpirnthzvtz.supabase.co';
+const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
+const embedBase = 'https://suno.com/embed';
+const fallbackJson = JSON.stringify(fallbackTracks);
+---
+<section
+  class="suno-embeds"
+  aria-label="Suno tracks"
+  id="work-suno-tracks"
+  data-embed-base={embedBase}
+  data-supabase-url={supabaseUrl}
+  data-supabase-key={supabaseKey}
+>
+  <h2 class="section-title">Tracks</h2>
+  <div class="suno-embeds__player-wrap" aria-live="polite" id="suno-player-wrap">
+    <p class="suno-embeds__loading" id="suno-loading">Loading tracks…</p>
+  </div>
+  <div class="suno-embeds__track-list" role="tablist" aria-label="Select a track" id="suno-track-list"></div>
+  <script type="application/json" id="suno-fallback-tracks" set:html={fallbackJson} />
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" is:inline></script>
+<script is:inline>
+  (function () {
+    var section = document.getElementById('work-suno-tracks');
+    var embedBase = (section && section.getAttribute('data-embed-base')) || 'https://suno.com/embed';
+    var wrap = document.getElementById('suno-player-wrap');
+    var listEl = document.getElementById('suno-track-list');
+    var fbEl = document.getElementById('suno-fallback-tracks');
+    var fallback = [];
+    try {
+      fallback = JSON.parse(fbEl ? fbEl.textContent : '[]') || [];
+    } catch (e) {}
+
+    function wirePills(iframeEl) {
+      if (!section || !iframeEl) return;
+      var buttons = section.querySelectorAll('.suno-embeds__track-btn');
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var id = btn.getAttribute('data-suno-id');
+          var title = btn.getAttribute('data-suno-title');
+          if (!id || !iframeEl) return;
+          iframeEl.src = embedBase + '/' + id + '?autoplay=1';
+          iframeEl.title = title + ' — Suno';
+          buttons.forEach(function (b) {
+            b.classList.remove('is-active');
+            b.setAttribute('aria-selected', 'false');
+          });
+          btn.classList.add('is-active');
+          btn.setAttribute('aria-selected', 'true');
+        });
+      });
+    }
+
+    function applyTracks(tracks) {
+      if (!tracks || !tracks.length || !wrap || !listEl) return;
+      var first = tracks[0];
+      wrap.innerHTML = '';
+      var iframe = document.createElement('iframe');
+      iframe.id = 'suno-embed-iframe';
+      iframe.className = 'suno-embeds__iframe';
+      iframe.src = embedBase + '/' + first.id + '?autoplay=0';
+      iframe.title = first.title + ' — Suno';
+      iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope');
+      wrap.appendChild(iframe);
+      listEl.innerHTML = '';
+      tracks.forEach(function (t, i) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'suno-embeds__track-btn' + (i === 0 ? ' is-active' : '');
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+        btn.setAttribute('data-suno-id', t.id);
+        btn.setAttribute('data-suno-title', t.title);
+        btn.textContent = t.title;
+        listEl.appendChild(btn);
+      });
+      wirePills(document.getElementById('suno-embed-iframe'));
+    }
+
+    function runWhenSupabaseReady(fn) {
+      if (typeof supabase !== 'undefined') {
+        fn();
+        return;
+      }
+      var attempts = 0;
+      var t = setInterval(function () {
+        attempts++;
+        if (typeof supabase !== 'undefined') {
+          clearInterval(t);
+          fn();
+          return;
+        }
+        if (attempts > 50) {
+          clearInterval(t);
+          applyTracks(fallback);
+        }
+      }, 100);
+    }
+
+    runWhenSupabaseReady(function () {
+      var url = section && section.getAttribute('data-supabase-url');
+      var key = section && section.getAttribute('data-supabase-key');
+      if (!section || !url || !key) {
+        applyTracks(fallback);
+        return;
+      }
+      var sb = supabase.createClient(url, key);
+      sb.from('work_suno_tracks')
+        .select('suno_song_id,title,sort_order')
+        .order('sort_order', { ascending: true })
+        .then(function (res) {
+          var rows = res.data || [];
+          if (res.error || !rows.length) {
+            applyTracks(fallback);
+            return;
+          }
+          var mapped = rows.map(function (r) {
+            return { id: r.suno_song_id, title: r.title };
+          });
+          applyTracks(mapped);
+        })
+        .catch(function () {
+          applyTracks(fallback);
+        });
+    });
+  })();
+</script>
+
+<style>
+  .suno-embeds__loading {
+    margin: 0;
+    min-height: 12rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted, #9d8bb8);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+  }
+</style>

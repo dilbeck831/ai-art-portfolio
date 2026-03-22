@@ -814,3 +814,16 @@ a:focus-visible,
     transform: scale(1.3);
   }
 }
+
+/* Glow cursor: hide native cursor only when GlowCursor.astro activates (see script) */
+@media (pointer: fine) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+  html.glow-cursor-active {
+    cursor: none !important;
+  }
+
+  html.glow-cursor-active *,
+  html.glow-cursor-active *::before,
+  html.glow-cursor-active *::after {
+    cursor: none !important;
+  }
+}

@@ -1,0 +1,175 @@
+---
+// Global glow + dot cursor — only activates on fine pointers with motion allowed.
+---
+
+<div class="glow-cursor-root" data-glow-cursor aria-hidden="true">
+  <div class="glow-cursor__glow"></div>
+  <div class="glow-cursor__dot"></div>
+</div>
+
+<style>
+  .glow-cursor-root {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  .glow-cursor__glow {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9997;
+    /* Default (idle) — overridden by JS for interactive / input */
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.55) 0%, transparent 70%);
+    filter: blur(13px);
+    transform: translate(-50%, -50%);
+    transition:
+      opacity 0.4s ease,
+      width 0.3s ease,
+      height 0.3s ease,
+      background 0.3s ease,
+      filter 0.3s ease;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  .glow-cursor__dot {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    width: 7px;
+    height: 7px;
+    /* idle dot */
+    background: rgba(220, 48, 156, 0.9);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition:
+      width 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+      height 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+      border-radius 0.18s ease,
+      background 0.18s ease,
+      transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform;
+  }
+
+  .glow-cursor__dot.is-pointer {
+    /* Same 7px size as idle; only color changes over interactive targets */
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 1);
+    transform: translate(-50%, -50%);
+  }
+</style>
+
+<script>
+  function initGlowCursor() {
+    const mqFine = window.matchMedia('(pointer: fine)');
+    const mqHover = window.matchMedia('(hover: hover)');
+    const mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const root = document.querySelector('[data-glow-cursor]');
+    if (!mqFine.matches || !mqHover.matches || mqReduce.matches) {
+      root?.remove();
+      return;
+    }
+
+    const glow = root?.querySelector('.glow-cursor__glow') as HTMLElement | null;
+    const dot = root?.querySelector('.glow-cursor__dot') as HTMLElement | null;
+    if (!root || !glow || !dot) return;
+
+    document.documentElement.classList.add('glow-cursor-active');
+
+    let mx = 0;
+    let my = 0;
+    let gx = 0;
+    let gy = 0;
+    let isPointer = false;
+    let isInput = false;
+
+    const INTERACTIVE =
+      ':is(a, button, input, textarea, select, [role="button"], [tabindex]:not([tabindex="-1"]), .card, .hero__slide.is-center)';
+
+    function resetGlow() {
+      /* Default (idle): 72px, blur 13px */
+      glow.style.width = '72px';
+      glow.style.height = '72px';
+      glow.style.background = 'radial-gradient(circle, rgba(168,85,247,0.55) 0%, transparent 70%)';
+      glow.style.filter = 'blur(13px)';
+    }
+
+    document.addEventListener(
+      'mousemove',
+      (e) => {
+        mx = e.clientX;
+        my = e.clientY;
+
+        glow.style.opacity = '1';
+        dot.style.left = `${mx}px`;
+        dot.style.top = `${my}px`;
+
+        const el = document.elementFromPoint(mx, my);
+        const interactive = el?.closest(INTERACTIVE);
+        const inputEl = el?.closest('input, textarea');
+
+        if (interactive && !isPointer) {
+          isPointer = true;
+          dot.classList.add('is-pointer');
+        } else if (!interactive && isPointer) {
+          isPointer = false;
+          dot.classList.remove('is-pointer');
+        }
+
+        if (inputEl && !isInput) {
+          isInput = true;
+          /* Input field: 60px, blur 11px */
+          glow.style.width = '60px';
+          glow.style.height = '60px';
+          glow.style.background = 'radial-gradient(circle, rgba(99,102,241,0.6) 0%, transparent 70%)';
+          glow.style.filter = 'blur(11px)';
+        } else if (!inputEl && isInput) {
+          isInput = false;
+          resetGlow();
+        }
+
+        if (!isInput) {
+          if (interactive) {
+            /* Interactive hover: 16px, blur 5px */
+            glow.style.width = '16px';
+            glow.style.height = '16px';
+            glow.style.background = 'radial-gradient(circle, rgba(192,132,252,0.85) 0%, transparent 65%)';
+            glow.style.filter = 'blur(5px)';
+          } else {
+            resetGlow();
+          }
+        }
+      },
+      { passive: true }
+    );
+
+    document.body.addEventListener('mouseleave', () => {
+      glow.style.opacity = '0';
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) glow.style.opacity = '0';
+    });
+
+    function loop() {
+      gx += (mx - gx) * 0.09;
+      gy += (my - gy) * 0.09;
+      glow.style.left = `${gx}px`;
+      glow.style.top = `${gy}px`;
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGlowCursor);
+  } else {
+    initGlowCursor();
+  }
+</script>
