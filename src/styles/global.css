@@ -628,7 +628,7 @@ main {
 
 /* ----- About the artist ----- */
 .about-artist {
-  margin-top: calc(var(--space) * 5);
+  margin-top: calc(var(--space) * 0);
   padding: calc(var(--space) * 3) 0;
 }
 
