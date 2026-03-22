@@ -19,12 +19,17 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
       </select>
     </div>
   </div>
+  <nav class="uploads-pagination uploads-pagination--top" id="uploads-pagination-top" aria-label="Uploads pagination" hidden>
+    <button type="button" class="uploads-pagination__btn uploads-pagination__prev" id="uploads-pagination-prev-top" aria-label="Previous page">Previous</button>
+    <span class="uploads-pagination__info" id="uploads-pagination-info-top" aria-live="polite"></span>
+    <button type="button" class="uploads-pagination__btn uploads-pagination__next" id="uploads-pagination-next-top" aria-label="Next page">Next</button>
+  </nav>
   <div class="uploads-grid-wrap">
     <div class="uploads-loading" id="uploads-loading">loading…</div>
     <ul class="gallery-grid uploads-grid" id="uploads-grid" aria-live="polite" hidden></ul>
     <div class="uploads-empty" id="uploads-empty" hidden>No uploads yet.</div>
     <div class="uploads-error" id="uploads-error" hidden></div>
-    <nav class="uploads-pagination" id="uploads-pagination" aria-label="Uploads pagination" hidden>
+    <nav class="uploads-pagination uploads-pagination--bottom" id="uploads-pagination" aria-label="Uploads pagination" hidden>
       <button type="button" class="uploads-pagination__btn uploads-pagination__prev" id="uploads-pagination-prev" aria-label="Previous page">Previous</button>
       <span class="uploads-pagination__info" id="uploads-pagination-info" aria-live="polite"></span>
       <button type="button" class="uploads-pagination__btn uploads-pagination__next" id="uploads-pagination-next" aria-label="Next page">Next</button>
@@ -95,6 +100,10 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
       var paginationPrev = document.getElementById('uploads-pagination-prev');
       var paginationNext = document.getElementById('uploads-pagination-next');
       var paginationInfo = document.getElementById('uploads-pagination-info');
+      var paginationElTop = document.getElementById('uploads-pagination-top');
+      var paginationPrevTop = document.getElementById('uploads-pagination-prev-top');
+      var paginationNextTop = document.getElementById('uploads-pagination-next-top');
+      var paginationInfoTop = document.getElementById('uploads-pagination-info-top');
       var lightboxEl = document.getElementById('uploads-lightbox');
       var lightboxImg = document.getElementById('uploads-lightbox-img');
       var lightboxCaption = document.getElementById('uploads-lightbox-caption');
@@ -138,6 +147,41 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
       if (e.key === 'ArrowLeft') { lightboxIndex = (lightboxIndex - 1 + currentList.length) % currentList.length; updateLightboxImage(); }
       if (e.key === 'ArrowRight') { lightboxIndex = (lightboxIndex + 1) % currentList.length; updateLightboxImage(); }
     }
+    function setPaginationHidden(hidden) {
+      if (paginationEl) paginationEl.hidden = hidden;
+      if (paginationElTop) paginationElTop.hidden = hidden;
+    }
+    function syncPaginationNavs(totalPages) {
+      var show = fullList.length > pageSize;
+      setPaginationHidden(!show);
+      if (!show) return;
+      var prevDisabled = currentPage <= 1;
+      var nextDisabled = currentPage >= totalPages;
+      var infoText = 'Page ' + currentPage + ' of ' + totalPages;
+      function syncOne(prev, next, info) {
+        if (prev) { prev.disabled = prevDisabled; prev.setAttribute('aria-disabled', prevDisabled); }
+        if (next) { next.disabled = nextDisabled; next.setAttribute('aria-disabled', nextDisabled); }
+        if (info) info.textContent = infoText;
+      }
+      syncOne(paginationPrev, paginationNext, paginationInfo);
+      syncOne(paginationPrevTop, paginationNextTop, paginationInfoTop);
+    }
+    function scrollUploadsSectionIntoView() {
+      if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function goPrevPage() {
+      if (currentPage <= 1) return;
+      currentPage--;
+      render(false);
+      scrollUploadsSectionIntoView();
+    }
+    function goNextPage() {
+      var tp = Math.ceil(fullList.length / pageSize) || 1;
+      if (currentPage >= tp) return;
+      currentPage++;
+      render(false);
+      scrollUploadsSectionIntoView();
+    }
     function render(resetPage) {
       if (resetPage !== false) currentPage = 1;
       var collection = (collectionSelect && collectionSelect.value) || '';
@@ -157,7 +201,7 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
       if (currentList.length === 0) {
         grid.hidden = true;
         if (empty) { empty.textContent = 'No uploads in this collection.'; empty.hidden = false; }
-        if (paginationEl) paginationEl.hidden = true;
+        setPaginationHidden(true);
         return;
       }
       if (empty) empty.hidden = true;
@@ -169,22 +213,7 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
         li.addEventListener('click', function () { openLightbox(i); });
         grid.appendChild(li);
       });
-      if (paginationEl) {
-        if (fullList.length > pageSize) {
-          paginationEl.hidden = false;
-          if (paginationPrev) {
-            paginationPrev.disabled = currentPage <= 1;
-            paginationPrev.setAttribute('aria-disabled', currentPage <= 1);
-          }
-          if (paginationNext) {
-            paginationNext.disabled = currentPage >= totalPages;
-            paginationNext.setAttribute('aria-disabled', currentPage >= totalPages);
-          }
-          if (paginationInfo) paginationInfo.textContent = 'Page ' + currentPage + ' of ' + totalPages;
-        } else {
-          paginationEl.hidden = true;
-        }
-      }
+      syncPaginationNavs(totalPages);
 
     }
     var done = false;
@@ -231,16 +260,10 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
           render();
           if (collectionSelect) collectionSelect.addEventListener('change', function () { render(true); });
           if (sortSelect) sortSelect.addEventListener('change', function () { render(true); });
-          if (paginationPrev) paginationPrev.addEventListener('click', function () {
-            if (currentPage <= 1) return;
-            currentPage--;
-            render(false);
-          });
-          if (paginationNext) paginationNext.addEventListener('click', function () {
-            if (currentPage >= Math.ceil(fullList.length / pageSize)) return;
-            currentPage++;
-            render(false);
-          });
+          if (paginationPrev) paginationPrev.addEventListener('click', goPrevPage);
+          if (paginationNext) paginationNext.addEventListener('click', goNextPage);
+          if (paginationPrevTop) paginationPrevTop.addEventListener('click', goPrevPage);
+          if (paginationNextTop) paginationNextTop.addEventListener('click', goNextPage);
           if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
           if (lightboxBackdrop) lightboxBackdrop.addEventListener('click', closeLightbox);
           if (lightboxPrev) lightboxPrev.addEventListener('click', function () {
@@ -342,6 +365,14 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
     justify-content: center;
     gap: 1rem;
     flex-wrap: wrap;
+  }
+  .uploads-pagination--top {
+    margin-top: 0.25rem;
+    margin-bottom: calc(var(--space) * 1.25);
+    padding-bottom: var(--space);
+    border-bottom: 1px solid var(--border);
+  }
+  .uploads-pagination--bottom {
     margin-top: calc(var(--space) * 2);
     padding-top: var(--space);
     border-top: 1px solid var(--border);
