@@ -429,43 +429,6 @@ const { base = import.meta.env.BASE_URL, supabaseUrl, supabaseKey } = Astro.prop
           if (!isNaN(idx)) openLightbox(idx);
         });
       });
-
-      // #region agent log
-      if (bottom.length > 0) {
-        function logDebug(payload) {
-          fetch('http://127.0.0.1:7942/ingest/e9039904-945a-4d3b-b67a-c995fafda067',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d668c7'},body:JSON.stringify({sessionId:'d668c7',location:'FeaturedDatabaseCollection.astro:renderGrid',timestamp:Date.now(),...payload})}).catch(function(){});
-        }
-        function measureBottomRow(runId) {
-          var wrap = section && section.querySelector('.featured-database-collection__wrap');
-          var bottomEl = mount && mount.querySelector('.featured-collection__bottom');
-          var tallCells = bottomEl ? bottomEl.querySelectorAll('.featured-cell--tall') : [];
-          var cellWidths = [];
-          var imgWidths = [];
-          var imgComputed = [];
-          for (var i = 0; i < tallCells.length; i++) {
-            var c = tallCells[i];
-            cellWidths.push(c.offsetWidth);
-            var img = c.querySelector('img');
-            if (img) {
-              imgWidths.push(img.offsetWidth);
-              var cs = window.getComputedStyle(img);
-              imgComputed.push({width:cs.width,height:cs.height,position:cs.position,display:cs.display,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,complete:img.complete});
-            } else { imgWidths.push(0); imgComputed.push(null); }
-          }
-          logDebug({message:'bottom row layout',runId:runId,data:{wrapWidth:wrap?wrap.offsetWidth:0,bottomWidth:bottomEl?bottomEl.offsetWidth:0,cellWidths:cellWidths,imgWidths:imgWidths,imgComputed:imgComputed},hypothesisId:'D,F,G'});
-        }
-        setTimeout(function(){ measureBottomRow('200ms'); }, 200);
-        setTimeout(function(){ measureBottomRow('2s'); }, 2000);
-        var bottomEl = mount && mount.querySelector('.featured-collection__bottom');
-        if (bottomEl) {
-          var imgs = bottomEl.querySelectorAll('.featured-cell--tall img');
-          var loaded = 0;
-          function onLoad() { loaded++; if (loaded >= imgs.length) setTimeout(function(){ measureBottomRow('afterLoad'); }, 50); }
-          for (var j = 0; j < imgs.length; j++) { if (imgs[j].complete) onLoad(); else imgs[j].addEventListener('load', onLoad); }
-          if (imgs.length === 0) setTimeout(function(){ measureBottomRow('afterLoad'); }, 50);
-        }
-      }
-      // #endregion
     }
 
     function updateLightboxImage() {

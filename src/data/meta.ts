@@ -6,7 +6,7 @@ export const defaultDescription =
   'Explore TØX!Q—an AI art portfolio blending dreamcore, surrealism, and psychedelic visuals. Discover haunting, poetic imagery where beauty and decay collide.';
 
 /** Marketing title for Open Graph / Twitter only; browser <title> stays page-specific in Layout. */
-export const socialTitle = 'TØX!Q Art Portfolio | Surreal AI Dreamcore & Psychedelic Visuals';
+export const socialTitle = 'TØX!Q Art Portfolio Surreal AI Dreamcore Visuals';
 
 /** Brief hero description for mobile (editable). */
 export const heroDescription =
