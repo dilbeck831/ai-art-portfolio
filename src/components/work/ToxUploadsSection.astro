@@ -117,12 +117,16 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
       var lightboxBackdrop = document.getElementById('uploads-lightbox-backdrop');
     function escapeAttr(s) { return (s || '').replace(/"/g, '&quot;'); }
     function escapeHtml(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function cellOverlayHtml(a) {
+      var cat = (a.collection || 'Fine Art').trim() || 'Fine Art';
+      return '<div class="featured-cell__overlay">' +
+        '<span class="featured-cell__title">' + escapeHtml(a.title || 'Untitled') + '</span>' +
+        '<span class="featured-cell__cat">' + escapeHtml(cat) + '</span></div>';
+    }
     function cardHtml(a) {
-      return '<div class="art-card__media">' +
-        '<img src="' + escapeAttr(a.image_url) + '" alt="' + escapeAttr(a.title || 'Artwork') + '" loading="lazy" decoding="async" />' +
-        '</div><div class="art-card__body">' +
-        '<h3 class="art-card__title">' + escapeHtml(a.title || 'Untitled') + '</h3>' +
-        (a.collection ? '<p class="art-card__description uploads-collection">' + escapeHtml(String(a.collection)) + '</p>' : '') +
+      return '<div class="uploads-tile__media">' +
+        '<img src="' + escapeAttr(a.image_url) + '" alt="" role="presentation" loading="lazy" decoding="async" />' +
+        cellOverlayHtml(a) +
         '</div>';
     }
     function updateLightboxImage() {
@@ -211,9 +215,19 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
       grid.hidden = false;
       currentList.forEach(function (a, i) {
         var li = document.createElement('li');
-        li.className = 'art-card uploads-card';
+        li.className = 'uploads-tile';
+        li.setAttribute('tabindex', '0');
+        li.setAttribute('role', 'button');
+        var label = (a.title || 'Artwork') + (a.collection ? ', ' + String(a.collection) : '');
+        li.setAttribute('aria-label', label);
         li.innerHTML = cardHtml(a);
         li.addEventListener('click', function () { openLightbox(i); });
+        li.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openLightbox(i);
+          }
+        });
         grid.appendChild(li);
       });
       syncPaginationNavs(totalPages);
@@ -364,13 +378,6 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
   }
   .uploads-grid {
     margin-top: 0;
-  }
-  .uploads-card {
-    cursor: pointer;
-  }
-  .uploads-collection {
-    text-transform: capitalize;
-    font-size: 0.8rem;
   }
 
   .uploads-pagination {
