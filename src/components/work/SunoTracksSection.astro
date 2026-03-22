@@ -5,21 +5,23 @@ const supabaseKey = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
 const embedBase = 'https://suno.com/embed';
 const fallbackJson = JSON.stringify(fallbackTracks);
 ---
-<section
-  class="suno-embeds"
+<div
+  class="suno-embeds suno-embeds--hub"
   aria-label="Suno tracks"
   id="work-suno-tracks"
   data-embed-base={embedBase}
   data-supabase-url={supabaseUrl}
   data-supabase-key={supabaseKey}
 >
-  <h2 class="section-title">Tracks</h2>
   <div class="suno-embeds__player-wrap" aria-live="polite" id="suno-player-wrap">
     <p class="suno-embeds__loading" id="suno-loading">Loading tracks…</p>
   </div>
-  <div class="suno-embeds__track-list" role="tablist" aria-label="Select a track" id="suno-track-list"></div>
-  <script type="application/json" id="suno-fallback-tracks" set:html={fallbackJson} />
-</section>
+  <div class="work-pages-dropdown">
+    <label for="suno-track-select">Track</label>
+    <select id="suno-track-select" aria-label="Select a track"></select>
+  </div>
+</div>
+<script type="application/json" id="suno-fallback-tracks" set:html={fallbackJson} />
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" is:inline></script>
 <script is:inline>
@@ -27,35 +29,27 @@ const fallbackJson = JSON.stringify(fallbackTracks);
     var section = document.getElementById('work-suno-tracks');
     var embedBase = (section && section.getAttribute('data-embed-base')) || 'https://suno.com/embed';
     var wrap = document.getElementById('suno-player-wrap');
-    var listEl = document.getElementById('suno-track-list');
+    var selectEl = document.getElementById('suno-track-select');
     var fbEl = document.getElementById('suno-fallback-tracks');
     var fallback = [];
     try {
       fallback = JSON.parse(fbEl ? fbEl.textContent : '[]') || [];
     } catch (e) {}
 
-    function wirePills(iframeEl) {
-      if (!section || !iframeEl) return;
-      var buttons = section.querySelectorAll('.suno-embeds__track-btn');
-      buttons.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          var id = btn.getAttribute('data-suno-id');
-          var title = btn.getAttribute('data-suno-title');
-          if (!id || !iframeEl) return;
-          iframeEl.src = embedBase + '/' + id + '?autoplay=1';
-          iframeEl.title = title + ' — Suno';
-          buttons.forEach(function (b) {
-            b.classList.remove('is-active');
-            b.setAttribute('aria-selected', 'false');
-          });
-          btn.classList.add('is-active');
-          btn.setAttribute('aria-selected', 'true');
-        });
-      });
+    function wireSelect(iframeEl) {
+      if (!selectEl || !iframeEl) return;
+      selectEl.onchange = function () {
+        var id = selectEl.value;
+        if (!id) return;
+        var opt = selectEl.options[selectEl.selectedIndex];
+        var title = opt ? opt.textContent : '';
+        iframeEl.src = embedBase + '/' + id + '?autoplay=1';
+        iframeEl.title = title + ' — Suno';
+      };
     }
 
     function applyTracks(tracks) {
-      if (!tracks || !tracks.length || !wrap || !listEl) return;
+      if (!tracks || !tracks.length || !wrap || !selectEl) return;
       var first = tracks[0];
       wrap.innerHTML = '';
       var iframe = document.createElement('iframe');
@@ -65,19 +59,15 @@ const fallbackJson = JSON.stringify(fallbackTracks);
       iframe.title = first.title + ' — Suno';
       iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope');
       wrap.appendChild(iframe);
-      listEl.innerHTML = '';
-      tracks.forEach(function (t, i) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'suno-embeds__track-btn' + (i === 0 ? ' is-active' : '');
-        btn.setAttribute('role', 'tab');
-        btn.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
-        btn.setAttribute('data-suno-id', t.id);
-        btn.setAttribute('data-suno-title', t.title);
-        btn.textContent = t.title;
-        listEl.appendChild(btn);
+      selectEl.innerHTML = '';
+      tracks.forEach(function (t) {
+        var opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = t.title;
+        selectEl.appendChild(opt);
       });
-      wirePills(document.getElementById('suno-embed-iframe'));
+      selectEl.value = first.id;
+      wireSelect(document.getElementById('suno-embed-iframe'));
     }
 
     function runWhenSupabaseReady(fn) {
@@ -132,7 +122,7 @@ const fallbackJson = JSON.stringify(fallbackTracks);
 <style>
   .suno-embeds__loading {
     margin: 0;
-    min-height: 12rem;
+    min-height: 7rem;
     display: flex;
     align-items: center;
     justify-content: center;

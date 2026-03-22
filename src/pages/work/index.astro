@@ -7,14 +7,18 @@ import WorkPagesDropdown from '../../components/work/WorkPagesDropdown.astro';
 import { processSections } from '../../data/ai-art-process';
 ---
 <WorkLayout title="Work" description="AI Art, Music, and UI/UX — TØX!Q / TOXIQMYND.">
-  <div class="work-page-intro">
+  <div class="work-page-intro work-page-intro--3col">
     <div class="work-page-intro__text">
       <h1 class="page-title">Work</h1>
       <p class="page-subtitle work-page-intro__subtitle">AI Art, music, and UI/UX. One identity.</p>
     </div>
-    <WorkPagesDropdown current="work" />
+    <div class="work-page-intro__suno">
+      <SunoTracksSection />
+    </div>
+    <div class="work-page-intro__pages">
+      <WorkPagesDropdown current="work" />
+    </div>
   </div>
-  <SunoTracksSection />
   <ToxUploadsSection />
   <section class="process-section">
     <h2 class="section-title">Process</h2>
@@ -24,21 +28,55 @@ import { processSections } from '../../data/ai-art-process';
 
 <style>
   .work-page-intro {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem 1.5rem;
     margin-bottom: calc(var(--space) * 2);
   }
 
+  /* Mobile-first: stack. Bootstrap-like 12-col ratios on wider viewports. */
+  .work-page-intro--3col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem 1.25rem;
+    align-items: start;
+  }
+
+  /* 768px–999px: 5 / 4 / 3 */
+  @media (min-width: 768px) {
+    .work-page-intro--3col {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 3fr);
+    }
+  }
+
+  /* 1000px+: 3 / 6 / 3 (middle column half the row) */
+  @media (min-width: 1000px) {
+    .work-page-intro--3col {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr);
+    }
+  }
+
   .work-page-intro__text {
-    flex: 1;
-    min-width: min(100%, 14rem);
+    min-width: 0;
   }
 
   .work-page-intro__subtitle {
     margin-bottom: 0;
+  }
+
+  .work-page-intro__suno {
+    min-width: 0;
+  }
+
+  .work-page-intro__pages {
+    justify-self: end;
+  }
+
+  @media (max-width: 767px) {
+    .work-page-intro__pages {
+      justify-self: stretch;
+    }
+
+    .work-page-intro__pages .work-pages-dropdown {
+      width: 100%;
+    }
   }
 
   .process-section {
