@@ -87,22 +87,27 @@ const { base = import.meta.env.BASE_URL, supabaseUrl, supabaseKey } = Astro.prop
   }
 
   /* Same grid layout as Featured Collection — :global() so injected content gets layout (no Astro scope) */
+  /* Wireframe: left tall portrait (fills row height) + right 2×2 of squares; row aligns top/bottom */
   :global(.featured-database-collection__wrap .featured-collection__top) {
     display: grid;
-    grid-template-columns: 1.15fr 1fr;
+    grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
     gap: 6px;
     margin-bottom: 6px;
-    min-height: 540px;
     align-items: stretch;
+    min-height: 0;
   }
 
+  /* Square 2×2: overall block is 1:1; minmax(0,1fr) prevents fr overflow/overlap */
   :global(.featured-database-collection__wrap .featured-collection__grid2x2) {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
     gap: 6px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     min-height: 0;
     align-items: stretch;
+    justify-items: stretch;
   }
 
   :global(.featured-database-collection__wrap .featured-collection__bottom) {
@@ -147,12 +152,19 @@ const { base = import.meta.env.BASE_URL, supabaseUrl, supabaseKey } = Astro.prop
     height: 100%;
   }
 
+  /* Desktop: hero fills row height (portrait silhouette vs wider right column); no 3:4 here — it fought the square grid */
   :global(.featured-database-collection__wrap .featured-cell--hero) {
-    min-height: 540px;
+    height: 100%;
+    min-height: 0;
+    width: 100%;
+    align-self: stretch;
   }
 
   :global(.featured-database-collection__wrap .featured-cell--sm) {
-    aspect-ratio: auto;
+    height: 100%;
+    min-height: 0;
+    width: 100%;
+    align-self: stretch;
   }
 
   :global(.featured-database-collection__wrap .featured-cell--tall) {
@@ -189,11 +201,20 @@ const { base = import.meta.env.BASE_URL, supabaseUrl, supabaseKey } = Astro.prop
   @media (max-width: 900px) {
     :global(.featured-database-collection__wrap .featured-collection__top) {
       grid-template-columns: 1fr;
-      min-height: 420px;
+      align-items: start;
     }
 
     :global(.featured-database-collection__wrap .featured-cell--hero) {
-      min-height: 420px;
+      aspect-ratio: 3 / 4;
+      height: auto;
+      min-height: 280px;
+      max-height: min(85vh, 720px);
+    }
+
+    :global(.featured-database-collection__wrap .featured-collection__grid2x2) {
+      aspect-ratio: 1 / 1;
+      max-width: min(100%, 560px);
+      margin-inline: auto;
     }
 
     :global(.featured-database-collection__wrap .featured-collection__bottom) {
