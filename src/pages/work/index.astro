@@ -3,13 +3,19 @@ import WorkLayout from '../../layouts/WorkLayout.astro';
 import TracksSection from '../../components/work/TracksSection.astro';
 import ToxUploadsSection from '../../components/work/ToxUploadsSection.astro';
 import ProcessBlock from '../../components/work/ProcessBlock.astro';
+import WorkPagesDropdown from '../../components/work/WorkPagesDropdown.astro';
 import { sunoTracks } from '../../data/music';
 import { processSections } from '../../data/ai-art-process';
 const sunoEmbedBase = 'https://suno.com/embed';
 ---
 <WorkLayout title="Work" description="AI Art, Music, and UI/UX — TØX!Q / TOXIQMYND.">
-  <h1 class="page-title">Work</h1>
-  <p class="page-subtitle">AI Art, music, and UI/UX. One identity.</p>
+  <div class="work-page-intro">
+    <div class="work-page-intro__text">
+      <h1 class="page-title">Work</h1>
+      <p class="page-subtitle work-page-intro__subtitle">AI Art, music, and UI/UX. One identity.</p>
+    </div>
+    <WorkPagesDropdown current="work" />
+  </div>
   <TracksSection tracks={sunoTracks} embedBase={sunoEmbedBase} />
   <ToxUploadsSection />
   <section class="process-section">
@@ -19,6 +25,24 @@ const sunoEmbedBase = 'https://suno.com/embed';
 </WorkLayout>
 
 <style>
+  .work-page-intro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    margin-bottom: calc(var(--space) * 2);
+  }
+
+  .work-page-intro__text {
+    flex: 1;
+    min-width: min(100%, 14rem);
+  }
+
+  .work-page-intro__subtitle {
+    margin-bottom: 0;
+  }
+
   .process-section {
     margin-top: calc(var(--space) * 3);
   }

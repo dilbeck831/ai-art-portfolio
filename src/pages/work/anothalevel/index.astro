@@ -1,5 +1,6 @@
 ---
 import WorkLayout from '../../../layouts/WorkLayout.astro';
+import WorkPagesDropdown from '../../../components/work/WorkPagesDropdown.astro';
 import { readdirSync } from 'node:fs';
 import { existsSync } from 'node:fs';
 import { extname, resolve } from 'node:path';
@@ -28,8 +29,13 @@ const artworksJson = JSON.stringify(artworks).replace(/</g, '\\u003c');
   description="Pinterest-style mosaic gallery and lightbox. TØX!Q / TOXIQMYND."
   breadcrumb={[{ label: 'Anotha Level', href: `${import.meta.env.BASE_URL}work/anothalevel/` }]}
 >
-  <h1 class="page-title">Anotha Level</h1>
-  <p class="page-subtitle">A mosaic feed with full-screen lightbox viewing.</p>
+  <div class="work-page-intro">
+    <div class="work-page-intro__text">
+      <h1 class="page-title">Anotha Level</h1>
+      <p class="page-subtitle work-page-intro__subtitle">A mosaic feed with full-screen lightbox viewing.</p>
+    </div>
+    <WorkPagesDropdown current="archive" />
+  </div>
 
   <section
     class="mosaic-gallery"
@@ -53,7 +59,7 @@ const artworksJson = JSON.stringify(artworks).replace(/</g, '\\u003c');
     <div class="mosaic-lightbox__backdrop" id="mosaic-lightbox-backdrop"></div>
     <button type="button" class="mosaic-lightbox__close" id="mosaic-lightbox-close" aria-label="Close">×</button>
     <button type="button" class="mosaic-lightbox__nav mosaic-lightbox__nav--prev" id="mosaic-lightbox-prev" aria-label="Previous image">‹</button>
-    <div class="mosaic-lightbox__content">
+    <div class="mosaic-lightbox__content" data-lightbox-content>
       <img id="mosaic-lightbox-img" src="" alt="" />
       <p class="mosaic-lightbox__counter" id="mosaic-lightbox-counter" aria-live="polite"></p>
     </div>
@@ -142,8 +148,26 @@ const artworksJson = JSON.stringify(artworks).replace(/</g, '\\u003c');
 </WorkLayout>
 
 <style>
+  .work-page-intro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    margin-bottom: calc(var(--space) * 2);
+  }
+
+  .work-page-intro__text {
+    flex: 1;
+    min-width: min(100%, 14rem);
+  }
+
+  .work-page-intro__subtitle {
+    margin-bottom: 0;
+  }
+
   .mosaic-gallery {
-    margin-top: calc(var(--space) * 2);
+    margin-top: 0;
   }
 
   .mosaic-gallery__loading {

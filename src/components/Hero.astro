@@ -47,32 +47,53 @@ const navLinks = [
     </div>
     <div class="hero__image-wrap">
       {carouselImages ? (
-        <div class="hero__carousel" id="hero-carousel" aria-roledescription="carousel" aria-label="Hero images">
-          <div class="hero__carousel-track">
-            {carouselImages.map((img, i) => (
-              <div class="hero__slide" data-slide-index={i} aria-hidden="true">
-                <img src={img.src} alt={img.alt} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" width="800" height="1000" />
-              </div>
-            ))}
-          </div>
-          <button type="button" class="hero__carousel-btn hero__carousel-btn--prev" aria-label="Previous image" title="Previous">
-            <span aria-hidden="true">‹</span>
-          </button>
-          <button type="button" class="hero__carousel-btn hero__carousel-btn--next" aria-label="Next image" title="Next">
-            <span aria-hidden="true">›</span>
-          </button>
-          <div class="hero__carousel-controls">
-            <div class="hero__carousel-dots" role="tablist" aria-label="Slide index">
-              {carouselImages.map((_, i) => (
-                <button type="button" class="hero__carousel-dot" role="tab" aria-selected={i === 0} aria-label={`Image ${i + 1}`} data-index={i}></button>
+        <>
+          <div class="hero__carousel" id="hero-carousel" aria-roledescription="carousel" aria-label="Hero images">
+            <div class="hero__carousel-track">
+              {carouselImages.map((img, i) => (
+                <div class="hero__slide" data-slide-index={i} aria-hidden="true">
+                  <img src={img.src} alt={img.alt} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" width="800" height="1000" />
+                </div>
               ))}
             </div>
-            <button type="button" class="hero__carousel-pause" id="hero-carousel-pause" aria-label="Pause auto-rotate" title="Pause" aria-pressed="false">
-              <span class="hero__carousel-pause-icon hero__carousel-pause-icon--pause" aria-hidden="true">⏸</span>
-              <span class="hero__carousel-pause-icon hero__carousel-pause-icon--play" aria-hidden="true" hidden>▶</span>
+            <button type="button" class="hero__carousel-btn hero__carousel-btn--prev" aria-label="Previous image" title="Previous">
+              <span aria-hidden="true">‹</span>
             </button>
+            <button type="button" class="hero__carousel-btn hero__carousel-btn--next" aria-label="Next image" title="Next">
+              <span aria-hidden="true">›</span>
+            </button>
+            <div class="hero__carousel-controls">
+              <div class="hero__carousel-dots" role="tablist" aria-label="Slide index">
+                {carouselImages.map((_, i) => (
+                  <button type="button" class="hero__carousel-dot" role="tab" aria-selected={i === 0} aria-label={`Image ${i + 1}`} data-index={i}></button>
+                ))}
+              </div>
+              <button type="button" class="hero__carousel-pause" id="hero-carousel-pause" aria-label="Pause auto-rotate" title="Pause" aria-pressed="false">
+                <span class="hero__carousel-pause-icon hero__carousel-pause-icon--pause" aria-hidden="true">⏸</span>
+                <span class="hero__carousel-pause-icon hero__carousel-pause-icon--play" aria-hidden="true" hidden>▶</span>
+              </button>
+            </div>
           </div>
-        </div>
+
+          <div
+            id="hero-carousel-lightbox"
+            class="hero-lightbox"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Enlarged hero artwork"
+            hidden
+          >
+            <div class="hero-lightbox__backdrop" id="hero-carousel-lightbox-backdrop"></div>
+            <button type="button" class="hero-lightbox__close" id="hero-carousel-lightbox-close" aria-label="Close">×</button>
+            <button type="button" class="hero-lightbox__nav hero-lightbox__nav--prev" id="hero-carousel-lightbox-prev" aria-label="Previous image">‹</button>
+            <div class="hero-lightbox__content" data-lightbox-content>
+              <img id="hero-carousel-lightbox-img" src="" alt="" />
+              <p class="hero-lightbox__caption" id="hero-carousel-lightbox-caption"></p>
+              <p class="hero-lightbox__counter" id="hero-carousel-lightbox-counter" aria-live="polite"></p>
+            </div>
+            <button type="button" class="hero-lightbox__nav hero-lightbox__nav--next" id="hero-carousel-lightbox-next" aria-label="Next image">›</button>
+          </div>
+        </>
       ) : singleImage ? (
         <img src={singleImage.src} alt={singleImage.alt} class="hero__image" loading="eager" decoding="async" width="800" height="1000" />
       ) : (
@@ -119,7 +140,7 @@ const navLinks = [
     min-height: 480px;
     overflow: visible;
     padding: 0;
-    max-width: var(--max-width, 1400px);
+    max-width: var(--max-width, 1600px);
     margin: 0 auto;
     text-align: left;
     background: none;
@@ -192,8 +213,23 @@ const navLinks = [
     font-weight: 800;
     letter-spacing: -0.02em;
     margin: 0 0 0.75rem;
-    color: var(--text);
     line-height: 1.1;
+    background: linear-gradient(
+      110deg,
+      #7c3aed 0%,
+      #8b5cf6 18%,
+      #a78bfa 38%,
+      #e879f9 52%,
+      #c4b5fd 68%,
+      #8b5cf6 85%,
+      #7c3aed 100%
+    );
+    background-size: 220% 100%;
+    animation: hero-title-gradient-shift 14s ease-in-out infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
   }
 
   .hero__mobile-desc {
@@ -387,18 +423,51 @@ const navLinks = [
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
   }
 
+  /* Wider gradient so background-position can drift subtly */
+  @keyframes hero-title-gradient-shift {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
   .hero__title {
-    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-size: clamp(2.5rem, 6vw, 10rem);
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.05;
     margin: 0 0 0.5rem 0;
-    background: var(--gradient-primary, linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.9) 100%));
+    /* Same palette as --gradient-primary, extended for seamless drift */
+    background: linear-gradient(
+      110deg,
+      #7c3aed 0%,
+      #8b5cf6 18%,
+      #a78bfa 38%,
+      #e879f9 52%,
+      #c4b5fd 68%,
+      #8b5cf6 85%,
+      #7c3aed 100%
+    );
+    background-size: 220% 100%;
+    animation: hero-title-gradient-shift 14s ease-in-out infinite;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    -webkit-text-fill-color: transparent;
     text-shadow: none;
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__title,
+    .hero__mobile-name {
+      animation: none;
+      background: var(--gradient-primary, linear-gradient(135deg, #8b5cf6 0%, #a78bfa 50%, #e879f9 100%));
+      background-size: 100% 100%;
+    }
   }
 
   .hero__subline {
@@ -440,7 +509,8 @@ const navLinks = [
   .hero__carousel {
     position: relative;
     width: 100%;
-    max-width: 560px;
+    /* At least as wide as track max (39.375rem) + arrow inset */
+    max-width: min(100%, calc(39.375rem + 2.5rem));
     margin: 0 auto;
     min-height: 320px;
     display: flex;
@@ -451,7 +521,7 @@ const navLinks = [
   .hero__carousel-track {
     position: relative;
     width: 100%;
-    max-width: 520px;
+    max-width: clamp(32.5rem, 21.042rem + 15.278vw, 39.375rem);
     aspect-ratio: 4 / 5;
     max-height: 85vh;
   }
@@ -482,6 +552,12 @@ const navLinks = [
     opacity: 1;
     box-shadow: 0px 0px 50px 15px rgb(0 0 0 / 60%), 0 0 0 1px rgb(176 132 255 / 48%);
     pointer-events: auto;
+    cursor: pointer;
+  }
+
+  .hero__slide.is-center:focus-visible {
+    outline: 2px solid var(--accent-bright, #c4b5fd);
+    outline-offset: 4px;
   }
 
   .hero__slide.is-right {
@@ -599,6 +675,118 @@ const navLinks = [
     border-color: var(--accent-bright, #c4b5fd);
     transform: scale(1.2);
   }
+
+  /* ----- Hero carousel lightbox ----- */
+  #hero-carousel-lightbox.hero-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  #hero-carousel-lightbox.hero-lightbox[hidden] {
+    display: none !important;
+  }
+
+  #hero-carousel-lightbox .hero-lightbox__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.88);
+    cursor: pointer;
+  }
+
+  #hero-carousel-lightbox .hero-lightbox__content {
+    position: relative;
+    z-index: 2;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  #hero-carousel-lightbox .hero-lightbox__content img {
+    max-width: 100%;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius-lg, 16px);
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.5);
+  }
+
+  #hero-carousel-lightbox .hero-lightbox__caption {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    text-align: center;
+  }
+
+  #hero-carousel-lightbox .hero-lightbox__counter {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin: 0;
+  }
+
+  #hero-carousel-lightbox .hero-lightbox__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 3;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  #hero-carousel-lightbox .hero-lightbox__close:hover {
+    background: rgba(0, 0, 0, 0.7);
+    border-color: rgba(255, 255, 255, 0.45);
+  }
+
+  #hero-carousel-lightbox .hero-lightbox__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  #hero-carousel-lightbox .hero-lightbox__nav:hover {
+    background: rgba(0, 0, 0, 0.65);
+    border-color: rgba(255, 255, 255, 0.45);
+  }
+
+  #hero-carousel-lightbox .hero-lightbox__nav--prev {
+    left: 1rem;
+  }
+
+  #hero-carousel-lightbox .hero-lightbox__nav--next {
+    right: 1rem;
+  }
 </style>
 
 <script>
@@ -608,7 +796,6 @@ const navLinks = [
     const carousel = document.getElementById('hero-carousel');
     if (!carousel) return;
 
-    const track = carousel.querySelector('.hero__carousel-track');
     const slides = Array.from(carousel.querySelectorAll('.hero__slide'));
     const prevBtn = carousel.querySelector('.hero__carousel-btn--prev');
     const nextBtn = carousel.querySelector('.hero__carousel-btn--next');
@@ -616,6 +803,25 @@ const navLinks = [
     const pauseBtn = document.getElementById('hero-carousel-pause');
     const total = slides.length;
     if (total < 2) return;
+
+    const lightbox = document.getElementById('hero-carousel-lightbox');
+    const lightboxImg = document.getElementById('hero-carousel-lightbox-img') as HTMLImageElement | null;
+    const lightboxCaption = document.getElementById('hero-carousel-lightbox-caption');
+    const lightboxCounter = document.getElementById('hero-carousel-lightbox-counter');
+    const lightboxPrev = document.getElementById('hero-carousel-lightbox-prev');
+    const lightboxNext = document.getElementById('hero-carousel-lightbox-next');
+    const lightboxClose = document.getElementById('hero-carousel-lightbox-close');
+    const lightboxBackdrop = document.getElementById('hero-carousel-lightbox-backdrop');
+
+    const items = slides.map((slide) => {
+      const img = slide.querySelector('img');
+      return {
+        src: img?.getAttribute('src') || '',
+        alt: img?.getAttribute('alt') || '',
+      };
+    });
+
+    let lightboxIndex = 0;
 
     let currentIndex = 0;
     let autoTimer: ReturnType<typeof setInterval> | null = null;
@@ -659,7 +865,63 @@ const navLinks = [
     function resetAuto() {
       if (autoTimer) clearInterval(autoTimer);
       autoTimer = null;
-      if (!paused) autoTimer = setInterval(next, AUTO_MS);
+      if (!paused && (!lightbox || lightbox.hidden)) {
+        autoTimer = setInterval(next, AUTO_MS);
+      }
+    }
+
+    function updateLightboxImage() {
+      if (!lightboxImg || !items.length) return;
+      const item = items[lightboxIndex];
+      lightboxImg.src = item.src;
+      lightboxImg.alt = item.alt || 'Artwork';
+      if (lightboxCaption) lightboxCaption.textContent = item.alt || 'Untitled';
+      if (lightboxCounter) lightboxCounter.textContent = `${lightboxIndex + 1} / ${items.length}`;
+      const hideNav = items.length <= 1;
+      if (lightboxPrev) lightboxPrev.style.visibility = hideNav ? 'hidden' : 'visible';
+      if (lightboxNext) lightboxNext.style.visibility = hideNav ? 'hidden' : 'visible';
+    }
+
+    function openLightbox(index: number) {
+      lightboxIndex = Math.max(0, Math.min(index, items.length - 1));
+      updateLightboxImage();
+      if (lightbox) {
+        lightbox.hidden = false;
+        document.body.style.overflow = 'hidden';
+      }
+      if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+      }
+      document.addEventListener('keydown', lightboxKeydown);
+      lightboxClose?.focus();
+    }
+
+    function closeLightbox() {
+      if (lightbox) {
+        lightbox.hidden = true;
+        document.body.style.overflow = '';
+      }
+      document.removeEventListener('keydown', lightboxKeydown);
+      if (!paused) resetAuto();
+    }
+
+    function lightboxKeydown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeLightbox();
+        return;
+      }
+      if (e.key === 'ArrowLeft' && items.length > 1) {
+        e.preventDefault();
+        lightboxIndex = (lightboxIndex - 1 + items.length) % items.length;
+        updateLightboxImage();
+      }
+      if (e.key === 'ArrowRight' && items.length > 1) {
+        e.preventDefault();
+        lightboxIndex = (lightboxIndex + 1) % items.length;
+        updateLightboxImage();
+      }
     }
 
     function setPaused(value: boolean) {
@@ -694,7 +956,34 @@ const navLinks = [
       }
     });
     carousel.addEventListener('mouseleave', () => {
-      if (!paused) resetAuto();
+      if (!paused && (!lightbox || lightbox.hidden)) resetAuto();
+    });
+
+    carousel.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (
+        t.closest('.hero__carousel-btn') ||
+        t.closest('.hero__carousel-controls') ||
+        t.closest('.hero__carousel-dot')
+      ) {
+        return;
+      }
+      const center = carousel.querySelector('.hero__slide.is-center');
+      if (!center || !center.contains(t)) return;
+      openLightbox(currentIndex);
+    });
+
+    lightboxClose?.addEventListener('click', closeLightbox);
+    lightboxBackdrop?.addEventListener('click', closeLightbox);
+    lightboxPrev?.addEventListener('click', () => {
+      if (items.length <= 1) return;
+      lightboxIndex = (lightboxIndex - 1 + items.length) % items.length;
+      updateLightboxImage();
+    });
+    lightboxNext?.addEventListener('click', () => {
+      if (items.length <= 1) return;
+      lightboxIndex = (lightboxIndex + 1) % items.length;
+      updateLightboxImage();
     });
   }
 
