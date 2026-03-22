@@ -3,6 +3,7 @@ import '../styles/global.css';
 import GlowCursor from '../components/GlowCursor.astro';
 import Nav from '../components/Nav.astro';
 import SocialIcons from '../components/SocialIcons.astro';
+import SeoHead from '../components/SeoHead.astro';
 import { siteTitle, brandName, defaultDescription } from '../data/meta';
 
 interface Props {
@@ -11,6 +12,11 @@ interface Props {
 }
 const { title, description = defaultDescription } = Astro.props;
 const base = import.meta.env.BASE_URL;
+const site = Astro.site;
+const ogImageAbsolute = site
+  ? new URL(`${base.replace(/^\//, '')}og-image.png`, site).href
+  : new URL(`${base}og-image.png`, Astro.url.origin).href;
+const canonicalUrl = Astro.url.href;
 const fullTitle = `${title} · Lab · ${siteTitle}`;
 const currentPath = Astro.url.pathname;
 const isActive = (path: string) =>
@@ -28,6 +34,7 @@ const navLinks = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <meta name="description" content={description} />
+    <SeoHead description={description} ogImageAbsolute={ogImageAbsolute} canonicalUrl={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <title>{fullTitle}</title>
   </head>

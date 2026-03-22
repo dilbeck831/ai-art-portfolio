@@ -3,6 +3,7 @@ import '../styles/global.css';
 import GlowCursor from '../components/GlowCursor.astro';
 import Nav from '../components/Nav.astro';
 import SocialIcons from '../components/SocialIcons.astro';
+import SeoHead from '../components/SeoHead.astro';
 import { siteTitle, brandName, defaultDescription } from '../data/meta';
 
 interface Props {
@@ -16,6 +17,11 @@ const pathNorm = pathname.replace(/\/$/, '') || '/';
 const baseNorm = base.replace(/\/$/, '') || '/';
 const currentPath = pathname;
 const fullTitle = title === 'Home' ? `${brandName} · ${siteTitle}` : `${title} · ${siteTitle}`;
+const site = Astro.site;
+const ogImageAbsolute = site
+  ? new URL(`${base.replace(/^\//, '')}og-image.png`, site).href
+  : new URL(`${base}og-image.png`, Astro.url.origin).href;
+const canonicalUrl = Astro.url.href;
 const isHome = pathNorm === baseNorm;
 const isActive = (path: string) => (path === base ? currentPath === base || currentPath === base.replace(/\/$/, '') : currentPath.startsWith(path));
 const navLinks = [
@@ -31,6 +37,7 @@ const navLinks = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <meta name="description" content={description} />
+    <SeoHead description={description} ogImageAbsolute={ogImageAbsolute} canonicalUrl={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <link rel="preconnect" href="https://sbbmducevhpirnthzvtz.supabase.co" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />

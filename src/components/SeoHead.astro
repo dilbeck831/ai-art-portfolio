@@ -1,0 +1,26 @@
+---
+/**
+ * Social / SEO tags. Page <title> stays in Layout; og/twitter titles use marketing `socialTitle`.
+ */
+import { socialTitle, brandName } from '../data/meta';
+
+interface Props {
+  /** Matches <meta name="description"> (per-page or default). */
+  description: string;
+  ogImageAbsolute: string;
+  canonicalUrl: string;
+}
+const { description, ogImageAbsolute, canonicalUrl } = Astro.props;
+const siteName = brandName;
+---
+<link rel="canonical" href={canonicalUrl} />
+<meta property="og:title" content={socialTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogImageAbsolute} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={siteName} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={socialTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImageAbsolute} />
