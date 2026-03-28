@@ -1,8 +1,9 @@
 # Supabase CLI (https://supabase.com/docs/guides/cli)
 # Edge Functions: `post-to-x` expects a logged-in admin JWT; the cron worker uses a shared secret instead.
 
+# ES256 / JWT signing keys: gateway verify_jwt can 401 valid sessions; validate in function instead.
 [functions.post-to-x]
-verify_jwt = true
+verify_jwt = false
 
 [functions.process-x-scheduled-posts]
 verify_jwt = false
