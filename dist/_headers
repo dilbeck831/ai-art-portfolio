@@ -1,0 +1,14 @@
+# Cache headers for static assets (Netlify; ignored by GitHub Pages)
+# Long-lived cache for hashed build assets; 1 day for art images.
+
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/ai-art-portfolio/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/art/*
+  Cache-Control: public, max-age=86400
+
+/ai-art-portfolio/art/*
+  Cache-Control: public, max-age=86400

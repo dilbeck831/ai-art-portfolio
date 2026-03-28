@@ -1,0 +1,1 @@
+import"./hoisted.P8j7Jg7p.js";import"./SocialIcons.astro_astro_type_script_index_0_lang.CFjtxhZE.js";import"./index.C8pce-KX.js";const t=document.getElementById("work-pages-select");t?.addEventListener("change",()=>{const e=t.value;e&&(window.location.href=e)});

@@ -1,0 +1,1 @@
+import"./SocialIcons.astro_astro_type_script_index_0_lang.CFjtxhZE.js";const e=document.getElementById("header-menu-btn"),n=document.getElementById("header-menu-nav");e&&n&&e.addEventListener("click",()=>{const t=e.getAttribute("aria-expanded")==="true";e.setAttribute("aria-expanded",t?"false":"true"),n.hidden=t});
