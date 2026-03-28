@@ -1392,7 +1392,7 @@
         “Post Now” calls the Edge Function <code>post-to-x</code> with your session. Store X credentials as Supabase secrets:
         <code>X_API_KEY</code> · <code>X_API_SECRET</code> · <code>X_ACCESS_TOKEN</code> · <code>X_ACCESS_TOKEN_SECRET</code>.<br /><br />
         <strong style="color:var(--accent-bright);font-weight:500;">Scheduled</strong><br />
-        Due posts are sent by <code>process-x-scheduled-posts</code> (cron). Set <code>CRON_SECRET</code> and call that function on a schedule with header <code>Authorization: Bearer &lt;CRON_SECRET&gt;</code> (see <code>supabase/functions/process-x-scheduled-posts</code>).
+        Due posts are sent only when something calls <code>process-x-scheduled-posts</code> (Supabase does not run it by itself). Set <code>CRON_SECRET</code> in Edge secrets; this repo includes <code>.github/workflows/process-x-scheduled-posts.yml</code> — add the same value as GitHub secret <code>CRON_SECRET</code> so Actions can POST every 5 min. Logs appear under that function name, not <code>post-to-x</code>.
       </div>
 
     </div>

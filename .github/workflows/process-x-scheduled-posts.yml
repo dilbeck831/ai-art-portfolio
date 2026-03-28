@@ -1,0 +1,27 @@
+# Calls Supabase Edge Function process-x-scheduled-posts so queued 𝕏 posts actually send.
+# Add repo secret CRON_SECRET (same value as Supabase Edge Function secret CRON_SECRET).
+
+name: Process X scheduled posts
+
+on:
+  schedule:
+    - cron: "*/5 * * * *" # every 5 minutes UTC
+  workflow_dispatch:
+
+jobs:
+  invoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invoke worker
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Set GitHub repo secret CRON_SECRET (match Supabase Edge secret)."
+            exit 1
+          fi
+          curl -sS -f -X POST \
+            "https://sbbmducevhpirnthzvtz.supabase.co/functions/v1/process-x-scheduled-posts" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            -w "\nHTTP %{http_code}\n"
