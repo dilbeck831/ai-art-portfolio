@@ -1,6 +1,6 @@
 # Enable: Repo → Settings → Pages → Build: GitHub Actions
-# ASTRO_BASE must match the URL path where the site is served (custom domain + folder).
-# Do not use only github.event.repository.name unless the repo name equals that path segment.
+# Custom domain (toxiqmynd.com) serves this repo at the SITE ROOT — not /ai-art-portfolio/.
+# ASTRO_BASE must be '/' so asset URLs match GitHub Pages (/_astro/..., /about/..., etc.).
 name: Deploy to GitHub Pages
 on:
   push:
@@ -26,8 +26,8 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Must match astro.config.mjs default and live URLs, e.g. toxiqmynd.com/ai-art-portfolio/
-          ASTRO_BASE: '/ai-art-portfolio/'
+          # Root of custom domain = base / (see scripts/verify-production-hosting.mjs + curl checks)
+          ASTRO_BASE: '/'
           SITE_URL: 'https://toxiqmynd.com'
           PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
           PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}

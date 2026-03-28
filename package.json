@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "verify:hosting": "node scripts/verify-production-hosting.mjs"
   },
   "dependencies": {
     "astro": "^4.16.0",

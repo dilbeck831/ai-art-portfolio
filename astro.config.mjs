@@ -1,10 +1,11 @@
 import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
-// SITE_URL + ASTRO_BASE are set in CI (e.g. GitHub Pages). Local dev uses defaults.
+// Custom domain serves the site at domain root (see scripts/verify-production-hosting.mjs).
+// Override with ASTRO_BASE if you host under a subpath.
 export default defineConfig({
   site: process.env.SITE_URL || 'https://toxiqmynd.com',
-  base: process.env.ASTRO_BASE || '/ai-art-portfolio/',
+  base: process.env.ASTRO_BASE || '/',
   redirects: {
     '/gallery': '/work/ai-art',
     '/gallery/': '/work/ai-art/',
