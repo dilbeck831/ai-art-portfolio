@@ -33,6 +33,7 @@
       --radius: 12px;
       --radius-lg: 16px;
       --glow: 0 0 40px -12px rgba(139, 92, 246, 0.5);
+      --x-blue: #1d9bf0;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -235,6 +236,7 @@
     }
 
     input[type="text"],
+    input[type="datetime-local"],
     textarea,
     select {
       background: var(--bg-elevated);
@@ -250,7 +252,12 @@
       -webkit-appearance: none;
     }
 
+    input[type="datetime-local"] {
+      color-scheme: dark;
+    }
+
     input[type="text"]:focus,
+    input[type="datetime-local"]:focus,
     textarea:focus,
     select:focus {
       border-color: var(--purple);
@@ -487,6 +494,44 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ---- Secondary button ---- */
+    .btn-secondary {
+      width: 100%;
+      padding: 0.75rem;
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      color: var(--accent-bright);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+      position: relative;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(139,92,246,0.1);
+      border-color: var(--purple);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary .spinner {
+      display: none;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(167,139,250,0.3);
+      border-top-color: var(--accent-bright);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto;
+    }
+    .btn-secondary.loading .btn-label { display: none; }
+    .btn-secondary.loading .spinner { display: block; }
+
     /* ---- Toast ---- */
     .toast {
       position: fixed;
@@ -679,6 +724,8 @@
     #artifactApp.authenticated { display: block; }
     #sunoApp { display: none; }
     #sunoApp.authenticated { display: block; }
+    #xSchedulerApp { display: none; }
+    #xSchedulerApp.authenticated { display: block; }
     #adminHub { display: none; max-width: 980px; margin: 2.5rem auto; padding: 0 1.5rem; }
     #adminHub.authenticated { display: block; }
     #loginPanel.hidden { display: none; }
@@ -858,9 +905,201 @@
       color: #ffd9dd;
       background: rgba(255, 95, 109, 0.14);
     }
+
+    /* ---- X Scheduler ---- */
+    .x-art-picker {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+      gap: 0.5rem;
+      max-height: 260px;
+      overflow-y: auto;
+      padding: 0.75rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .x-art-picker::-webkit-scrollbar { width: 4px; }
+    .x-art-picker::-webkit-scrollbar-track { background: transparent; }
+    .x-art-picker::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+
+    .x-art-thumb {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+      position: relative;
+    }
+
+    .x-art-thumb:hover { border-color: var(--purple); transform: scale(1.04); }
+    .x-art-thumb.selected { border-color: var(--x-blue); box-shadow: 0 0 0 2px rgba(29,155,240,0.3); }
+
+    .x-art-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    .x-art-thumb .x-thumb-check {
+      position: absolute;
+      inset: 0;
+      background: rgba(29,155,240,0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .x-art-thumb.selected .x-thumb-check { display: flex; }
+
+    .x-selected-preview {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      aspect-ratio: 16/9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .x-selected-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .x-selected-preview .x-preview-empty {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .char-counter {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-align: right;
+      letter-spacing: 0.04em;
+      transition: color 0.2s;
+    }
+
+    .char-counter.warn { color: #fbbf24; }
+    .char-counter.over { color: #f87171; }
+
+    .x-btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .x-queue { display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .x-queue-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-elevated);
+      padding: 0.75rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .x-queue-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+
+    .x-queue-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .x-queue-body { flex: 1; min-width: 0; }
+
+    .x-queue-caption {
+      font-size: 0.75rem;
+      color: var(--text);
+      line-height: 1.5;
+      margin-bottom: 0.3rem;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .x-queue-meta {
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .x-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .x-status-badge.pending { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; }
+    .x-status-badge.published { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: #86efac; }
+    .x-status-badge.failed { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; }
+
+    .x-queue-actions { display: flex; gap: 0.35rem; flex-shrink: 0; flex-direction: column; }
+
+    .x-queue-actions button {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.2rem 0.4rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .x-queue-actions button:hover { border-color: var(--purple); color: var(--accent-bright); }
+    .x-queue-actions button.danger { border-color: rgba(255,95,109,0.45); color: #ff8b98; }
+    .x-queue-actions button.danger:hover { border-color: #ff5f6d; color: #ffd9dd; background: rgba(255,95,109,0.14); }
+
+    .x-config-note {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      line-height: 1.65;
+      letter-spacing: 0.02em;
+    }
+
+    .x-config-note code {
+      color: var(--accent);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+    }
+
     @media (max-width: 680px) {
       #adminHub { padding: 0 1rem; }
       .hub-grid { grid-template-columns: 1fr; }
+      .x-btn-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -908,6 +1147,10 @@
       <button type="button" class="hub-card" id="openSunoFlow">
         <h3>Suno tracks</h3>
         <p>Paste Suno song links for the Work page embed. Reorder or set which plays first.</p>
+      </button>
+      <button type="button" class="hub-card" id="openXSchedulerFlow">
+        <h3>𝕏 Scheduler</h3>
+        <p>Pick artwork from your library, write a caption, and schedule or post directly to X.</p>
       </button>
     </div>
   </div>
@@ -1104,11 +1347,71 @@
   </div>
 </div>
 
+<!-- ========== X SCHEDULER ========== -->
+<div id="xSchedulerApp" class="container">
+  <div class="panel">
+    <button type="button" class="view-back" id="backToHubFromX">← Back to hub</button>
+    <div class="panel-title">Compose</div>
+    <div class="fields">
+
+      <div class="field">
+        <label>Select Artwork</label>
+        <div class="x-art-picker" id="xArtPicker">
+          <div style="grid-column:1/-1;text-align:center;font-size:0.72rem;color:var(--text-muted);padding:1rem;">loading library…</div>
+        </div>
+      </div>
+
+      <div class="x-selected-preview" id="xSelectedPreview">
+        <div class="x-preview-empty">No artwork selected</div>
+      </div>
+
+      <div class="field">
+        <label for="xCaption">Caption</label>
+        <textarea id="xCaption" placeholder="Write your post…" maxlength="280" rows="4"></textarea>
+        <div class="char-counter" id="xCharCounter">0 / 280</div>
+      </div>
+
+      <div class="field">
+        <label for="xScheduleAt">Schedule for (leave blank to post now)</label>
+        <input type="datetime-local" id="xScheduleAt" />
+      </div>
+
+      <div class="x-btn-row">
+        <button type="button" class="btn-secondary" id="xScheduleBtn">
+          <span class="btn-label">Schedule</span>
+          <span class="spinner"></span>
+        </button>
+        <button type="button" class="btn-submit" id="xPostNowBtn">
+          <span class="btn-label">Post Now</span>
+          <span class="spinner"></span>
+        </button>
+      </div>
+
+      <div class="x-config-note">
+        <strong style="color:var(--accent-bright);font-weight:500;">Posting</strong><br />
+        “Post Now” calls the Edge Function <code>post-to-x</code> with your session. Store X credentials as Supabase secrets:
+        <code>X_API_KEY</code> · <code>X_API_SECRET</code> · <code>X_ACCESS_TOKEN</code> · <code>X_ACCESS_TOKEN_SECRET</code>.<br /><br />
+        <strong style="color:var(--accent-bright);font-weight:500;">Scheduled</strong><br />
+        Due posts are sent by <code>process-x-scheduled-posts</code> (cron). Set <code>CRON_SECRET</code> and call that function on a schedule with header <code>Authorization: Bearer &lt;CRON_SECRET&gt;</code> (see <code>supabase/functions/process-x-scheduled-posts</code>).
+      </div>
+
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Queue</div>
+    <div class="x-queue" id="xQueue">
+      <div class="loading-state" style="grid-column:unset;padding:1.5rem 0;">loading…</div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
   const SUPABASE_URL = 'https://sbbmducevhpirnthzvtz.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
+  const X_EDGE_FN = SUPABASE_URL + '/functions/v1/post-to-x';
 
   (function () {
     var logo = document.getElementById('adminLogo');
@@ -1144,44 +1447,54 @@
   const openImageFlow = document.getElementById('openImageFlow');
   const openArtifactFlow = document.getElementById('openArtifactFlow');
   const openSunoFlow = document.getElementById('openSunoFlow');
+  const openXSchedulerFlow = document.getElementById('openXSchedulerFlow');
   const backToHubFromImages = document.getElementById('backToHubFromImages');
   const backToHubFromArtifacts = document.getElementById('backToHubFromArtifacts');
   const backToHubFromSuno = document.getElementById('backToHubFromSuno');
+  const backToHubFromX = document.getElementById('backToHubFromX');
+  const xSchedulerApp = document.getElementById('xSchedulerApp');
   const sunoLinkInput = document.getElementById('sunoLinkInput');
   const sunoTitleInput = document.getElementById('sunoTitleInput');
   const sunoAddBtn = document.getElementById('sunoAddBtn');
   const sunoTrackList = document.getElementById('sunoTrackList');
 
-  function showHub() {
-    adminHub.classList.add('authenticated');
+  function hideAllViews() {
+    adminHub.classList.remove('authenticated');
     adminApp.classList.remove('authenticated');
     artifactApp.classList.remove('authenticated');
     if (sunoApp) sunoApp.classList.remove('authenticated');
+    if (xSchedulerApp) xSchedulerApp.classList.remove('authenticated');
+  }
+
+  function showHub() {
+    hideAllViews();
+    adminHub.classList.add('authenticated');
     if (headerBadge) headerBadge.textContent = 'Admin · Hub';
   }
   function showImageFlow() {
-    adminHub.classList.remove('authenticated');
+    hideAllViews();
     adminApp.classList.add('authenticated');
-    artifactApp.classList.remove('authenticated');
-    if (sunoApp) sunoApp.classList.remove('authenticated');
     if (headerBadge) headerBadge.textContent = 'Admin · Image Upload';
     if (typeof loadGallery === 'function') loadGallery();
   }
   function showArtifactFlow() {
-    adminHub.classList.remove('authenticated');
-    adminApp.classList.remove('authenticated');
+    hideAllViews();
     artifactApp.classList.add('authenticated');
-    if (sunoApp) sunoApp.classList.remove('authenticated');
     if (headerBadge) headerBadge.textContent = 'Admin · Artifact Upload';
     if (typeof loadArtifacts === 'function') loadArtifacts();
   }
   function showSunoFlow() {
-    adminHub.classList.remove('authenticated');
-    adminApp.classList.remove('authenticated');
-    artifactApp.classList.remove('authenticated');
+    hideAllViews();
     if (sunoApp) sunoApp.classList.add('authenticated');
     if (headerBadge) headerBadge.textContent = 'Admin · Suno tracks';
     if (typeof loadSunoTracks === 'function') loadSunoTracks();
+  }
+  function showXSchedulerFlow() {
+    hideAllViews();
+    if (xSchedulerApp) xSchedulerApp.classList.add('authenticated');
+    if (headerBadge) headerBadge.textContent = 'Admin · 𝕏 Scheduler';
+    if (typeof loadXArtPicker === 'function') loadXArtPicker();
+    if (typeof loadXQueue === 'function') loadXQueue();
   }
 
   function setAuthLoading(show) {
@@ -1190,10 +1503,7 @@
   function showLoginView() {
     setAuthLoading(false);
     loginPanel.classList.remove('hidden');
-    adminHub.classList.remove('authenticated');
-    adminApp.classList.remove('authenticated');
-    artifactApp.classList.remove('authenticated');
-    if (sunoApp) sunoApp.classList.remove('authenticated');
+    hideAllViews();
     signOutBtn.style.display = 'none';
     userEmail.textContent = '';
   }
@@ -1253,9 +1563,11 @@
   openImageFlow.addEventListener('click', showImageFlow);
   openArtifactFlow.addEventListener('click', showArtifactFlow);
   if (openSunoFlow) openSunoFlow.addEventListener('click', showSunoFlow);
+  if (openXSchedulerFlow) openXSchedulerFlow.addEventListener('click', showXSchedulerFlow);
   backToHubFromImages.addEventListener('click', showHub);
   backToHubFromArtifacts.addEventListener('click', showHub);
   if (backToHubFromSuno) backToHubFromSuno.addEventListener('click', showHub);
+  if (backToHubFromX) backToHubFromX.addEventListener('click', showHub);
 
   // ---- State ----
   let selectedFile = null;
@@ -1286,6 +1598,15 @@
     toast.textContent = msg;
     toast.className = `toast ${type} show`;
     setTimeout(() => { toast.className = 'toast'; }, 3500);
+  }
+
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   // ---- File handling ----
@@ -1450,17 +1771,21 @@
       const item = document.createElement('div');
       item.className = 'gallery-item';
       const isFeatured = !!artwork.favorite;
+      const safeTitle = escapeHtml(artwork.title);
+      const safeCollection = escapeHtml(artwork.collection);
+      const srcAttr = String(artwork.image_url || '').replace(/"/g, '&quot;');
+      const pathAttr = String(artwork.image_path || '').replace(/"/g, '&quot;');
       item.innerHTML = `
-        <img src="${artwork.image_url}" alt="${artwork.title}" loading="lazy" />
+        <img src="${srcAttr}" alt="${safeTitle}" loading="lazy" />
         <label class="gallery-item-featured ${isFeatured ? 'is-on' : ''}">
           <input type="checkbox" data-featured-toggle ${isFeatured ? 'checked' : ''} />
           <span>${isFeatured ? 'Featured' : 'Not featured'}</span>
         </label>
         <div class="gallery-item-info">
-          <div class="gallery-item-title">${artwork.title}</div>
-          <div class="gallery-item-collection">${artwork.collection}</div>
+          <div class="gallery-item-title">${safeTitle}</div>
+          <div class="gallery-item-collection">${safeCollection}</div>
         </div>
-        <button class="gallery-item-delete" data-id="${artwork.id}" data-path="${artwork.image_path}">✕</button>
+        <button class="gallery-item-delete" data-id="${artwork.id}" data-path="${pathAttr}">✕</button>
       `;
       const featuredToggle = item.querySelector('[data-featured-toggle]');
       const featuredWrap = item.querySelector('.gallery-item-featured');
@@ -1809,7 +2134,269 @@
 
   if (sunoAddBtn) sunoAddBtn.addEventListener('click', addSunoTrack);
 
-  // loadGallery() is called from showAdminView() after sign-in
+  // ========== X SCHEDULER ==========
+  let xSelectedArtwork = null;
+
+  const xArtPicker = document.getElementById('xArtPicker');
+  const xSelectedPreview = document.getElementById('xSelectedPreview');
+  const xCaption = document.getElementById('xCaption');
+  const xCharCounter = document.getElementById('xCharCounter');
+  const xScheduleAt = document.getElementById('xScheduleAt');
+  const xScheduleBtn = document.getElementById('xScheduleBtn');
+  const xPostNowBtn = document.getElementById('xPostNowBtn');
+  const xQueue = document.getElementById('xQueue');
+
+  function setMinDatetime() {
+    if (!xScheduleAt) return;
+    var now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    xScheduleAt.min = now.toISOString().slice(0, 16);
+  }
+
+  if (xCaption) {
+    xCaption.addEventListener('input', function () {
+      var len = xCaption.value.length;
+      if (xCharCounter) {
+        xCharCounter.textContent = len + ' / 280';
+        xCharCounter.className = 'char-counter' + (len > 260 ? (len >= 280 ? ' over' : ' warn') : '');
+      }
+    });
+  }
+
+  async function loadXArtPicker() {
+    if (!xArtPicker || !xSelectedPreview) return;
+    setMinDatetime();
+    xArtPicker.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:0.72rem;color:var(--text-muted);padding:1rem;">loading…</div>';
+    const { data, error } = await sb.from('artworks').select('id,title,image_url,description').order('created_at', { ascending: false }).limit(60);
+    if (error || !data || !data.length) {
+      xArtPicker.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:0.72rem;color:var(--text-muted);padding:1rem;">No artwork in library yet.</div>';
+      return;
+    }
+    xArtPicker.innerHTML = '';
+    data.forEach(function (art) {
+      var thumb = document.createElement('div');
+      thumb.className = 'x-art-thumb';
+      thumb.title = art.title || '';
+      var img = document.createElement('img');
+      img.src = art.image_url || '';
+      img.alt = art.title || '';
+      img.loading = 'lazy';
+      var check = document.createElement('div');
+      check.className = 'x-thumb-check';
+      check.textContent = '✓';
+      thumb.appendChild(img);
+      thumb.appendChild(check);
+      thumb.addEventListener('click', function () {
+        document.querySelectorAll('.x-art-thumb.selected').forEach(function (el) { el.classList.remove('selected'); });
+        thumb.classList.add('selected');
+        xSelectedArtwork = art;
+        xSelectedPreview.innerHTML = '';
+        var pv = document.createElement('img');
+        pv.src = art.image_url || '';
+        pv.alt = art.title || '';
+        xSelectedPreview.appendChild(pv);
+        if (xCaption && !xCaption.value.trim()) {
+          var suggested = art.title || '';
+          if (art.description) suggested += '\n\n' + art.description;
+          suggested += '\n\n#AIArt #ToxiqMynd #DarkArt';
+          xCaption.value = suggested.slice(0, 280);
+          xCaption.dispatchEvent(new Event('input'));
+        }
+      });
+      xArtPicker.appendChild(thumb);
+    });
+  }
+
+  async function loadXQueue() {
+    if (!xQueue) return;
+    xQueue.innerHTML = '<div style="text-align:center;font-size:0.72rem;color:var(--text-muted);padding:1.5rem 0;">loading…</div>';
+    const { data, error } = await sb.from('x_scheduled_posts')
+      .select('id,caption,image_url,artwork_title,scheduled_at,status,posted_at,tweet_id,error_message')
+      .order('scheduled_at', { ascending: true })
+      .limit(30);
+    if (error) {
+      xQueue.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);padding:0.5rem 0;">Could not load queue — run the migration <code style="color:var(--accent)">supabase/migrations/20250328120000_x_scheduled_posts.sql</code> in the SQL editor.</div>';
+      return;
+    }
+    if (!data || !data.length) {
+      xQueue.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);padding:0.5rem 0;">No posts scheduled yet.</div>';
+      return;
+    }
+    xQueue.innerHTML = '';
+    data.forEach(function (post) {
+      var item = document.createElement('div');
+      item.className = 'x-queue-item';
+
+      var thumbEl = document.createElement('div');
+      thumbEl.className = 'x-queue-thumb';
+      if (post.image_url) {
+        var qimg = document.createElement('img');
+        qimg.src = post.image_url;
+        qimg.alt = '';
+        thumbEl.appendChild(qimg);
+      }
+
+      var body = document.createElement('div');
+      body.className = 'x-queue-body';
+
+      var cap = document.createElement('div');
+      cap.className = 'x-queue-caption';
+      cap.textContent = post.caption || '—';
+
+      var meta = document.createElement('div');
+      meta.className = 'x-queue-meta';
+
+      var badge = document.createElement('span');
+      badge.className = 'x-status-badge ' + (post.status || 'pending');
+      badge.textContent = post.status || 'pending';
+
+      var timeStr = '';
+      if (post.status === 'published' && post.posted_at) {
+        timeStr = 'posted ' + new Date(post.posted_at).toLocaleString();
+      } else if (post.status === 'failed' && post.error_message) {
+        timeStr = post.error_message.slice(0, 120) + (post.error_message.length > 120 ? '…' : '');
+      } else if (post.scheduled_at) {
+        timeStr = 'scheduled ' + new Date(post.scheduled_at).toLocaleString();
+      }
+
+      var timeEl = document.createElement('span');
+      timeEl.textContent = timeStr;
+
+      meta.appendChild(badge);
+      if (timeStr) meta.appendChild(timeEl);
+
+      body.appendChild(cap);
+      body.appendChild(meta);
+
+      var actions = document.createElement('div');
+      actions.className = 'x-queue-actions';
+
+      if (post.status === 'published' && post.tweet_id) {
+        var viewBtn = document.createElement('button');
+        viewBtn.type = 'button';
+        viewBtn.textContent = 'View';
+        viewBtn.addEventListener('click', function () {
+          window.open('https://x.com/i/web/status/' + post.tweet_id, '_blank');
+        });
+        actions.appendChild(viewBtn);
+      }
+
+      if (post.status === 'pending') {
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'danger';
+        cancelBtn.textContent = '✕';
+        cancelBtn.title = 'Cancel';
+        cancelBtn.addEventListener('click', async function () {
+          if (!confirm('Cancel this scheduled post?')) return;
+          await sb.from('x_scheduled_posts').delete().eq('id', post.id);
+          showToast('Post cancelled');
+          loadXQueue();
+        });
+        actions.appendChild(cancelBtn);
+      }
+
+      item.appendChild(thumbEl);
+      item.appendChild(body);
+      item.appendChild(actions);
+      xQueue.appendChild(item);
+    });
+  }
+
+  async function xSaveToQueue(postNow) {
+    if (!xSelectedArtwork) return showToast('Select an artwork first', 'error');
+    var caption = (xCaption && xCaption.value.trim()) || '';
+    if (!caption) return showToast('Add a caption', 'error');
+
+    var scheduledAt = null;
+    if (!postNow) {
+      var dtVal = xScheduleAt && xScheduleAt.value;
+      if (!dtVal) return showToast('Pick a schedule time or use Post Now', 'error');
+      scheduledAt = new Date(dtVal).toISOString();
+    } else {
+      scheduledAt = new Date().toISOString();
+    }
+
+    var btn = postNow ? xPostNowBtn : xScheduleBtn;
+    if (btn) {
+      btn.classList.add('loading');
+      btn.disabled = true;
+    }
+
+    try {
+      var ins = await sb.from('x_scheduled_posts').insert({
+        artwork_id: xSelectedArtwork.id,
+        artwork_title: xSelectedArtwork.title || null,
+        image_url: xSelectedArtwork.image_url,
+        caption: caption,
+        scheduled_at: scheduledAt,
+        status: 'pending',
+      }).select('id').single();
+
+      if (ins.error) throw ins.error;
+      var queueRowId = ins.data && ins.data.id;
+
+      if (postNow) {
+        var session = (await sb.auth.getSession()).data.session;
+        var fnRes = await fetch(X_EDGE_FN, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (session ? session.access_token : ''),
+          },
+          body: JSON.stringify({
+            image_url: xSelectedArtwork.image_url,
+            caption: caption,
+          }),
+        });
+
+        var fnData = await fnRes.json().catch(function () { return {}; });
+
+        if (!fnRes.ok) {
+          showToast('Post failed: ' + (fnData.error || fnRes.status), 'error');
+        } else if (fnData.tweet_id && queueRowId) {
+          var up = await sb.from('x_scheduled_posts')
+            .update({
+              status: 'published',
+              tweet_id: fnData.tweet_id,
+              posted_at: new Date().toISOString(),
+              error_message: null,
+            })
+            .eq('id', queueRowId);
+          if (up.error) console.error(up.error);
+          showToast('✓ Posted to 𝕏!', 'success');
+        } else {
+          showToast('Posted but no tweet id returned — check X app', 'error');
+        }
+      } else {
+        showToast('✓ Scheduled', 'success');
+      }
+
+      if (xCaption) xCaption.value = '';
+      if (xCharCounter) {
+        xCharCounter.textContent = '0 / 280';
+        xCharCounter.className = 'char-counter';
+      }
+      if (xScheduleAt) xScheduleAt.value = '';
+      xSelectedArtwork = null;
+      if (xSelectedPreview) xSelectedPreview.innerHTML = '<div class="x-preview-empty">No artwork selected</div>';
+      document.querySelectorAll('.x-art-thumb.selected').forEach(function (el) { el.classList.remove('selected'); });
+
+      loadXQueue();
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Failed', 'error');
+    } finally {
+      if (btn) {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+  }
+
+  if (xPostNowBtn) xPostNowBtn.addEventListener('click', function () { xSaveToQueue(true); });
+  if (xScheduleBtn) xScheduleBtn.addEventListener('click', function () { xSaveToQueue(false); });
+
   }
 </script>
 </body>
