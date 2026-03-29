@@ -1500,7 +1500,10 @@
     <button type="button" class="view-back" id="backToHubFromX">← Back to hub</button>
     <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
       <span>Compose</span>
-      <button type="button" id="xGuideBtn" class="x-guide-btn">Posting Guides</button>
+      <div style="display:flex;gap:0.4rem;">
+        <button type="button" id="xGuideBtn" class="x-guide-btn">Posting Guides</button>
+        <button type="button" id="xHolidayBtn" class="x-guide-btn">US Holidays</button>
+      </div>
     </div>
     <div class="fields">
 
@@ -1644,6 +1647,109 @@
         <div class="x-guide-time">7:30–9:00 AM PST</div>
         <div class="x-guide-note">Reflective end-of-week reset (lowest traffic)</div>
         <div class="x-guide-theme">Reflective Reverie <span>dreamy, introspective, softer decayed aesthetics</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- X Scheduler: US Holidays Modal -->
+<div id="xHolidayModal" class="x-guide-modal" aria-hidden="true">
+  <div class="x-guide-backdrop" id="xHolidayBackdrop"></div>
+  <div class="x-guide-panel">
+    <div class="x-guide-header">
+      <span class="x-guide-title">US Holidays</span>
+      <button type="button" id="xHolidayClose" class="x-day-panel-close">✕</button>
+    </div>
+    <div class="x-guide-body">
+      <div class="x-guide-row">
+        <div class="x-guide-day">Jan 1</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">New Year's Day</div>
+        <div class="x-guide-theme">Decayed Dawn (New Beginnings) <span>Ornate crumbling clocks and fireworks dissolving into elegant ruin, symbolizing fresh starts in decay</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Jan 19 <span style="font-size:0.6rem;opacity:0.6;">3rd Mon</span></div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Martin Luther King Jr. Day</div>
+        <div class="x-guide-theme">Elegant Decay <span>Dignified, moody surreal portraits with hopeful light piercing through ornate shadows and decay</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Feb 14</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Valentine's Day</div>
+        <div class="x-guide-theme">Toxic Visions <span>Dark romantic decadence — toxic love motifs with bleeding hearts, thorns, and neon-psychedelic entanglement</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Feb 16 <span style="font-size:0.6rem;opacity:0.6;">3rd Mon</span></div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Presidents' Day</div>
+        <div class="x-guide-theme">Peak Decadence <span>Ornate historical figures fused with crumbling gold frames and patriotic decay</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Mar/Apr</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Good Friday</div>
+        <div class="x-guide-theme">Reflective Reverie <span>Solemn, introspective crucifixion or sacrifice motifs reimagined in misty, ornate decayed elegance</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Mar/Apr <span style="font-size:0.6rem;opacity:0.6;">Sun</span></div>
+        <div class="x-guide-time">7:30–9:00 AM PST</div>
+        <div class="x-guide-note">Easter Sunday</div>
+        <div class="x-guide-theme">Decayed Dawn (Rebirth) <span>Subtle resurrection through crumbling beauty — blooming decay, eggshells in ruin, and renewal motifs</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Apr 22</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Earth Day</div>
+        <div class="x-guide-theme">Peak Decadence <span>Decayed nature fusion — overgrown ruins, polluted yet opulent surreal landscapes with neon flora in decay</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">May 25 <span style="font-size:0.6rem;opacity:0.6;">last Mon</span></div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Memorial Day</div>
+        <div class="x-guide-theme">Elegant Decay <span>Solemn, respectful decayed elegance with faded flags, poppies, and misty memorial surrealism</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Jun 19</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Juneteenth</div>
+        <div class="x-guide-theme">Toxic Visions <span>Vibrant, powerful freedom-themed surrealism with decadent chains breaking in neon-gold bursts</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Jul 4</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Independence Day</div>
+        <div class="x-guide-theme">Edgy Afterglow / Peak Decadence <span>Neon-patriotic decay — exploding fireworks dissolving into ornate ruins and rebellious energy</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Sep 7 <span style="font-size:0.6rem;opacity:0.6;">1st Mon</span></div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Labor Day</div>
+        <div class="x-guide-theme">Decayed Dawn <span>Rest and renewal through decay — tools and figures in elegant crumbling repose</span></div>
+      </div>
+      <div class="x-guide-row x-guide-peak">
+        <div class="x-guide-day">Oct 31</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Halloween ✦ High engagement</div>
+        <div class="x-guide-theme">Experimental Surreal / Toxic Visions <span>Wild, spooky psychedelic horror-decay — extra dark, ornate monsters, ghosts in neon ruins</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Nov 11</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Veterans Day</div>
+        <div class="x-guide-theme">Elegant Decay <span>Respectful, moody portraits of service with faded honors and dignified decayed elegance</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Nov 26 <span style="font-size:0.6rem;opacity:0.6;">4th Thu</span></div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Thanksgiving</div>
+        <div class="x-guide-theme">Reflective Reverie <span>Abundant yet decayed opulence — feasts in ornate ruin, grateful misty surrealism</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Dec 25</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Christmas</div>
+        <div class="x-guide-theme">Reflective Reverie / Elegant Decay <span>Dreamy, mystical holiday decay — ornate trees, lights, and gifts crumbling into elegant winter surrealism</span></div>
       </div>
     </div>
   </div>
@@ -2435,7 +2541,17 @@
   if (xGuideBtn) xGuideBtn.addEventListener('click', openGuideModal);
   if (xGuideClose) xGuideClose.addEventListener('click', closeGuideModal);
   if (xGuideBackdrop) xGuideBackdrop.addEventListener('click', closeGuideModal);
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeGuideModal(); });
+
+  var xHolidayModal = document.getElementById('xHolidayModal');
+  var xHolidayBtn = document.getElementById('xHolidayBtn');
+  var xHolidayClose = document.getElementById('xHolidayClose');
+  var xHolidayBackdrop = document.getElementById('xHolidayBackdrop');
+  function openHolidayModal() { if (xHolidayModal) { xHolidayModal.classList.add('open'); xHolidayModal.setAttribute('aria-hidden','false'); } }
+  function closeHolidayModal() { if (xHolidayModal) { xHolidayModal.classList.remove('open'); xHolidayModal.setAttribute('aria-hidden','true'); } }
+  if (xHolidayBtn) xHolidayBtn.addEventListener('click', openHolidayModal);
+  if (xHolidayClose) xHolidayClose.addEventListener('click', closeHolidayModal);
+  if (xHolidayBackdrop) xHolidayBackdrop.addEventListener('click', closeHolidayModal);
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeGuideModal(); closeHolidayModal(); } });
 
   // --- Source mode toggle (Library / Upload New) ---
   var xUploadFile = null;
