@@ -27,28 +27,9 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  // #region agent log
-  console.log(JSON.stringify({
-    hypothesisId: "H1",
-    message: "process-x-scheduled-posts entry",
-    data: { method: req.method },
-    timestamp: Date.now(),
-    runId: "pre-fix",
-  }));
-  // #endregion
-
   // Trim: pasted GitHub/Supabase secrets often pick up a trailing newline and break auth.
   const cronSecret = Deno.env.get("CRON_SECRET")?.trim() ?? "";
   if (!cronSecret) {
-    // #region agent log
-    console.log(JSON.stringify({
-      hypothesisId: "H2",
-      message: "CRON_SECRET missing in Edge env",
-      data: {},
-      timestamp: Date.now(),
-      runId: "pre-fix",
-    }));
-    // #endregion
     console.error("CRON_SECRET is not set");
     return new Response(JSON.stringify({ error: "Server misconfigured" }), {
       status: 500,
@@ -60,30 +41,8 @@ Deno.serve(async (req: Request) => {
   const bearer = auth?.replace(/^Bearer\s+/i, "").trim();
   const headerSecret = req.headers.get("x-cron-secret")?.trim() ?? "";
   if (bearer !== cronSecret && headerSecret !== cronSecret) {
-    // #region agent log
-    console.log(JSON.stringify({
-      hypothesisId: "H2",
-      message: "process-x-scheduled-posts auth rejected",
-      data: {
-        hasBearer: !!bearer,
-        hasXCronSecretHeader: !!headerSecret,
-      },
-      timestamp: Date.now(),
-      runId: "pre-fix",
-    }));
-    // #endregion
     return unauthorized();
   }
-
-  // #region agent log
-  console.log(JSON.stringify({
-    hypothesisId: "H1",
-    message: "process-x-scheduled-posts authorized",
-    data: { method: req.method },
-    timestamp: Date.now(),
-    runId: "pre-fix",
-  }));
-  // #endregion
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -106,20 +65,6 @@ Deno.serve(async (req: Request) => {
       headers: { "Content-Type": "application/json" },
     });
   }
-
-  // #region agent log
-  console.log(JSON.stringify({
-    hypothesisId: "H3",
-    message: "due rows query result",
-    data: {
-      nowIso,
-      dueCount: (rows || []).length,
-      firstScheduledAt: rows && rows[0] ? rows[0].scheduled_at : null,
-    },
-    timestamp: Date.now(),
-    runId: "pre-fix",
-  }));
-  // #endregion
 
   const processed: string[] = [];
   const failures: { id: string; message: string }[] = [];

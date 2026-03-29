@@ -2215,19 +2215,9 @@
       .order('scheduled_at', { ascending: true })
       .limit(30);
     if (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7942/ingest/e9039904-945a-4d3b-b67a-c995fafda067',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'1c91ce'},body:JSON.stringify({sessionId:'1c91ce',location:'admin/index.html:loadXQueue',message:'queue load error',data:{hypothesisId:'H4',code:error.code||null,hint:String(error.message||'')},timestamp:Date.now(),runId:'pre-fix'})}).catch(function(){});
-      // #endregion
       xQueue.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);padding:0.5rem 0;">Could not load queue — run the migration <code style="color:var(--accent)">supabase/migrations/20250328120000_x_scheduled_posts.sql</code> in the SQL editor.</div>';
       return;
     }
-    // #region agent log
-    (function(){
-      var pending = (data||[]).filter(function(p){return p.status==='pending';});
-      var dueBr = pending.filter(function(p){return new Date(p.scheduled_at)<=new Date();});
-      fetch('http://127.0.0.1:7942/ingest/e9039904-945a-4d3b-b67a-c995fafda067',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'1c91ce'},body:JSON.stringify({sessionId:'1c91ce',location:'admin/index.html:loadXQueue',message:'queue snapshot',data:{hypothesisId:'H3',total:data?data.length:0,pendingCount:pending.length,dueByBrowserClock:dueBr.length,isoNow:new Date().toISOString()},timestamp:Date.now(),runId:'pre-fix'})}).catch(function(){});
-    })();
-    // #endregion
     if (!data || !data.length) {
       xQueue.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);padding:0.5rem 0;">No posts scheduled yet.</div>';
       return;
@@ -2379,9 +2369,6 @@
           showToast('Posted but no tweet id returned — check X app', 'error');
         }
       } else {
-        // #region agent log
-        fetch('http://127.0.0.1:7942/ingest/e9039904-945a-4d3b-b67a-c995fafda067',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'1c91ce'},body:JSON.stringify({sessionId:'1c91ce',location:'admin/index.html:xSaveToQueue',message:'scheduled insert ok',data:{hypothesisId:'H4',queueRowId:queueRowId||null,scheduledAt:scheduledAt},timestamp:Date.now(),runId:'pre-fix'})}).catch(function(){});
-        // #endregion
         showToast('✓ Scheduled', 'success');
       }
 
