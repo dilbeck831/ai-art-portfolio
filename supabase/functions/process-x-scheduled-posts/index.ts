@@ -3,49 +3,70 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { postTweetWithMedia } from "../_shared/x-post.ts";
 
 /**
- * Call on a schedule (e.g. every 1–5 min) with header:
- *   Authorization: Bearer <CRON_SECRET>
- * or
- *   x-cron-secret: <CRON_SECRET>
- * Set secret CRON_SECRET in Edge Function secrets.
+ * Call with either:
+ *   Authorization: Bearer <CRON_SECRET>  (GitHub Actions / cron)
+ *   Authorization: Bearer <user JWT>     (logged-in admin from /admin — same validation as post-to-x)
+ * Optional: x-cron-secret: <CRON_SECRET>
  *
  * Uses SUPABASE_SERVICE_ROLE_KEY to read/update queued rows (bypasses RLS).
  */
 
-function unauthorized() {
-  return new Response(JSON.stringify({ error: "Unauthorized" }), {
-    status: 401,
-    headers: { "Content-Type": "application/json" },
+const corsHeaders: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-cron-secret",
+};
+
+function json(
+  body: Record<string, unknown>,
+  status: number,
+): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
 
+function unauthorized(): Response {
+  return json({ error: "Unauthorized" }, 401);
+}
+
 Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   if (req.method !== "POST" && req.method !== "GET") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  // Trim: pasted GitHub/Supabase secrets often pick up a trailing newline and break auth.
-  const cronSecret = Deno.env.get("CRON_SECRET")?.trim() ?? "";
-  if (!cronSecret) {
-    console.error("CRON_SECRET is not set");
-    return new Response(JSON.stringify({ error: "Server misconfigured" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const auth = req.headers.get("Authorization");
-  const bearer = auth?.replace(/^Bearer\s+/i, "").trim();
-  const headerSecret = req.headers.get("x-cron-secret")?.trim() ?? "";
-  if (bearer !== cronSecret && headerSecret !== cronSecret) {
-    return unauthorized();
+    return json({ error: "Method not allowed" }, 405);
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const sbAuth = createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const cronSecret = Deno.env.get("CRON_SECRET")?.trim() ?? "";
+  const auth = req.headers.get("Authorization");
+  const bearer = auth?.replace(/^Bearer\s+/i, "").trim() ?? "";
+  const headerSecret = req.headers.get("x-cron-secret")?.trim() ?? "";
+
+  let authorized = false;
+  if (cronSecret && (bearer === cronSecret || headerSecret === cronSecret)) {
+    authorized = true;
+  } else if (bearer) {
+    const { data: userData, error: userErr } = await sbAuth.auth.getUser(
+      bearer,
+    );
+    if (!userErr && userData?.user) {
+      authorized = true;
+    }
+  }
+
+  if (!authorized) {
+    return unauthorized();
+  }
+
   const sb = createClient(supabaseUrl, serviceKey);
 
   const nowIso = new Date().toISOString();
@@ -60,10 +81,7 @@ Deno.serve(async (req: Request) => {
 
   if (qErr) {
     console.error(qErr);
-    return new Response(JSON.stringify({ error: qErr.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json({ error: qErr.message }, 500);
   }
 
   const processed: string[] = [];
@@ -97,14 +115,11 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  return new Response(
-    JSON.stringify({
-      ok: true,
-      serverTimeUtc: nowIso,
-      due: (rows || []).length,
-      processed,
-      failures,
-    }),
-    { status: 200, headers: { "Content-Type": "application/json" } },
-  );
+  return json({
+    ok: true,
+    serverTimeUtc: nowIso,
+    due: (rows || []).length,
+    processed,
+    failures,
+  }, 200);
 });
