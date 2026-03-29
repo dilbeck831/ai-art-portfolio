@@ -1096,6 +1096,64 @@
       font-size: 0.68rem;
     }
 
+    /* ---- X Scheduler: Posting Guides button ---- */
+    .x-guide-btn {
+      font-family:'DM Mono',monospace; font-size:0.68rem; padding:0.3rem 0.6rem;
+      background:transparent; border:1px solid var(--border-strong); border-radius:5px;
+      color:var(--text-muted); cursor:pointer; transition:all 0.15s; white-space:nowrap;
+    }
+    .x-guide-btn:hover { border-color:var(--accent); color:var(--accent-bright); }
+
+    /* ---- X Scheduler: Posting Guides modal ---- */
+    .x-guide-modal { display:none; position:fixed; inset:0; z-index:400; }
+    .x-guide-modal.open { display:flex; align-items:center; justify-content:center; }
+    .x-guide-backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(2px); }
+    .x-guide-panel {
+      position:relative; z-index:1; background:var(--surface);
+      border:1px solid var(--border-strong); border-radius:12px;
+      width:min(680px,95vw); max-height:88vh; overflow-y:auto;
+      padding:1.5rem; box-shadow:0 8px 48px rgba(0,0,0,0.5);
+    }
+    .x-guide-header {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:1.25rem; padding-bottom:0.85rem; border-bottom:1px solid var(--border);
+    }
+    .x-guide-title { font-size:0.9rem; color:var(--accent-bright); letter-spacing:0.04em; }
+    .x-guide-body { display:flex; flex-direction:column; gap:0.5rem; }
+    .x-guide-row {
+      display:grid; grid-template-columns:90px 120px 1fr;
+      grid-template-rows:auto auto; gap:0.1rem 0.75rem;
+      padding:0.65rem 0.75rem; border-radius:7px;
+      border:1px solid var(--border); background:var(--bg-elevated);
+      transition:border-color 0.12s;
+    }
+    .x-guide-row:hover { border-color:var(--border-strong); }
+    .x-guide-peak { border-color:rgba(167,139,250,0.35) !important; background:rgba(167,139,250,0.06) !important; }
+    .x-guide-dim { opacity:0.65; }
+    .x-guide-day {
+      grid-column:1; grid-row:1;
+      font-size:0.78rem; color:var(--accent-bright); font-weight:500;
+      align-self:center;
+    }
+    .x-guide-time {
+      grid-column:2; grid-row:1;
+      font-size:0.7rem; color:var(--text-muted); align-self:center;
+    }
+    .x-guide-note {
+      grid-column:3; grid-row:1;
+      font-size:0.7rem; color:var(--text-muted); align-self:center;
+    }
+    .x-guide-theme {
+      grid-column:1/-1; grid-row:2;
+      font-size:0.75rem; color:#e2d9f3; padding-top:0.25rem;
+    }
+    .x-guide-theme span { color:var(--text-muted); font-size:0.68rem; }
+    @media (max-width:520px) {
+      .x-guide-row { grid-template-columns:1fr 1fr; }
+      .x-guide-note { grid-column:1/-1; grid-row:2; }
+      .x-guide-theme { grid-row:3; }
+    }
+
     /* ---- X Scheduler: Source toggle ---- */
     .x-source-toggle { display:flex; gap:0.4rem; margin-bottom:0.85rem; }
     .x-src-btn {
@@ -1440,7 +1498,10 @@
 <div id="xSchedulerApp" class="container">
   <div class="panel">
     <button type="button" class="view-back" id="backToHubFromX">← Back to hub</button>
-    <div class="panel-title">Compose</div>
+    <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
+      <span>Compose</span>
+      <button type="button" id="xGuideBtn" class="x-guide-btn">Posting Guides</button>
+    </div>
     <div class="fields">
 
       <div class="field">
@@ -1528,6 +1589,61 @@
     <div id="xListView" style="display:none;">
       <div class="x-queue" id="xQueue">
         <div class="loading-state" style="grid-column:unset;padding:1.5rem 0;">loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- X Scheduler: Posting Guides Modal -->
+<div id="xGuideModal" class="x-guide-modal" aria-hidden="true">
+  <div class="x-guide-backdrop" id="xGuideBackdrop"></div>
+  <div class="x-guide-panel">
+    <div class="x-guide-header">
+      <span class="x-guide-title">Posting Guides</span>
+      <button type="button" id="xGuideClose" class="x-day-panel-close">✕</button>
+    </div>
+    <div class="x-guide-body">
+      <div class="x-guide-row">
+        <div class="x-guide-day">Monday</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">New week energy &amp; fresh scroll after weekend</div>
+        <div class="x-guide-theme">Decayed Dawn <span>rebirth through elegant crumbling beauty &amp; renewal motifs</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Tuesday</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">High midweek attention &amp; motivation</div>
+        <div class="x-guide-theme">Toxic Visions <span>edgy, intense, mind-bending psychedelic surrealism</span></div>
+      </div>
+      <div class="x-guide-row x-guide-peak">
+        <div class="x-guide-day">Wednesday</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Peak overall engagement day (strongest platform-wide)</div>
+        <div class="x-guide-theme">Peak Decadence <span>most ornate, intricate, opulent decayed pieces with max visual impact</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Thursday</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Solid midweek momentum before weekend</div>
+        <div class="x-guide-theme">Elegant Decay <span>moody, sophisticated surreal portraits &amp; decadent fashion flair</span></div>
+      </div>
+      <div class="x-guide-row">
+        <div class="x-guide-day">Friday</div>
+        <div class="x-guide-time">6:00–7:00 AM PST</div>
+        <div class="x-guide-note">Pre-weekend wind-down &amp; lighter vibe</div>
+        <div class="x-guide-theme">Edgy Afterglow <span>vibrant, rebellious, neon-tinged decayed energy</span></div>
+      </div>
+      <div class="x-guide-row x-guide-dim">
+        <div class="x-guide-day">Saturday</div>
+        <div class="x-guide-time">7:30–9:00 AM PST</div>
+        <div class="x-guide-note">Leisurely weekend scrolling (lower overall traffic)</div>
+        <div class="x-guide-theme">Experimental Surreal <span>wild, abstract, rule-breaking tests</span></div>
+      </div>
+      <div class="x-guide-row x-guide-dim">
+        <div class="x-guide-day">Sunday</div>
+        <div class="x-guide-time">7:30–9:00 AM PST</div>
+        <div class="x-guide-note">Reflective end-of-week reset (lowest traffic)</div>
+        <div class="x-guide-theme">Reflective Reverie <span>dreamy, introspective, softer decayed aesthetics</span></div>
       </div>
     </div>
   </div>
@@ -2308,6 +2424,18 @@
   const xDayPanelTitle = document.getElementById('xDayPanelTitle');
   const xDayPanelBody = document.getElementById('xDayPanelBody');
   const xDayPanelClose = document.getElementById('xDayPanelClose');
+
+  // --- Posting Guides modal ---
+  var xGuideModal = document.getElementById('xGuideModal');
+  var xGuideBtn = document.getElementById('xGuideBtn');
+  var xGuideClose = document.getElementById('xGuideClose');
+  var xGuideBackdrop = document.getElementById('xGuideBackdrop');
+  function openGuideModal() { if (xGuideModal) { xGuideModal.classList.add('open'); xGuideModal.setAttribute('aria-hidden','false'); } }
+  function closeGuideModal() { if (xGuideModal) { xGuideModal.classList.remove('open'); xGuideModal.setAttribute('aria-hidden','true'); } }
+  if (xGuideBtn) xGuideBtn.addEventListener('click', openGuideModal);
+  if (xGuideClose) xGuideClose.addEventListener('click', closeGuideModal);
+  if (xGuideBackdrop) xGuideBackdrop.addEventListener('click', closeGuideModal);
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeGuideModal(); });
 
   // --- Source mode toggle (Library / Upload New) ---
   var xUploadFile = null;
