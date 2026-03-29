@@ -1415,7 +1415,6 @@
   const SUPABASE_URL = 'https://sbbmducevhpirnthzvtz.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
   const X_EDGE_FN = SUPABASE_URL + '/functions/v1/post-to-x';
-  const X_PROCESS_QUEUE_FN = SUPABASE_URL + '/functions/v1/process-x-scheduled-posts';
 
   (function () {
     var logo = document.getElementById('adminLogo');
@@ -2159,22 +2158,19 @@
       xProcessQueueBtn.classList.add('loading');
     }
     try {
-      var r = await fetch(X_PROCESS_QUEUE_FN, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + session.access_token,
-        },
-        body: '{}',
-      });
-      var data = await r.json().catch(function () { return {}; });
-      if (!r.ok) {
-        showToast('Worker: ' + (data.error || String(r.status)), 'error');
+      // Use SDK invoke (correct apikey + Authorization); raw fetch often 401s on Edge Functions.
+      var inv = await sb.functions.invoke('process-x-scheduled-posts', { body: {} });
+      if (inv.error) {
+        showToast('Worker: ' + (inv.error.message || String(inv.error)), 'error');
         return;
       }
+      var data = inv.data || {};
       var parts = ['due ' + (data.due != null ? data.due : '?')];
       if (data.processed && data.processed.length) parts.push('posted ' + data.processed.length);
       if (data.failures && data.failures.length) parts.push('failed ' + data.failures.length);
+      if (data.due === 0 && (!data.processed || !data.processed.length)) {
+        parts.push('(nothing due yet — check scheduled time vs UTC)');
+      }
       showToast(parts.join(' · '), (data.failures && data.failures.length) ? 'error' : 'success');
       loadXQueue();
     } catch (err) {
