@@ -20,6 +20,8 @@ jobs:
             echo "::error::Set GitHub repo secret CRON_SECRET (match Supabase Edge secret)."
             exit 1
           fi
+          echo "UTC now: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+          echo "CRON_SECRET length (chars, no value): ${#CRON_SECRET}"
           code=$(curl -sS -o /tmp/proc_body -w "%{http_code}" -X POST \
             "https://sbbmducevhpirnthzvtz.supabase.co/functions/v1/process-x-scheduled-posts" \
             -H "Authorization: Bearer ${CRON_SECRET}" \

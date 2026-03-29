@@ -37,7 +37,8 @@ Deno.serve(async (req: Request) => {
   }));
   // #endregion
 
-  const cronSecret = Deno.env.get("CRON_SECRET");
+  // Trim: pasted GitHub/Supabase secrets often pick up a trailing newline and break auth.
+  const cronSecret = Deno.env.get("CRON_SECRET")?.trim() ?? "";
   if (!cronSecret) {
     // #region agent log
     console.log(JSON.stringify({
@@ -56,8 +57,8 @@ Deno.serve(async (req: Request) => {
   }
 
   const auth = req.headers.get("Authorization");
-  const bearer = auth?.replace(/^Bearer\s+/i, "");
-  const headerSecret = req.headers.get("x-cron-secret");
+  const bearer = auth?.replace(/^Bearer\s+/i, "").trim();
+  const headerSecret = req.headers.get("x-cron-secret")?.trim() ?? "";
   if (bearer !== cronSecret && headerSecret !== cronSecret) {
     // #region agent log
     console.log(JSON.stringify({
