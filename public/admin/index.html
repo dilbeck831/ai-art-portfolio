@@ -1096,10 +1096,99 @@
       font-size: 0.68rem;
     }
 
+    /* ---- X Scheduler: Source toggle ---- */
+    .x-source-toggle { display:flex; gap:0.4rem; margin-bottom:0.85rem; }
+    .x-src-btn {
+      flex:1; padding:0.35rem 0.6rem; font-family:'DM Mono',monospace; font-size:0.72rem;
+      background:transparent; border:1px solid var(--border-strong); border-radius:6px;
+      color:var(--text-muted); cursor:pointer; transition:all 0.15s;
+    }
+    .x-src-btn:hover { border-color:var(--accent); color:var(--accent-bright); }
+    .x-src-btn.active {
+      background:linear-gradient(135deg,var(--purple),var(--fuchsia));
+      border-color:transparent; color:#fff;
+    }
+    .x-dropzone {
+      width:100%; aspect-ratio:4/3; border:1.5px dashed var(--border-strong);
+      border-radius:8px; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; position:relative; overflow:hidden; background:var(--bg-elevated);
+      transition:border-color 0.15s;
+    }
+    .x-dropzone:hover, .x-dropzone.dragover { border-color:var(--accent); }
+    .x-dropzone img { width:100%; height:100%; object-fit:cover; display:block; position:absolute; inset:0; }
+    .x-drop-hint { font-size:0.72rem; color:var(--text-muted); text-align:center; padding:1rem; pointer-events:none; }
+    #xUploadForm .field input[type="text"] { margin-top:0.5rem; }
+
+    /* ---- X Scheduler: View tabs ---- */
+    .x-view-tabs { display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap; }
+    .x-view-tab {
+      padding:0.3rem 0.55rem; font-family:'DM Mono',monospace; font-size:0.68rem;
+      background:transparent; border:1px solid var(--border-strong); border-radius:5px;
+      color:var(--text-muted); cursor:pointer; transition:all 0.15s;
+    }
+    .x-view-tab:hover { border-color:var(--accent); color:var(--accent-bright); }
+    .x-view-tab.active { background:rgba(167,139,250,0.15); border-color:var(--accent); color:var(--accent-bright); }
+
+    /* ---- X Scheduler: Calendar ---- */
+    .x-cal-header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:0.75rem;
+    }
+    .x-cal-nav {
+      background:transparent; border:1px solid var(--border-strong); border-radius:5px;
+      color:var(--text-muted); font-size:1rem; line-height:1; padding:0.2rem 0.5rem;
+      cursor:pointer; transition:all 0.15s; font-family:'DM Mono',monospace;
+    }
+    .x-cal-nav:hover { border-color:var(--accent); color:var(--accent-bright); }
+    .x-cal-month-label { font-size:0.8rem; color:var(--accent-bright); letter-spacing:0.05em; }
+    .x-cal-grid {
+      display:grid; grid-template-columns:repeat(7,1fr); gap:2px;
+    }
+    .x-cal-dow {
+      font-size:0.6rem; color:var(--text-muted); text-align:center;
+      padding:0.2rem 0; letter-spacing:0.04em;
+    }
+    .x-cal-day {
+      min-height:48px; padding:0.25rem 0.3rem; border:1px solid var(--border);
+      border-radius:4px; cursor:default; transition:border-color 0.12s, background 0.12s;
+    }
+    .x-cal-day.other-month { opacity:0.25; }
+    .x-cal-day.today { border-color:var(--accent); }
+    .x-cal-day.has-posts { cursor:pointer; border-color:var(--border-strong); }
+    .x-cal-day.has-posts:hover { border-color:var(--accent); background:rgba(167,139,250,0.07); }
+    .x-cal-day-num { font-size:0.62rem; color:var(--text-muted); margin-bottom:0.2rem; }
+    .x-cal-day.today .x-cal-day-num { color:var(--accent-bright); font-weight:600; }
+    .x-cal-dots { display:flex; gap:2px; flex-wrap:wrap; }
+    .x-cal-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .x-cal-dot.pending  { background:#fbbf24; }
+    .x-cal-dot.published { background:#86efac; }
+    .x-cal-dot.failed   { background:#fca5a5; }
+
+    /* ---- X Scheduler: Slide-out Day Panel ---- */
+    .x-day-panel {
+      position:fixed; top:0; right:-400px; width:360px; max-width:100vw; height:100vh;
+      background:var(--surface); border-left:1px solid var(--border-strong);
+      padding:1.25rem; overflow-y:auto; transition:right 0.25s ease; z-index:300;
+      box-shadow:-4px 0 24px rgba(0,0,0,0.4);
+    }
+    .x-day-panel.open { right:0; }
+    .x-day-panel-header {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border);
+    }
+    .x-day-panel-title { font-size:0.85rem; color:var(--accent-bright); }
+    .x-day-panel-close {
+      background:transparent; border:1px solid var(--border-strong); border-radius:5px;
+      color:var(--text-muted); cursor:pointer; font-size:0.8rem; padding:0.2rem 0.45rem;
+      transition:all 0.15s;
+    }
+    .x-day-panel-close:hover { border-color:var(--accent); color:var(--accent-bright); }
+
     @media (max-width: 680px) {
       #adminHub { padding: 0 1rem; }
       .hub-grid { grid-template-columns: 1fr; }
       .x-btn-row { grid-template-columns: 1fr; }
+      .x-day-panel { width:100vw; }
     }
   </style>
 </head>
@@ -1355,9 +1444,31 @@
     <div class="fields">
 
       <div class="field">
-        <label>Select Artwork</label>
-        <div class="x-art-picker" id="xArtPicker">
+        <label>Artwork Source</label>
+        <div class="x-source-toggle">
+          <button type="button" id="xSrcLibrary" class="x-src-btn active">Library</button>
+          <button type="button" id="xSrcUpload" class="x-src-btn">Upload New</button>
+        </div>
+
+        <!-- Library picker (shown by default) -->
+        <div id="xArtPicker" class="x-art-picker">
           <div style="grid-column:1/-1;text-align:center;font-size:0.72rem;color:var(--text-muted);padding:1rem;">loading library…</div>
+        </div>
+
+        <!-- Upload mini-form (hidden by default) -->
+        <div id="xUploadForm" style="display:none;">
+          <div id="xDropzone" class="x-dropzone">
+            <input type="file" id="xFileInput" accept="image/*" style="display:none;">
+            <div class="x-drop-hint" id="xDropHint">Drop image or click to browse</div>
+            <img id="xUploadPreview" style="display:none;" alt="">
+          </div>
+          <div class="field" style="margin-top:0.6rem;">
+            <input type="text" id="xUploadTitle" placeholder="Artwork title" maxlength="200" />
+          </div>
+          <button type="button" id="xUploadSubmit" class="btn-secondary" style="width:100%;margin-top:0.4rem;">
+            <span class="btn-label">Upload &amp; Select</span>
+            <span class="spinner"></span>
+          </button>
         </div>
       </div>
 
@@ -1400,13 +1511,42 @@
 
   <div class="panel">
     <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;">
-      <span>Queue</span>
-      <button type="button" class="btn-secondary" id="xProcessQueueBtn" style="font-size:0.72rem;padding:0.35rem 0.65rem;">Post due items now</button>
+      <span>Schedule</span>
+      <div class="x-view-tabs">
+        <button type="button" id="xViewCalBtn" class="x-view-tab active">Calendar</button>
+        <button type="button" id="xViewListBtn" class="x-view-tab">List</button>
+        <button type="button" class="btn-secondary" id="xProcessQueueBtn" style="font-size:0.72rem;padding:0.35rem 0.65rem;">Post due items now</button>
+      </div>
     </div>
-    <div class="x-queue" id="xQueue">
-      <div class="loading-state" style="grid-column:unset;padding:1.5rem 0;">loading…</div>
+
+    <!-- Calendar view (default) -->
+    <div id="xCalendarView">
+      <div class="x-cal-header">
+        <button type="button" id="xCalPrev" class="x-cal-nav">&#8249;</button>
+        <span id="xCalMonthLabel" class="x-cal-month-label"></span>
+        <button type="button" id="xCalNext" class="x-cal-nav">&#8250;</button>
+      </div>
+      <div class="x-cal-grid" id="xCalGrid">
+        <div style="grid-column:1/-1;text-align:center;font-size:0.72rem;color:var(--text-muted);padding:1.5rem 0;">loading…</div>
+      </div>
+    </div>
+
+    <!-- List view (hidden by default) -->
+    <div id="xListView" style="display:none;">
+      <div class="x-queue" id="xQueue">
+        <div class="loading-state" style="grid-column:unset;padding:1.5rem 0;">loading…</div>
+      </div>
     </div>
   </div>
+</div>
+
+<!-- X Scheduler: Slide-out Day Panel -->
+<div id="xDayPanel" class="x-day-panel">
+  <div class="x-day-panel-header">
+    <span id="xDayPanelTitle" class="x-day-panel-title"></span>
+    <button type="button" id="xDayPanelClose" class="x-day-panel-close">✕</button>
+  </div>
+  <div id="xDayPanelBody" class="x-queue"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1496,6 +1636,8 @@
     hideAllViews();
     if (xSchedulerApp) xSchedulerApp.classList.add('authenticated');
     if (headerBadge) headerBadge.textContent = 'Admin · 𝕏 Scheduler';
+    xSetViewMode('calendar');
+    xSetSourceMode('library');
     if (typeof loadXArtPicker === 'function') loadXArtPicker();
     if (typeof loadXQueue === 'function') loadXQueue();
   }
@@ -2139,6 +2281,9 @@
 
   // ========== X SCHEDULER ==========
   let xSelectedArtwork = null;
+  let xCalYear = new Date().getFullYear();
+  let xCalMonth = new Date().getMonth();
+  let xAllPosts = [];
 
   const xArtPicker = document.getElementById('xArtPicker');
   const xSelectedPreview = document.getElementById('xSelectedPreview');
@@ -2149,6 +2294,338 @@
   const xPostNowBtn = document.getElementById('xPostNowBtn');
   const xQueue = document.getElementById('xQueue');
   const xProcessQueueBtn = document.getElementById('xProcessQueueBtn');
+  const xSrcLibraryBtn = document.getElementById('xSrcLibrary');
+  const xSrcUploadBtn = document.getElementById('xSrcUpload');
+  const xUploadForm = document.getElementById('xUploadForm');
+  const xDropzone = document.getElementById('xDropzone');
+  const xFileInput = document.getElementById('xFileInput');
+  const xDropHint = document.getElementById('xDropHint');
+  const xUploadPreviewImg = document.getElementById('xUploadPreview');
+  const xUploadTitle = document.getElementById('xUploadTitle');
+  const xUploadSubmit = document.getElementById('xUploadSubmit');
+  const xViewCalBtn = document.getElementById('xViewCalBtn');
+  const xViewListBtn = document.getElementById('xViewListBtn');
+  const xCalendarView = document.getElementById('xCalendarView');
+  const xListView = document.getElementById('xListView');
+  const xCalPrev = document.getElementById('xCalPrev');
+  const xCalNext = document.getElementById('xCalNext');
+  const xCalMonthLabel = document.getElementById('xCalMonthLabel');
+  const xCalGrid = document.getElementById('xCalGrid');
+  const xDayPanel = document.getElementById('xDayPanel');
+  const xDayPanelTitle = document.getElementById('xDayPanelTitle');
+  const xDayPanelBody = document.getElementById('xDayPanelBody');
+  const xDayPanelClose = document.getElementById('xDayPanelClose');
+
+  // --- Source mode toggle (Library / Upload New) ---
+  var xUploadFile = null;
+
+  function xSetSourceMode(mode) {
+    if (mode === 'upload') {
+      xArtPicker.style.display = 'none';
+      xUploadForm.style.display = 'block';
+      if (xSrcLibraryBtn) xSrcLibraryBtn.classList.remove('active');
+      if (xSrcUploadBtn) xSrcUploadBtn.classList.add('active');
+    } else {
+      xArtPicker.style.display = '';
+      xUploadForm.style.display = 'none';
+      if (xSrcLibraryBtn) xSrcLibraryBtn.classList.add('active');
+      if (xSrcUploadBtn) xSrcUploadBtn.classList.remove('active');
+    }
+  }
+
+  function xSetUploadFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      showToast('Please select an image file', 'error');
+      return;
+    }
+    xUploadFile = file;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      if (xUploadPreviewImg) {
+        xUploadPreviewImg.src = e.target.result;
+        xUploadPreviewImg.style.display = 'block';
+      }
+      if (xDropHint) xDropHint.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+    if (xUploadTitle && !xUploadTitle.value.trim()) {
+      var name = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+      xUploadTitle.value = name.charAt(0).toUpperCase() + name.slice(1);
+    }
+  }
+
+  if (xDropzone) {
+    xDropzone.addEventListener('click', function () { if (xFileInput) xFileInput.click(); });
+    xDropzone.addEventListener('dragover', function (e) { e.preventDefault(); xDropzone.classList.add('dragover'); });
+    xDropzone.addEventListener('dragleave', function () { xDropzone.classList.remove('dragover'); });
+    xDropzone.addEventListener('drop', function (e) {
+      e.preventDefault();
+      xDropzone.classList.remove('dragover');
+      var f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) xSetUploadFile(f);
+    });
+  }
+  if (xFileInput) {
+    xFileInput.addEventListener('change', function () {
+      if (xFileInput.files && xFileInput.files[0]) xSetUploadFile(xFileInput.files[0]);
+    });
+  }
+  if (xSrcLibraryBtn) xSrcLibraryBtn.addEventListener('click', function () { xSetSourceMode('library'); });
+  if (xSrcUploadBtn) xSrcUploadBtn.addEventListener('click', function () { xSetSourceMode('upload'); });
+
+  async function xUploadAndSelect() {
+    if (!xUploadFile) return showToast('Select an image first', 'error');
+    var title = xUploadTitle ? xUploadTitle.value.trim() : '';
+    if (!title) return showToast('Enter a title for the artwork', 'error');
+    if (xUploadSubmit) { xUploadSubmit.classList.add('loading'); xUploadSubmit.disabled = true; }
+    try {
+      var ext = xUploadFile.name.split('.').pop() || 'jpg';
+      var path = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+      var upRes = await sb.storage.from('artworks').upload(path, xUploadFile);
+      if (upRes.error) throw upRes.error;
+      var urlRes = sb.storage.from('artworks').getPublicUrl(path);
+      var imageUrl = urlRes.data && urlRes.data.publicUrl;
+      var insRes = await sb.from('artworks').insert({
+        title: title,
+        image_url: imageUrl,
+        image_path: path,
+      }).select('id,title,image_url').single();
+      if (insRes.error) throw insRes.error;
+      var art = insRes.data;
+      xSelectedArtwork = { id: art.id, title: art.title, image_url: art.image_url };
+      if (xSelectedPreview) {
+        xSelectedPreview.innerHTML = '';
+        var pv = document.createElement('img');
+        pv.src = art.image_url;
+        pv.alt = art.title || '';
+        xSelectedPreview.appendChild(pv);
+      }
+      if (xCaption && !xCaption.value.trim()) {
+        var suggested = (title + '\n\n#AIArt #ToxiqMynd #DarkArt').slice(0, 280);
+        xCaption.value = suggested;
+        xCaption.dispatchEvent(new Event('input'));
+      }
+      showToast('✓ Uploaded & selected', 'success');
+      // Reset upload form
+      xUploadFile = null;
+      if (xUploadPreviewImg) { xUploadPreviewImg.src = ''; xUploadPreviewImg.style.display = 'none'; }
+      if (xDropHint) xDropHint.style.display = '';
+      if (xUploadTitle) xUploadTitle.value = '';
+      if (xFileInput) xFileInput.value = '';
+      xSetSourceMode('library');
+      loadXArtPicker();
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Upload failed', 'error');
+    } finally {
+      if (xUploadSubmit) { xUploadSubmit.classList.remove('loading'); xUploadSubmit.disabled = false; }
+    }
+  }
+  if (xUploadSubmit) xUploadSubmit.addEventListener('click', xUploadAndSelect);
+
+  // --- Calendar view toggle ---
+  function xSetViewMode(mode) {
+    if (mode === 'calendar') {
+      if (xCalendarView) xCalendarView.style.display = '';
+      if (xListView) xListView.style.display = 'none';
+      if (xViewCalBtn) xViewCalBtn.classList.add('active');
+      if (xViewListBtn) xViewListBtn.classList.remove('active');
+    } else {
+      if (xCalendarView) xCalendarView.style.display = 'none';
+      if (xListView) xListView.style.display = '';
+      if (xViewCalBtn) xViewCalBtn.classList.remove('active');
+      if (xViewListBtn) xViewListBtn.classList.add('active');
+    }
+  }
+  if (xViewCalBtn) xViewCalBtn.addEventListener('click', function () { xSetViewMode('calendar'); });
+  if (xViewListBtn) xViewListBtn.addEventListener('click', function () { xSetViewMode('list'); });
+
+  // --- Calendar rendering ---
+  var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DOW_LABELS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+
+  function renderCalendar(posts) {
+    if (!xCalGrid || !xCalMonthLabel) return;
+    xCalMonthLabel.textContent = MONTH_NAMES[xCalMonth] + ' ' + xCalYear;
+
+    // Group posts by local date key YYYY-MM-DD
+    var byDay = {};
+    (posts || []).forEach(function (p) {
+      if (!p.scheduled_at) return;
+      var d = new Date(p.scheduled_at);
+      var key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      if (!byDay[key]) byDay[key] = [];
+      byDay[key].push(p);
+    });
+
+    var todayKey = (function () {
+      var t = new Date();
+      return t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+    })();
+
+    xCalGrid.innerHTML = '';
+
+    // Day-of-week headers (Mon first)
+    DOW_LABELS.forEach(function (d) {
+      var h = document.createElement('div');
+      h.className = 'x-cal-dow';
+      h.textContent = d;
+      xCalGrid.appendChild(h);
+    });
+
+    // First day of month (0=Sun…6=Sat), convert to Mon-first (0=Mon…6=Sun)
+    var firstDay = new Date(xCalYear, xCalMonth, 1).getDay();
+    var offset = (firstDay + 6) % 7; // days to pad at start
+    var daysInMonth = new Date(xCalYear, xCalMonth + 1, 0).getDate();
+    var daysInPrev = new Date(xCalYear, xCalMonth, 0).getDate();
+
+    // Leading cells from prev month
+    for (var i = 0; i < offset; i++) {
+      var cell = document.createElement('div');
+      cell.className = 'x-cal-day other-month';
+      var num = document.createElement('div');
+      num.className = 'x-cal-day-num';
+      num.textContent = daysInPrev - offset + 1 + i;
+      cell.appendChild(num);
+      xCalGrid.appendChild(cell);
+    }
+
+    // Current month days
+    for (var day = 1; day <= daysInMonth; day++) {
+      var key = xCalYear + '-' + String(xCalMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      var dayPosts = byDay[key] || [];
+      var cell = document.createElement('div');
+      cell.className = 'x-cal-day' + (key === todayKey ? ' today' : '') + (dayPosts.length ? ' has-posts' : '');
+      var num = document.createElement('div');
+      num.className = 'x-cal-day-num';
+      num.textContent = day;
+      cell.appendChild(num);
+      if (dayPosts.length) {
+        var dots = document.createElement('div');
+        dots.className = 'x-cal-dots';
+        var shown = dayPosts.slice(0, 6);
+        shown.forEach(function (p) {
+          var dot = document.createElement('div');
+          dot.className = 'x-cal-dot ' + (p.status || 'pending');
+          dots.appendChild(dot);
+        });
+        cell.appendChild(dots);
+        (function (k, dp) {
+          cell.addEventListener('click', function () { openDayPanel(k, dp); });
+        })(key, dayPosts);
+      }
+      xCalGrid.appendChild(cell);
+    }
+
+    // Trailing cells
+    var total = offset + daysInMonth;
+    var trailing = (7 - (total % 7)) % 7;
+    for (var t = 1; t <= trailing; t++) {
+      var cell = document.createElement('div');
+      cell.className = 'x-cal-day other-month';
+      var num = document.createElement('div');
+      num.className = 'x-cal-day-num';
+      num.textContent = t;
+      cell.appendChild(num);
+      xCalGrid.appendChild(cell);
+    }
+  }
+
+  if (xCalPrev) xCalPrev.addEventListener('click', function () {
+    xCalMonth--;
+    if (xCalMonth < 0) { xCalMonth = 11; xCalYear--; }
+    renderCalendar(xAllPosts);
+  });
+  if (xCalNext) xCalNext.addEventListener('click', function () {
+    xCalMonth++;
+    if (xCalMonth > 11) { xCalMonth = 0; xCalYear++; }
+    renderCalendar(xAllPosts);
+  });
+
+  // --- Day slide-out panel ---
+  function openDayPanel(dateKey, posts) {
+    if (!xDayPanel || !xDayPanelTitle || !xDayPanelBody) return;
+    var parts = dateKey.split('-');
+    var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+    xDayPanelTitle.textContent = d.toLocaleDateString(undefined, {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    xDayPanelBody.innerHTML = '';
+    posts.forEach(function (post) {
+      var item = document.createElement('div');
+      item.className = 'x-queue-item';
+
+      var thumbEl = document.createElement('div');
+      thumbEl.className = 'x-queue-thumb';
+      if (post.image_url) {
+        var qimg = document.createElement('img');
+        qimg.src = post.image_url;
+        qimg.alt = '';
+        thumbEl.appendChild(qimg);
+      }
+
+      var body = document.createElement('div');
+      body.className = 'x-queue-body';
+
+      var cap = document.createElement('div');
+      cap.className = 'x-queue-caption';
+      cap.textContent = post.caption || '—';
+
+      var meta = document.createElement('div');
+      meta.className = 'x-queue-meta';
+      var badge = document.createElement('span');
+      badge.className = 'x-status-badge ' + (post.status || 'pending');
+      badge.textContent = post.status || 'pending';
+      var timeStr = '';
+      if (post.status === 'published' && post.posted_at) {
+        timeStr = 'posted ' + new Date(post.posted_at).toLocaleTimeString();
+      } else if (post.status === 'failed' && post.error_message) {
+        timeStr = post.error_message.slice(0, 80) + (post.error_message.length > 80 ? '…' : '');
+      } else if (post.scheduled_at) {
+        timeStr = new Date(post.scheduled_at).toLocaleTimeString();
+      }
+      meta.appendChild(badge);
+      if (timeStr) { var timeEl = document.createElement('span'); timeEl.textContent = timeStr; meta.appendChild(timeEl); }
+
+      body.appendChild(cap);
+      body.appendChild(meta);
+
+      var actions = document.createElement('div');
+      actions.className = 'x-queue-actions';
+      if (post.status === 'published' && post.tweet_id) {
+        var viewBtn = document.createElement('button');
+        viewBtn.type = 'button';
+        viewBtn.textContent = 'View';
+        viewBtn.addEventListener('click', function () { window.open('https://x.com/i/web/status/' + post.tweet_id, '_blank'); });
+        actions.appendChild(viewBtn);
+      }
+      if (post.status === 'pending') {
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'danger';
+        cancelBtn.textContent = '✕';
+        cancelBtn.title = 'Cancel';
+        cancelBtn.addEventListener('click', async function () {
+          if (!confirm('Cancel this scheduled post?')) return;
+          await sb.from('x_scheduled_posts').delete().eq('id', post.id);
+          showToast('Post cancelled');
+          loadXQueue();
+          closeDayPanel();
+        });
+        actions.appendChild(cancelBtn);
+      }
+
+      item.appendChild(thumbEl);
+      item.appendChild(body);
+      item.appendChild(actions);
+      xDayPanelBody.appendChild(item);
+    });
+    xDayPanel.classList.add('open');
+  }
+
+  function closeDayPanel() {
+    if (xDayPanel) xDayPanel.classList.remove('open');
+  }
+
+  if (xDayPanelClose) xDayPanelClose.addEventListener('click', closeDayPanel);
 
   async function xProcessQueueNow() {
     var session = (await sb.auth.getSession()).data.session;
@@ -2251,11 +2728,14 @@
     const { data, error } = await sb.from('x_scheduled_posts')
       .select('id,caption,image_url,artwork_title,scheduled_at,status,posted_at,tweet_id,error_message')
       .order('scheduled_at', { ascending: true })
-      .limit(30);
+      .limit(200);
     if (error) {
       xQueue.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);padding:0.5rem 0;">Could not load queue — run the migration <code style="color:var(--accent)">supabase/migrations/20250328120000_x_scheduled_posts.sql</code> in the SQL editor.</div>';
+      renderCalendar([]);
       return;
     }
+    xAllPosts = data || [];
+    renderCalendar(xAllPosts);
     if (!data || !data.length) {
       xQueue.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);padding:0.5rem 0;">No posts scheduled yet.</div>';
       return;
