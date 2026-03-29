@@ -8,6 +8,11 @@ on:
     - cron: "*/5 * * * *" # every 5 minutes UTC
   workflow_dispatch:
 
+# Avoid overlapping runs (two concurrent invokes could process the same rows).
+concurrency:
+  group: process-x-scheduled-posts
+  cancel-in-progress: false
+
 jobs:
   invoke:
     runs-on: ubuntu-latest

@@ -155,6 +155,7 @@ Deno.serve(async (req: Request) => {
   return new Response(
     JSON.stringify({
       ok: true,
+      serverTimeUtc: nowIso,
       due: (rows || []).length,
       processed,
       failures,
