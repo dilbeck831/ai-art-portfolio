@@ -1612,7 +1612,6 @@
       <div class="x-view-tabs">
         <button type="button" id="xViewCalBtn" class="x-view-tab active">Calendar</button>
         <button type="button" id="xViewListBtn" class="x-view-tab">List</button>
-        <button type="button" class="btn-secondary" id="xProcessQueueBtn" style="font-size:0.72rem;padding:0.35rem 0.65rem;">Post due items now</button>
       </div>
     </div>
 
@@ -2548,7 +2547,6 @@
   const xScheduleBtn = document.getElementById('xScheduleBtn');
   const xPostNowBtn = document.getElementById('xPostNowBtn');
   const xQueue = document.getElementById('xQueue');
-  const xProcessQueueBtn = document.getElementById('xProcessQueueBtn');
   const xSrcLibraryBtn = document.getElementById('xSrcLibrary');
   const xSrcUploadBtn = document.getElementById('xSrcUpload');
   const xUploadForm = document.getElementById('xUploadForm');
@@ -2956,40 +2954,6 @@
 
   if (xDayPanelClose) xDayPanelClose.addEventListener('click', closeDayPanel);
 
-  async function xProcessQueueNow() {
-    var session = (await sb.auth.getSession()).data.session;
-    if (!session) return showToast('Sign in required', 'error');
-    if (xProcessQueueBtn) {
-      xProcessQueueBtn.disabled = true;
-      xProcessQueueBtn.classList.add('loading');
-    }
-    try {
-      // Use SDK invoke (correct apikey + Authorization); raw fetch often 401s on Edge Functions.
-      var inv = await sb.functions.invoke('process-x-scheduled-posts', { body: {} });
-      if (inv.error) {
-        showToast('Worker: ' + (inv.error.message || String(inv.error)), 'error');
-        return;
-      }
-      var data = inv.data || {};
-      var parts = ['due ' + (data.due != null ? data.due : '?')];
-      if (data.processed && data.processed.length) parts.push('posted ' + data.processed.length);
-      if (data.failures && data.failures.length) parts.push('failed ' + data.failures.length);
-      if (data.due === 0 && (!data.processed || !data.processed.length)) {
-        parts.push('(nothing due yet — check scheduled time vs UTC)');
-      }
-      showToast(parts.join(' · '), (data.failures && data.failures.length) ? 'error' : 'success');
-      loadXQueue();
-    } catch (err) {
-      console.error(err);
-      showToast(err.message || 'Request failed', 'error');
-    } finally {
-      if (xProcessQueueBtn) {
-        xProcessQueueBtn.disabled = false;
-        xProcessQueueBtn.classList.remove('loading');
-      }
-    }
-  }
-
   function setMinDatetime() {
     if (!xScheduleAt) return;
     var now = new Date();
@@ -3246,7 +3210,6 @@
 
   if (xPostNowBtn) xPostNowBtn.addEventListener('click', function () { xSaveToQueue(true); });
   if (xScheduleBtn) xScheduleBtn.addEventListener('click', function () { xSaveToQueue(false); });
-  if (xProcessQueueBtn) xProcessQueueBtn.addEventListener('click', function () { xProcessQueueNow(); });
 
   }
 </script>
