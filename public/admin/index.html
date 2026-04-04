@@ -1026,7 +1026,7 @@
 
     .x-btn-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 0.75rem;
       margin-top: 0.5rem;
     }
@@ -1336,7 +1336,6 @@
     @media (max-width: 680px) {
       #adminHub { padding: 0 1rem; }
       .hub-grid { grid-template-columns: 1fr; }
-      .x-btn-row { grid-template-columns: 1fr; }
       .x-art-picker {
         gap: 0.35rem;
         padding: 0.5rem;
@@ -1646,17 +1645,13 @@
       </div>
 
       <div class="field">
-        <label for="xScheduleAt">Schedule for (leave blank to post now)</label>
-        <input type="datetime-local" id="xScheduleAt" />
+        <label for="xScheduleAt">Schedule for</label>
+        <input type="datetime-local" id="xScheduleAt" required />
       </div>
 
       <div class="x-btn-row">
-        <button type="button" class="btn-secondary" id="xScheduleBtn">
+        <button type="button" class="btn-submit" id="xScheduleBtn">
           <span class="btn-label">Schedule</span>
-          <span class="spinner"></span>
-        </button>
-        <button type="button" class="btn-submit" id="xPostNowBtn">
-          <span class="btn-label">Post Now</span>
           <span class="spinner"></span>
         </button>
       </div>
@@ -1867,7 +1862,6 @@
 <script>
   const SUPABASE_URL = 'https://sbbmducevhpirnthzvtz.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_X1bha7SOQmNtwVvC4Rhp-Q_67c3guiX';
-  const X_EDGE_FN = SUPABASE_URL + '/functions/v1/post-to-x';
 
   (function () {
     var logo = document.getElementById('adminLogo');
@@ -2604,7 +2598,6 @@
   const xCharCounter = document.getElementById('xCharCounter');
   const xScheduleAt = document.getElementById('xScheduleAt');
   const xScheduleBtn = document.getElementById('xScheduleBtn');
-  const xPostNowBtn = document.getElementById('xPostNowBtn');
   const xQueue = document.getElementById('xQueue');
   const xSrcLibraryBtn = document.getElementById('xSrcLibrary');
   const xSrcUploadBtn = document.getElementById('xSrcUpload');
@@ -3176,21 +3169,16 @@
     });
   }
 
-  async function xSaveToQueue(postNow) {
+  async function xSaveToQueue() {
     if (!xSelectedArtwork) return showToast('Select an artwork first', 'error');
     var caption = (xCaption && xCaption.value.trim()) || '';
     if (!caption) return showToast('Add a caption', 'error');
 
-    var scheduledAt = null;
-    if (!postNow) {
-      var dtVal = xScheduleAt && xScheduleAt.value;
-      if (!dtVal) return showToast('Pick a schedule time or use Post Now', 'error');
-      scheduledAt = new Date(dtVal).toISOString();
-    } else {
-      scheduledAt = new Date().toISOString();
-    }
+    var dtVal = xScheduleAt && xScheduleAt.value;
+    if (!dtVal) return showToast('Pick a schedule time', 'error');
+    var scheduledAt = new Date(dtVal).toISOString();
 
-    var btn = postNow ? xPostNowBtn : xScheduleBtn;
+    var btn = xScheduleBtn;
     if (btn) {
       btn.classList.add('loading');
       btn.disabled = true;
@@ -3207,43 +3195,8 @@
       }).select('id').single();
 
       if (ins.error) throw ins.error;
-      var queueRowId = ins.data && ins.data.id;
 
-      if (postNow) {
-        var session = (await sb.auth.getSession()).data.session;
-        var fnRes = await fetch(X_EDGE_FN, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + (session ? session.access_token : ''),
-          },
-          body: JSON.stringify({
-            image_url: xSelectedArtwork.image_url,
-            caption: caption,
-          }),
-        });
-
-        var fnData = await fnRes.json().catch(function () { return {}; });
-
-        if (!fnRes.ok) {
-          showToast('Post failed: ' + (fnData.error || fnRes.status), 'error');
-        } else if (fnData.tweet_id && queueRowId) {
-          var up = await sb.from('x_scheduled_posts')
-            .update({
-              status: 'published',
-              tweet_id: fnData.tweet_id,
-              posted_at: new Date().toISOString(),
-              error_message: null,
-            })
-            .eq('id', queueRowId);
-          if (up.error) console.error(up.error);
-          showToast('✓ Posted to 𝕏!', 'success');
-        } else {
-          showToast('Posted but no tweet id returned — check X app', 'error');
-        }
-      } else {
-        showToast('✓ Scheduled', 'success');
-      }
+      showToast('✓ Scheduled', 'success');
 
       if (xCaption) xCaption.value = '';
       if (xCharCounter) {
@@ -3267,8 +3220,7 @@
     }
   }
 
-  if (xPostNowBtn) xPostNowBtn.addEventListener('click', function () { xSaveToQueue(true); });
-  if (xScheduleBtn) xScheduleBtn.addEventListener('click', function () { xSaveToQueue(false); });
+  if (xScheduleBtn) xScheduleBtn.addEventListener('click', xSaveToQueue);
 
   }
 </script>
