@@ -1046,6 +1046,46 @@
       flex-wrap: wrap;
     }
 
+    .x-queue-title-row {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .x-queue-title-label {
+      font-size: 0.58rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .x-queue-title-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      padding: 0.4rem 0.5rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .x-queue-title-input:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 2px rgba(139,92,246,0.12);
+    }
+    .x-queue-title-input:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+    .x-queue-title-static {
+      margin: 0;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
     .x-status-badge {
       display: inline-flex;
       align-items: center;
@@ -2998,6 +3038,50 @@
       cap.className = 'x-queue-caption';
       cap.textContent = post.caption || '—';
 
+      var titleRow = document.createElement('div');
+      titleRow.className = 'x-queue-title-row';
+      if (post.status === 'pending') {
+        var titleLabel = document.createElement('label');
+        titleLabel.className = 'x-queue-title-label';
+        titleLabel.setAttribute('for', 'x-queue-title-' + post.id);
+        titleLabel.textContent = 'Post title (artwork)';
+        var titleInput = document.createElement('input');
+        titleInput.type = 'text';
+        titleInput.id = 'x-queue-title-' + post.id;
+        titleInput.className = 'x-queue-title-input';
+        titleInput.value = post.artwork_title || '';
+        titleInput.placeholder = 'Label for this queued post';
+        titleInput.autocomplete = 'off';
+        var titleSaving = false;
+        titleInput.addEventListener('keydown', function (e) { e.stopPropagation(); });
+        titleInput.addEventListener('click', function (e) { e.stopPropagation(); });
+        titleInput.addEventListener('blur', async function () {
+          if (titleSaving) return;
+          var next = titleInput.value.trim();
+          var prev = (post.artwork_title || '').trim();
+          if (next === prev) return;
+          titleSaving = true;
+          titleInput.disabled = true;
+          var up = await sb.from('x_scheduled_posts').update({ artwork_title: next || null }).eq('id', post.id);
+          titleInput.disabled = false;
+          titleSaving = false;
+          if (up.error) {
+            showToast(up.error.message || 'Could not save title', 'error');
+            titleInput.value = post.artwork_title || '';
+          } else {
+            post.artwork_title = next || null;
+            showToast('Title updated', 'success');
+          }
+        });
+        titleRow.appendChild(titleLabel);
+        titleRow.appendChild(titleInput);
+      } else if (post.artwork_title) {
+        var titleStatic = document.createElement('p');
+        titleStatic.className = 'x-queue-title-static';
+        titleStatic.textContent = 'Title: ' + post.artwork_title;
+        titleRow.appendChild(titleStatic);
+      }
+
       var meta = document.createElement('div');
       meta.className = 'x-queue-meta';
 
@@ -3021,6 +3105,7 @@
       if (timeStr) meta.appendChild(timeEl);
 
       body.appendChild(cap);
+      if (titleRow.childNodes.length) body.appendChild(titleRow);
       body.appendChild(meta);
 
       var actions = document.createElement('div');
