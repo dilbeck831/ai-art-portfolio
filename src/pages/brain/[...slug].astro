@@ -1,0 +1,161 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('vault');
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// Derive a display title: frontmatter title, first h1 in slug, or humanized slug
+const title = entry.data.title ?? entry.slug.split('/').pop()?.replace(/-/g, ' ') ?? entry.slug;
+const tags: string[] = entry.data.tags ?? [];
+---
+<Layout title={title}>
+  <article class="vault-note" data-pagefind-body>
+    <header class="vault-note__header">
+      <p class="vault-note__path">{entry.slug}</p>
+      <h1 class="vault-note__title">{title}</h1>
+      {tags.length > 0 && (
+        <ul class="vault-note__tags" aria-label="Tags">
+          {tags.map((tag) => <li class="vault-note__tag">#{tag}</li>)}
+        </ul>
+      )}
+    </header>
+    <div class="vault-note__content">
+      <Content />
+    </div>
+  </article>
+
+  <style>
+    .vault-note {
+      max-width: 72ch;
+      margin: 0 auto;
+      padding: calc(var(--space) * 3) calc(var(--space) * 2);
+    }
+
+    .vault-note__header {
+      margin-bottom: calc(var(--space) * 2);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: var(--space);
+    }
+
+    .vault-note__path {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin: 0 0 0.5rem;
+      font-family: monospace;
+    }
+
+    .vault-note__title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0 0 var(--space);
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-transform: capitalize;
+    }
+
+    .vault-note__tags {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .vault-note__tag {
+      font-size: 0.75rem;
+      color: var(--accent);
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    /* Markdown content styling */
+    .vault-note__content :global(h1),
+    .vault-note__content :global(h2),
+    .vault-note__content :global(h3) {
+      color: var(--text);
+      margin-top: calc(var(--space) * 1.5);
+    }
+
+    .vault-note__content :global(h2) {
+      font-size: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    .vault-note__content :global(p) {
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .vault-note__content :global(a) {
+      color: var(--accent-bright);
+    }
+
+    .vault-note__content :global(code) {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 0.875em;
+    }
+
+    .vault-note__content :global(pre) {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space);
+      overflow-x: auto;
+    }
+
+    .vault-note__content :global(pre code) {
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .vault-note__content :global(blockquote) {
+      border-left: 3px solid var(--accent);
+      padding-left: var(--space);
+      margin: 0;
+      color: var(--text-muted);
+    }
+
+    .vault-note__content :global(table) {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .vault-note__content :global(th),
+    .vault-note__content :global(td) {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+    }
+
+    .vault-note__content :global(th) {
+      background: var(--surface);
+      color: var(--accent-bright);
+    }
+
+    .vault-note__content :global(ul),
+    .vault-note__content :global(ol) {
+      padding-left: 1.5rem;
+      line-height: 1.8;
+    }
+  </style>
+</Layout>

@@ -18,6 +18,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # ── Vault content ──────────────────────────────────────────────────────
+      # Before running: create a GitHub PAT (classic, repo scope read-only)
+      # for the private obsidian-vault repo and store it as:
+      #   Settings → Secrets and variables → Actions → VAULT_ACCESS_TOKEN
+      # Then replace YOUR_GITHUB_USERNAME/obsidian-vault below with the real repo.
+      - name: Checkout vault content
+        uses: actions/checkout@v4
+        with:
+          repository: dilbeck831/obsidian-vault
+          token: ${{ secrets.VAULT_ACCESS_TOKEN }}
+          path: vault-content
+
+      - name: Copy vault content into Astro content collection
+        run: |
+          mkdir -p src/content/vault
+          # Copy all markdown files, preserving folder structure for sub-collections
+          find vault-content -name "*.md" \
+            ! -path "*/raw/*" \
+            ! -name "CLAUDE.md" \
+            ! -name "README.md" \
+            | while read f; do
+                dest="src/content/vault/${f#vault-content/}"
+                mkdir -p "$(dirname "$dest")"
+                cp "$f" "$dest"
+              done
+      # ──────────────────────────────────────────────────────────────────────
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"

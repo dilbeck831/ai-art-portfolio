@@ -4,12 +4,15 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
-    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build && npx pagefind --site dist --output-path dist/_pagefind",
     "preview": "astro preview",
     "verify:hosting": "node scripts/verify-production-hosting.mjs"
   },
   "dependencies": {
     "astro": "^4.16.0",
     "gsap": "^3.14.2"
+  },
+  "devDependencies": {
+    "pagefind": "^1.5.0"
   }
 }
