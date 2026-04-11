@@ -6,6 +6,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # Rebuild every 6 hours so vault search stays in sync with Obsidian pushes.
+    # Adjust the interval here: https://crontab.guru
+    - cron: '0 */6 * * *'
 permissions:
   contents: read
   pages: write
