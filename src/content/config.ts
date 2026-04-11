@@ -6,7 +6,11 @@ const vault = defineCollection({
   type: 'content',
   schema: z.object({
     date: z.union([z.string(), z.date()]).optional(),
-    tags: z.array(z.string()).optional(),
+    // Accept both array and string forms — vault notes aren't always consistent
+    tags: z.preprocess(
+      (val) => (typeof val === 'string' ? val.replace(/^\[|\]$/g, '').split(',').map((s) => s.trim()).filter(Boolean) : val),
+      z.array(z.string())
+    ).optional(),
     status: z.string().optional(),
     aliases: z.array(z.string()).optional(),
     title: z.string().optional(),
