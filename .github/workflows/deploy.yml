@@ -34,16 +34,17 @@ jobs:
       - name: Copy vault content into Astro content collection
         run: |
           mkdir -p src/content/vault
-          # Copy all markdown files, preserving folder structure for sub-collections
-          find vault-content -name "*.md" \
-            ! -path "*/raw/*" \
-            ! -name "CLAUDE.md" \
-            ! -name "README.md" \
-            | while read f; do
+          # Only copy real content folders — exclude plugin data, templates, raw staging
+          for dir in 00-inbox 01-projects 02-areas 03-resources 04-archive wiki; do
+            if [ -d "vault-content/$dir" ]; then
+              mkdir -p "src/content/vault/$dir"
+              find "vault-content/$dir" -name "*.md" | while read f; do
                 dest="src/content/vault/${f#vault-content/}"
                 mkdir -p "$(dirname "$dest")"
                 cp "$f" "$dest"
               done
+            fi
+          done
       # ──────────────────────────────────────────────────────────────────────
 
       - uses: actions/setup-node@v4
