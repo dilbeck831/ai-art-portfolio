@@ -2,16 +2,6 @@
 import Layout from '../../../layouts/Layout.astro';
 const base = import.meta.env.BASE_URL;
 
-const tools = [
-  {
-    label: 'Private',
-    title: 'Brain Search',
-    description: 'Full-text search across all Obsidian vault notes, wiki entries, and resources. Synced automatically via Obsidian Git.',
-    href: `${base}search/`,
-    tags: ['Vault', 'Pagefind', 'Private'],
-  },
-];
-
 const vibes = [
   {
     id: 'v1-cinematic',
@@ -37,22 +27,6 @@ const vibes = [
   <h1 class="page-title">Homepage Hub</h1>
   <p class="page-subtitle">Experimental homepage designs. Each is a standalone vibe — pick what fits the mood.</p>
 
-  <h2 class="section-label">Tools</h2>
-  <ul class="hub-grid">
-    {tools.map((t) => (
-      <li class="hub-card">
-        <div class="hub-card__meta">
-          <span class="hub-card__label">{t.label}</span>
-          {t.tags.map((tag) => <span class="hub-card__tag">{tag}</span>)}
-        </div>
-        <h3 class="hub-card__title">{t.title}</h3>
-        <p class="hub-card__desc">{t.description}</p>
-        <a href={t.href} class="hub-card__btn">Open →</a>
-      </li>
-    ))}
-  </ul>
-
-  <h2 class="section-label">Homepage variants</h2>
   <ul class="hub-grid">
     {vibes.map((v) => (
       <li class:list={['hub-card', v.gold && 'hub-card--gold']}>
@@ -73,15 +47,6 @@ const vibes = [
 </Layout>
 
 <style>
-  .section-label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--text-muted);
-    margin: calc(var(--space) * 2) 0 0;
-  }
-
   .hub-grid {
     list-style: none;
     padding: 0;
